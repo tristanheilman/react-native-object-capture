@@ -1,8 +1,45 @@
-import type { TurboModule } from 'react-native';
-import { TurboModuleRegistry } from 'react-native';
+import { useEffect, useState } from 'react';
+import { NativeEventEmitter, NativeModules } from 'react-native';
 
-export interface Spec extends TurboModule {
-  multiply(a: number, b: number): number;
+export type SessionState =
+  | 'initializing'
+  | 'ready'
+  | 'capturing'
+  | 'processing'
+  | 'completed'
+  | 'failed';
+
+export interface ObjectCaptureEvents {
+  onSessionStateChange: (state: SessionState) => void;
 }
 
-export default TurboModuleRegistry.getEnforcing<Spec>('ObjectCapture');
+// Export the native module
+export const RNObjectCapture = NativeModules.RNObjectCapture;
+
+// Export the event emitter
+export const objectCaptureEmitter = new NativeEventEmitter(RNObjectCapture);
+
+export const useObjectCapture = () => {
+  const [sessionState, setSessionState] =
+    useState<SessionState>('initializing');
+
+  useEffect(() => {
+    const subscription = objectCaptureEmitter.addListener(
+      'onSessionStateChange',
+      (event: { state: SessionState }) => {
+        setSessionState(event.state);
+      }
+    );
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+
+  return {
+    sessionState,
+    constants: RNObjectCapture.constants,
+  };
+};
+
+export default RNObjectCapture;

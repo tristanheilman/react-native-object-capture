@@ -1,16 +1,19 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import {
   ObjectCaptureView,
   type SessionState,
+  type ObjectCaptureViewRef,
 } from 'react-native-object-capture';
 
 export default function ObjectSessionScreen() {
+  const objectCaptureViewRef = useRef<ObjectCaptureViewRef>(null);
   const [sessionState, setSessionState] =
     useState<SessionState>('initializing');
 
   const handleSessionStateChange = (state: SessionState) => {
     console.log('Session state:', state);
+    console.log('Object capture view ref:', objectCaptureViewRef.current);
     setSessionState(state);
   };
 
@@ -25,6 +28,7 @@ export default function ObjectSessionScreen() {
   return (
     <View style={styles.container}>
       <ObjectCaptureView
+        ref={objectCaptureViewRef}
         style={styles.container}
         onSessionStateChange={handleSessionStateChange}
         onCaptureComplete={handleCaptureComplete}

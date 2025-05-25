@@ -12,6 +12,7 @@ export { ObjectCaptureView };
 // Export types
 export type { ObjectCaptureViewProps } from './components/ObjectCaptureView';
 export type { SessionState };
+export type { ObjectCaptureViewRef } from './components/ObjectCaptureView';
 
 // Export hooks and utilities
 export { useObjectCapture, objectCaptureEmitter };

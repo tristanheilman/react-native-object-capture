@@ -32,6 +32,6 @@
     "react-native-monorepo-config": "^0.1.9"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=29.19.0"
   }
 }

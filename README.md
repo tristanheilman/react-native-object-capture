@@ -1,5 +1,14 @@
 # react-native-object-capture
 
+> ⚠️ **WARNING: This library is currently in active development and is NOT ready for production use.**
+> 
+> - The implementation is incomplete and may contain bugs
+> - API changes are likely to occur
+> - Some features may not work as expected
+> - Testing has been limited to specific devices and scenarios
+> 
+> Use at your own risk and expect breaking changes in future releases.
+
 AR object capture session for React Native using Apple's Object Capture API. This library provides a React Native wrapper for capturing 3D objects using the device's camera.
 
 ## Requirements

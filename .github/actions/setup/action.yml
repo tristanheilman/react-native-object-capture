@@ -34,3 +34,5 @@ runs:
           **/node_modules
           .yarn/install-state.gz
         key: ${{ steps.yarn-cache.outputs.cache-primary-key }}
+
+runs-on: macos-latest

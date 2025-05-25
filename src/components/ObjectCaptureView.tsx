@@ -1,3 +1,4 @@
+// src/components/ObjectCaptureView.tsx
 import React, { useEffect } from 'react';
 import { requireNativeComponent, type ViewStyle, Platform } from 'react-native';
 import { useObjectCapture, type SessionState } from '../NativeObjectCapture';

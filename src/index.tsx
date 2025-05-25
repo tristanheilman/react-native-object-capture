@@ -1,3 +1,4 @@
+// src/index.tsx
 import ObjectCapture, {
   useObjectCapture,
   type SessionState,

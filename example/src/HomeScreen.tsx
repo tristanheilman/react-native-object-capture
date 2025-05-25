@@ -23,8 +23,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   button: {
-    backgroundColor: 'blue',
-    padding: 10,
+    backgroundColor: '#CD8987',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderRadius: 5,
   },
 });

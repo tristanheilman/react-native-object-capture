@@ -196,12 +196,60 @@ class ObjectCaptureSessionManager: NSObject, ObservableObject {
     @MainActor
     private func finishSetup(completion: @escaping (Bool, String?) -> Void) {
         // Create new configuration
-        var config = ObjectCaptureSession.Configuration()
-        config.checkpointDirectory = getDocumentsDirectory().appendingPathComponent("Snapshots/")
+        let checkpointDirectory = getDocumentsDirectory().appendingPathComponent("Snapshots/")
         
+        // Create checkpoint directory if it doesn't exist
+        if !FileManager.default.fileExists(atPath: checkpointDirectory.path) {
+            do {
+                try FileManager.default.createDirectory(at: checkpointDirectory, withIntermediateDirectories: true)
+            } catch {
+                print("Failed to create checkpoint directory: \(error)")
+                completion(false, "Failed to create checkpoint directory")
+                return
+            }
+        } else {
+            // Clear existing checkpoint directory
+            do {
+                let contents = try FileManager.default.contentsOfDirectory(at: checkpointDirectory, includingPropertiesForKeys: nil)
+                for file in contents {
+                    try FileManager.default.removeItem(at: file)
+                }
+            } catch {
+                print("Failed to clear checkpoint directory: \(error)")
+                completion(false, "Failed to clear checkpoint directory")
+                return
+            }
+        }
+        
+        var config = ObjectCaptureSession.Configuration()
+        config.checkpointDirectory = checkpointDirectory
+
         // Create directories if they don't exist
         let imagesDirectory = getDocumentsDirectory().appendingPathComponent("Images/")
         
+        // Create directory if it doesn't exist
+        if !FileManager.default.fileExists(atPath: imagesDirectory.path) {
+            do {
+                try FileManager.default.createDirectory(at: imagesDirectory, withIntermediateDirectories: true)
+            } catch {
+                print("Failed to create images directory: \(error)")
+                completion(false, "Failed to create images directory")
+                return
+            }
+        } else {
+            // Clear existing directory
+            do {
+                let contents = try FileManager.default.contentsOfDirectory(at: imagesDirectory, includingPropertiesForKeys: nil)
+                for file in contents {
+                    try FileManager.default.removeItem(at: file)
+                }
+            } catch {
+                print("Failed to clear images directory: \(error)")
+                completion(false, "Failed to clear images directory")
+                return
+            }
+        }
+
         // Create and configure new session
         let newSession = ObjectCaptureSession()
         

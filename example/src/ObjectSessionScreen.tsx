@@ -12,6 +12,7 @@ export default function ObjectSessionScreen() {
     useState<SessionState>('initializing');
 
   const handleSessionStateChange = (state: SessionState) => {
+    console.log('State change: ', state);
     setSessionState(state);
   };
 
@@ -24,9 +25,19 @@ export default function ObjectSessionScreen() {
   };
 
   const handleStartDetection = async () => {
-    console.log('Starting detection');
-    console.log('Object capture view ref:', objectCaptureViewRef.current);
     await objectCaptureViewRef.current?.startDetection();
+  };
+
+  const handleResetDetection = async () => {
+    await objectCaptureViewRef.current?.resetDetection();
+  };
+
+  const handleStartCapturing = async () => {
+    await objectCaptureViewRef.current?.startCapturing();
+  };
+
+  const handleFinishSession = async () => {
+    await objectCaptureViewRef.current?.finishSession();
   };
 
   return (
@@ -50,6 +61,26 @@ export default function ObjectSessionScreen() {
             <Pressable style={styles.button} onPress={handleStartDetection}>
               <Text>Start Detection</Text>
             </Pressable>
+          )}
+          {sessionState === 'detecting' && (
+            <View style={styles.buttonRow}>
+              <Pressable style={styles.button} onPress={handleResetDetection}>
+                <Text>Reset Detection</Text>
+              </Pressable>
+              <Pressable style={styles.button} onPress={handleStartCapturing}>
+                <Text>Start Capturing</Text>
+              </Pressable>
+            </View>
+          )}
+          {sessionState === 'capturing' && (
+            <View style={styles.buttonRow}>
+              <Pressable style={styles.button} onPress={handleResetDetection}>
+                <Text>Reset Detection</Text>
+              </Pressable>
+              <Pressable style={styles.button} onPress={handleFinishSession}>
+                <Text>Finish Session</Text>
+              </Pressable>
+            </View>
           )}
         </View>
       </View>
@@ -81,6 +112,11 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flex: 1,
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
 });

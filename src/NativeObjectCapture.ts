@@ -9,6 +9,7 @@ import {
 export type SessionState =
   | 'initializing'
   | 'ready'
+  | 'detecting'
   | 'capturing'
   | 'processing'
   | 'completed'

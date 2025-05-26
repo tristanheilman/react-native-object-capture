@@ -91,6 +91,36 @@ class RNObjectCaptureView: RCTViewManager {
         }
     }
 
+    @objc
+    func getSessionState(_ node: NSNumber) async -> String {
+        return await _sharedSessionManager.getSessionState()
+    }
+
+    @objc
+    func isDeviceSupported(_ node: NSNumber) async -> Bool {
+        return await _sharedSessionManager.isDeviceSupported()
+    }
+
+    @objc
+    func getTrackingState(_ node: NSNumber) async -> String {
+        return await _sharedSessionManager.getTrackingState()
+    }
+
+    @objc
+    func getFeedbackState(_ node: NSNumber) async -> [String] {
+        return await _sharedSessionManager.getFeedbackState()
+    }
+
+    @objc
+    func getNumberOfShotsTaken(_ node: NSNumber) async -> Int {
+        return await _sharedSessionManager.getNumberOfShotsTaken()
+    }
+
+    @objc
+    func getUserCompletedScanState(_ node: NSNumber) async -> Bool {
+        return await _sharedSessionManager.getUserCompletedScanState()
+    }
+
     override static func requiresMainQueueSetup() -> Bool {
         return true
     }
@@ -353,6 +383,36 @@ class ObjectCaptureSessionManager: NSObject, ObservableObject {
         }
     }
 
+    @MainActor
+    func getSessionState() -> String {
+        return session?.state.stringValue ?? "unknown"
+    }
+
+    @MainActor
+    func getTrackingState() -> String {
+      return session?.cameraTracking.stringValue ?? "unknown"
+    }
+
+    @MainActor
+    func getFeedbackState() -> [String] {
+      return session?.feedback.stringValues ?? ["unknown"]
+    }
+
+    @MainActor
+    func getNumberOfShotsTaken() -> Int {
+        return session?.numberOfShotsTaken ?? 0
+    }
+
+    @MainActor
+    func getUserCompletedScanState() -> Bool {
+        return session?.userCompletedScanPass ?? false
+    }
+
+    @MainActor
+    func isDeviceSupported() -> Bool {
+        return ObjectCaptureSession.isSupported
+    }
+
     private func getDocumentsDirectory() -> URL {
         FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
     }
@@ -381,6 +441,50 @@ extension ObjectCaptureSession.CaptureState {
     }
 }
 
+extension ObjectCaptureSession.Tracking {
+    var stringValue: String {
+        switch self {
+        case .normal:
+            return "normal"
+        case .notAvailable:
+            return "notAvailable"
+        case .limited:
+            return "limited"
+        @unknown default:
+            return "unknown"
+        }
+    }   
+}
+
+extension Set where Element == ObjectCaptureSession.Feedback {
+    var stringValues: [String] {
+        self.map { feedback in
+            switch feedback {   
+            case .objectTooClose:
+                return "objectTooClose"
+            case .objectTooFar:
+                return "objectTooFar"
+            case .environmentLowLight:
+                return "environmentLowLight"
+            case .environmentTooDark:
+                return "environmentTooDark"
+            case .movingTooFast:
+                return "movingTooFast"
+            case .outOfFieldOfView:
+                return "outOfFieldOfView"
+            case .objectNotFlippable:
+                return "objectNotFlippable"
+            case .overCapturing:
+                return "overCapturing"
+            case .objectNotDetected:
+                return "objectNotDetected"
+            @unknown default:
+                return "unknown"
+            }
+        }
+    }
+}
+
 struct RNObjectCaptureViewWrapper: View {
     @ObservedObject var sessionManager: ObjectCaptureSessionManager
     
@@ -395,6 +499,22 @@ struct RNObjectCaptureViewWrapper: View {
                         print("Converted state to string: \(stateString)") // Debug log
                         sessionManager.sendEvent(name: "onSessionStateChange", body: [
                             "state": stateString
+                        ])
+                    }
+                    .onChange(of: session.feedback) { _, newState in
+                        print("Feedback state changed to \(newState)")
+                        let feedbackString = newState.stringValues
+                        print("Converted feedback to string: \(feedbackString)") // Debug log
+                        sessionManager.sendEvent(name: "onFeedbackStateChange", body: [
+                            "feedback": feedbackString
+                        ])
+                    }
+                    .onChange(of: session.cameraTracking) { _, newState in
+                        print("Tracking state changed to \(newState)")
+                        let trackingString = newState.stringValue
+                        print("Converted tracking to string: \(trackingString)") // Debug log
+                        sessionManager.sendEvent(name: "onTrackingStateChange", body: [
+                            "tracking": trackingString
                         ])
                     }
                     .onAppear {

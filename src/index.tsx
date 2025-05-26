@@ -2,6 +2,8 @@
 import ObjectCapture, {
   useObjectCapture,
   type SessionState,
+  type TrackingState,
+  type FeedbackState,
   objectCaptureEmitter,
 } from './NativeObjectCapture';
 import ObjectCaptureView from './components/ObjectCaptureView';
@@ -11,7 +13,7 @@ export { ObjectCaptureView };
 
 // Export types
 export type { ObjectCaptureViewProps } from './components/ObjectCaptureView';
-export type { SessionState };
+export type { SessionState, TrackingState, FeedbackState };
 export type { ObjectCaptureViewRef } from './components/ObjectCaptureView';
 
 // Export hooks and utilities

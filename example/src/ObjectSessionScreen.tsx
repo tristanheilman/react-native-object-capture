@@ -4,6 +4,8 @@ import {
   ObjectCaptureView,
   type SessionState,
   type ObjectCaptureViewRef,
+  type FeedbackState,
+  type TrackingState,
 } from 'react-native-object-capture';
 
 type ObjectSessionScreenProps = {
@@ -16,10 +18,20 @@ export default function ObjectSessionScreen({
   const objectCaptureViewRef = useRef<ObjectCaptureViewRef>(null);
   const [sessionState, setSessionState] =
     useState<SessionState>('initializing');
+  const [trackingState, setTrackingState] =
+    useState<TrackingState>('notAvailable');
+  const [feedbackState, setFeedbackState] = useState<FeedbackState[]>([]);
 
   const handleSessionStateChange = (state: SessionState) => {
-    console.log('State change: ', state);
     setSessionState(state);
+  };
+
+  const handleFeedbackStateChange = (feedback: FeedbackState[]) => {
+    setFeedbackState(feedback);
+  };
+
+  const handleTrackingStateChange = (tracking: TrackingState) => {
+    setTrackingState(tracking);
   };
 
   const handleCaptureComplete = (result: { url: string }) => {
@@ -47,12 +59,8 @@ export default function ObjectSessionScreen({
   };
 
   const handleCancelSession = async () => {
-    try {
-      await objectCaptureViewRef.current?.cancelSession();
-      navigation.goBack();
-    } catch (error) {
-      console.error('Error canceling session:', error);
-    }
+    await objectCaptureViewRef.current?.cancelSession();
+    navigation.goBack();
   };
 
   return (
@@ -61,9 +69,28 @@ export default function ObjectSessionScreen({
         ref={objectCaptureViewRef}
         style={styles.container}
         onSessionStateChange={handleSessionStateChange}
+        onFeedbackStateChange={handleFeedbackStateChange}
+        onTrackingStateChange={handleTrackingStateChange}
         onCaptureComplete={handleCaptureComplete}
         onError={handleError}
       />
+
+      {feedbackState.length > 0 && (
+        <View style={styles.feedbackContainer}>
+          <Pressable
+            style={styles.feedbackButton}
+            onPress={handleCancelSession}
+          >
+            <Text style={styles.feedbackText}>{feedbackState.join(', ')}</Text>
+          </Pressable>
+        </View>
+      )}
+
+      <View style={styles.trackingContainer}>
+        <Pressable style={styles.trackingButton} onPress={handleCancelSession}>
+          <Text style={styles.trackingText}>{trackingState}</Text>
+        </Pressable>
+      </View>
 
       <View style={styles.floatingBackButton}>
         <Pressable style={styles.button} onPress={handleCancelSession}>
@@ -119,6 +146,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#CD8987',
     borderRadius: 5,
   },
+  feedbackButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    borderRadius: 5,
+  },
+  feedbackContainer: {
+    position: 'absolute',
+    top: 150,
+    right: 50,
+    left: 50,
+    alignItems: 'center',
+  },
   floatingContainer: {
     position: 'absolute',
     left: 0,
@@ -144,6 +184,26 @@ const styles = StyleSheet.create({
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    gap: 10,
     alignItems: 'center',
+  },
+  feedbackText: {
+    color: '#ffffff',
+  },
+  trackingContainer: {
+    position: 'absolute',
+    bottom: 150,
+    left: 50,
+    right: 50,
+    alignItems: 'center',
+  },
+  trackingButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    borderRadius: 5,
+  },
+  trackingText: {
+    color: '#ffffff',
   },
 });

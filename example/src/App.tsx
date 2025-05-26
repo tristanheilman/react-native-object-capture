@@ -12,6 +12,9 @@ export default function App() {
         <Stack.Screen
           name="ObjectCaptureView"
           component={ObjectSessionScreen}
+          options={{
+            headerShown: false,
+          }}
         />
       </Stack.Navigator>
     </NavigationContainer>

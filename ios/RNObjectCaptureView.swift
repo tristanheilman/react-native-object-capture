@@ -68,6 +68,14 @@ class RNObjectCaptureView: RCTViewManager {
     }
 
     @objc
+    func cancelSession(_ node: NSNumber) {
+        Task { [weak self] in
+            guard let self = self else { return }
+            await _sharedSessionManager.cancelSession()
+        }
+    }
+
+    @objc
     func beginNewScanAfterFlip(_ node: NSNumber) {
         Task { [weak self] in
             guard let self = self else { return }
@@ -276,6 +284,15 @@ class ObjectCaptureSessionManager: NSObject, ObservableObject {
         print("Resuming session") // Debug log
         if let existingSession = session {
             existingSession.resume()
+        }
+    }
+    
+    @MainActor
+    func cancelSession() async {
+        print("Cancelling session") // Debug log
+        if let existingSession = session {
+            existingSession.cancel()
+            session = nil
         }
     }
 

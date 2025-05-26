@@ -24,6 +24,7 @@ export interface ObjectCaptureViewRef {
   beginNewScanAfterFlip: () => Promise<void>;
   beginNewScan: () => Promise<void>;
   finishSession: () => Promise<void>;
+  cancelSession: () => Promise<void>;
 }
 
 // Define the native module interface
@@ -36,6 +37,7 @@ interface RNObjectCaptureViewModule {
   beginNewScanAfterFlip: (node: number) => Promise<void>;
   beginNewScan: (node: number) => Promise<void>;
   finishSession: (node: number) => Promise<void>;
+  cancelSession: (node: number) => Promise<void>;
 }
 
 // Only require the native component on iOS
@@ -71,6 +73,16 @@ const ObjectCaptureView = forwardRef<
   useImperativeHandle(
     ref,
     () => ({
+      cancelSession: async () => {
+        if (!nativeModule.current || !viewRef.current) {
+          throw new Error('View or native module not found');
+        }
+        const node = findNodeHandle(viewRef.current);
+        if (!node) {
+          throw new Error('View node not found');
+        }
+        return nativeModule.current.cancelSession(node);
+      },
       resumeSession: async () => {
         if (!nativeModule.current || !viewRef.current) {
           throw new Error('View or native module not found');

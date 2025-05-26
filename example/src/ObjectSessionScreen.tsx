@@ -6,7 +6,13 @@ import {
   type ObjectCaptureViewRef,
 } from 'react-native-object-capture';
 
-export default function ObjectSessionScreen() {
+type ObjectSessionScreenProps = {
+  navigation: any;
+};
+
+export default function ObjectSessionScreen({
+  navigation,
+}: ObjectSessionScreenProps) {
   const objectCaptureViewRef = useRef<ObjectCaptureViewRef>(null);
   const [sessionState, setSessionState] =
     useState<SessionState>('initializing');
@@ -40,6 +46,15 @@ export default function ObjectSessionScreen() {
     await objectCaptureViewRef.current?.finishSession();
   };
 
+  const handleCancelSession = async () => {
+    try {
+      await objectCaptureViewRef.current?.cancelSession();
+      navigation.goBack();
+    } catch (error) {
+      console.error('Error canceling session:', error);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <ObjectCaptureView
@@ -49,6 +64,12 @@ export default function ObjectSessionScreen() {
         onCaptureComplete={handleCaptureComplete}
         onError={handleError}
       />
+
+      <View style={styles.floatingBackButton}>
+        <Pressable style={styles.button} onPress={handleCancelSession}>
+          <Text>Cancel</Text>
+        </Pressable>
+      </View>
 
       <View style={styles.floatingContainer}>
         <View style={styles.buttonContainer}>
@@ -108,6 +129,12 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
+  },
+  floatingBackButton: {
+    position: 'absolute',
+    top: 60,
+    left: 0,
+    padding: 16,
   },
   buttonContainer: {
     flex: 1,

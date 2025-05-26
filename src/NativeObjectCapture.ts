@@ -20,11 +20,6 @@ export interface ObjectCaptureEvents {
 
 // Define the interface for the native module
 interface RNObjectCaptureInterface extends NativeModule {
-  startSession(): Promise<void>;
-  stopSession(): Promise<void>;
-  startDetection(): Promise<void>;
-  startCapturing(): Promise<void>;
-  finishSession(): Promise<void>;
   constants: {
     SessionState: {
       initializing: string;
@@ -64,12 +59,6 @@ export const useObjectCapture = () => {
   return {
     sessionState,
     constants: RNObjectCapture.constants,
-    // Add methods to the hook return value
-    startSession: RNObjectCapture.startSession,
-    stopSession: RNObjectCapture.stopSession,
-    startDetection: RNObjectCapture.startDetection,
-    startCapturing: RNObjectCapture.startCapturing,
-    finishSession: RNObjectCapture.finishSession,
   };
 };
 

@@ -8,19 +8,81 @@ import ARKit
 
 @objc(RNObjectCaptureView)
 class RNObjectCaptureView: RCTViewManager {
-    //private var sessionManager: ObjectCaptureSessionManager?
+    private var _sharedSessionManager: ObjectCaptureSessionManager
+
+    override init() {
+        _sharedSessionManager = ObjectCaptureSessionManager()
+    }
     
     override func view() -> UIView! {
-        // Get the session manager from the RNObjectCapture module
-        // if let bridge = RCTBridge.current(),
-        //    let module = bridge.module(for: RNObjectCapture.self) as? RNObjectCapture {
-        //     sessionManager = module.getSessionManager()
-        // }
-        
-        let hostingController = UIHostingController(rootView: RNObjectCaptureViewWrapper())
+        let hostingController = UIHostingController(rootView: RNObjectCaptureViewWrapper(sessionManager: _sharedSessionManager))
         return hostingController.view
     }
     
+    @objc
+    func resumeSession(_ node: NSNumber) {
+        Task { [weak self] in
+            guard let self = self else { return }
+          await _sharedSessionManager.resumeSession()
+        }
+    }
+    
+    @objc
+    func pauseSession(_ node: NSNumber) {
+        Task { [weak self] in
+            guard let self = self else { return }
+            await _sharedSessionManager.pauseSession()
+        }
+    }
+    
+    @objc
+    func startDetection(_ node: NSNumber) {
+        Task { [weak self] in
+            guard let self = self else { return }
+            await _sharedSessionManager.startDetection()
+        }
+    }
+    
+    @objc
+    func resetDetection(_ node: NSNumber) {
+        Task { [weak self] in
+            guard let self = self else { return }
+            await _sharedSessionManager.resetDetection()
+        }
+    }
+    
+    @objc
+    func startCapturing(_ node: NSNumber) {
+        Task { [weak self] in
+            guard let self = self else { return }
+            await _sharedSessionManager.startCapturing()
+        }
+    }
+    
+    @objc
+    func finishSession(_ node: NSNumber) {
+        Task { [weak self] in
+            guard let self = self else { return }
+            await _sharedSessionManager.finishSession()
+        }
+    }
+
+    @objc
+    func beginNewScanAfterFlip(_ node: NSNumber) {
+        Task { [weak self] in
+            guard let self = self else { return }
+            await _sharedSessionManager.beginNewScanAfterFlip()
+        }
+    }
+
+    @objc
+    func beginNewScan(_ node: NSNumber) {
+        Task { [weak self] in
+            guard let self = self else { return }
+            await _sharedSessionManager.beginNewScan()
+        }
+    }
+
     override static func requiresMainQueueSetup() -> Bool {
         return true
     }
@@ -30,22 +92,12 @@ class RNObjectCaptureView: RCTViewManager {
     }
 }
 
-@MainActor
 class ObjectCaptureSessionManager: NSObject, ObservableObject {
     @Published var session: ObjectCaptureSession?
     @Published var eventEmitter: RCTEventEmitter?
     private var configuration: ObjectCaptureSession.Configuration?
     private var eventBuffer: [(String, [String: Any])] = []
 
-    override init() {
-        super.init()
-      print("ObjectCaptureSessionManager initializing") // Debug log
-        Task {
-            await setupSession()
-            print("ObjectCaptureSessionManager initialized") // Debug log
-        }
-    }
-    
     func setEventEmitter(_ emitter: RCTEventEmitter) {
         self.eventEmitter = emitter
         print("Event emitter set")
@@ -64,71 +116,85 @@ class ObjectCaptureSessionManager: NSObject, ObservableObject {
             eventBuffer.append((name, body))
         }
     }
-    
-    func setupSession() async {
+
+    @MainActor
+    func setupSession(completion: @escaping (Bool, String?) -> Void) {
         print("Setting up session") // Debug log
         
         // Clean up any existing session
-        await cleanupSession()
-
-        // Check if device supports Object Capture
-        if !ObjectCaptureSession.isSupported {
-            print("Object Capture is not supported on this device")
-            eventEmitter?.sendEvent(withName: "onError", body: [
-                "message": "Object Capture is not supported on this device"
-            ])
-            return
-        }
-        
-        // Check if Metal is available and properly configured
-        guard let metalDevice = MTLCreateSystemDefaultDevice() else {
-            print("Failed to create Metal device")
-            eventEmitter?.sendEvent(withName: "onError", body: [
-                "message": "Failed to create Metal device"
-            ])
-            return
-        }
-        
-        print("Metal device: \(metalDevice.name)")
-        
-        guard let commandQueue = metalDevice.makeCommandQueue() else {
-            print("Failed to create Metal command queue")
-            eventEmitter?.sendEvent(withName: "onError", body: [
-                "message": "Failed to create Metal command queue"
-            ])
-            return
-        }
-        print("Metal command queue created successfully")
-
-        // Check for required Metal GPU families
-        let requiredFamilies: [MTLGPUFamily] = [
-            .apple4,  // iOS GPU Family 4
-            .apple5   // iOS GPU Family 5
-        ]
-        
-        for family in requiredFamilies {
-            if !metalDevice.supportsFamily(family) {
-                print("Device does not support required Metal GPU family: \(family)")
-                eventEmitter?.sendEvent(withName: "onError", body: [
-                    "message": "Device does not support required Metal GPU family: \(family)"
+        cleanupSession { [weak self] success, error in
+            guard let self = self else { return }
+            
+            // Check if device supports Object Capture
+            if !ObjectCaptureSession.isSupported {
+                print("Object Capture is not supported on this device")
+                self.eventEmitter?.sendEvent(withName: "onError", body: [
+                    "message": "Object Capture is not supported on this device"
                 ])
+                completion(false, "Object Capture is not supported on this device")
                 return
             }
-        }
-        
-        // Check camera permissions first
-        let cameraAuthStatus = AVCaptureDevice.authorizationStatus(for: .video)
-        if cameraAuthStatus != .authorized {
-            // Request camera permission
-            let granted = await AVCaptureDevice.requestAccess(for: .video)
-            if !granted {
-                eventEmitter?.sendEvent(withName: "onError", body: [
-                    "message": "Camera permission not granted"
+            
+            // Check if Metal is available and properly configured
+            guard let metalDevice = MTLCreateSystemDefaultDevice() else {
+                print("Failed to create Metal device")
+                self.eventEmitter?.sendEvent(withName: "onError", body: [
+                    "message": "Failed to create Metal device"
                 ])
+                completion(false, "Failed to create Metal device")
                 return
             }
+            
+            print("Metal device: \(metalDevice.name)")
+            
+            guard let commandQueue = metalDevice.makeCommandQueue() else {
+                print("Failed to create Metal command queue")
+                self.eventEmitter?.sendEvent(withName: "onError", body: [
+                    "message": "Failed to create Metal command queue"
+                ])
+                completion(false, "Failed to create Metal command queue")
+                return
+            }
+            print("Metal command queue created successfully")
+
+            // Check for required Metal GPU families
+            let requiredFamilies: [MTLGPUFamily] = [
+                .apple4,  // iOS GPU Family 4
+                .apple5   // iOS GPU Family 5
+            ]
+            
+            for family in requiredFamilies {
+                if !metalDevice.supportsFamily(family) {
+                    print("Device does not support required Metal GPU family: \(family)")
+                    self.eventEmitter?.sendEvent(withName: "onError", body: [
+                        "message": "Device does not support required Metal GPU family: \(family)"
+                    ])
+                    completion(false, "Device does not support required Metal GPU family: \(family)")
+                    return
+                }
+            }
+            
+            // Check camera permissions
+            let cameraAuthStatus = AVCaptureDevice.authorizationStatus(for: .video)
+            if cameraAuthStatus != .authorized {
+                AVCaptureDevice.requestAccess(for: .video) { granted in
+                    if !granted {
+                        self.eventEmitter?.sendEvent(withName: "onError", body: [
+                            "message": "Camera permission not granted"
+                        ])
+                        completion(false, "Camera permission not granted")
+                        return
+                    }
+                    self.finishSetup(completion: completion)
+                }
+            } else {
+                self.finishSetup(completion: completion)
+            }
         }
-        
+    }
+    
+    @MainActor
+    private func finishSetup(completion: @escaping (Bool, String?) -> Void) {
         // Create new configuration
         var config = ObjectCaptureSession.Configuration()
         config.checkpointDirectory = getDocumentsDirectory().appendingPathComponent("Snapshots/")
@@ -145,17 +211,19 @@ class ObjectCaptureSessionManager: NSObject, ObservableObject {
         self.configuration = config
         
         print("Session started successfully") // Debug log
+        completion(true, nil)
     }
-
-    func cleanupSession() async {
-        print("Cleaning up session") // Debug log
-        
-        if let existingSession = session {
-            existingSession.cancel()
-            session = nil
+    
+    @MainActor
+    func cleanupSession(completion: @escaping (Bool, String?) -> Void) {
+        if let session = self.session {
+            session.cancel()
+            self.session = nil
         }
+        completion(true, nil)
     }
 
+    @MainActor
     func resumeSession() async {
         print("Resuming session") // Debug log
         if let existingSession = session {
@@ -163,6 +231,7 @@ class ObjectCaptureSessionManager: NSObject, ObservableObject {
         }
     }
 
+    @MainActor
     func pauseSession() async {
         print("Pausing session") // Debug log
         if let existingSession = session {
@@ -170,13 +239,15 @@ class ObjectCaptureSessionManager: NSObject, ObservableObject {
         }
     }
 
+    @MainActor
     func startDetection() async {
-        print("Starting detection") // Debug log
+        print("Starting detection [ObjectCaptureSessionManager]") // Debug log
         if let existingSession = session {
             existingSession.startDetecting()
         }
     }
 
+    @MainActor
     func resetDetection() async {
         print("Resetting detection") // Debug log
         if let existingSession = session {
@@ -184,6 +255,7 @@ class ObjectCaptureSessionManager: NSObject, ObservableObject {
         }
     }
 
+    @MainActor
     func startCapturing() async {
         print("Starting capture") // Debug log
         if let existingSession = session {
@@ -191,6 +263,7 @@ class ObjectCaptureSessionManager: NSObject, ObservableObject {
         }
     }
 
+    @MainActor
     func beginNewScanAfterFlip() async {
         print("Beginning new scan after flip") // Debug log
         if let existingSession = session {
@@ -198,6 +271,7 @@ class ObjectCaptureSessionManager: NSObject, ObservableObject {
         }
     }
 
+    @MainActor
     func beginNewScan() async {
         print("Beginning new scan") // Debug log
         if let existingSession = session {
@@ -205,6 +279,7 @@ class ObjectCaptureSessionManager: NSObject, ObservableObject {
         }
     }
 
+    @MainActor
     func finishSession() async {
         print("Finishing session") // Debug log
         if let existingSession = session {
@@ -242,7 +317,7 @@ extension ObjectCaptureSession.CaptureState {
 }
 
 struct RNObjectCaptureViewWrapper: View {
-    @StateObject private var sessionManager = ObjectCaptureSessionManager()
+    @ObservedObject var sessionManager: ObjectCaptureSessionManager
     
     var body: some View {
         ZStack {
@@ -270,11 +345,17 @@ struct RNObjectCaptureViewWrapper: View {
                         } else {
                             print("No RCTBridge available")
                         }
+                                  
+                                  
                     }
                     .onDisappear {
                         print("ObjectCaptureView disappeared") // Debug log
-                        Task {
-                            await sessionManager.cleanupSession()
+                        sessionManager.cleanupSession { success, error in
+                            if !success {
+                                print("Failed to cleanup session: \(error ?? "Unknown error")")
+                            } else {
+                                print("Session cleanup completed successfully")
+                            }
                         }
                     }
                 }
@@ -283,8 +364,16 @@ struct RNObjectCaptureViewWrapper: View {
                 VStack {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle())
+                        .onAppear {
+                            sessionManager.setupSession { success, error in
+                                if !success {
+                                    print("Failed to setup session: \(error ?? "Unknown error")")
+                                }
+                            }
+                        }
                     Text("Initializing...")
                         .padding()
+                        
                 }
             }
         }

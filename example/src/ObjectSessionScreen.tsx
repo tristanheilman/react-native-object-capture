@@ -12,8 +12,6 @@ export default function ObjectSessionScreen() {
     useState<SessionState>('initializing');
 
   const handleSessionStateChange = (state: SessionState) => {
-    console.log('Session state:', state);
-    console.log('Object capture view ref:', objectCaptureViewRef.current);
     setSessionState(state);
   };
 
@@ -23,6 +21,12 @@ export default function ObjectSessionScreen() {
 
   const handleError = (error: { message: string }) => {
     console.error('Error:', error.message);
+  };
+
+  const handleStartDetection = async () => {
+    console.log('Starting detection');
+    console.log('Object capture view ref:', objectCaptureViewRef.current);
+    await objectCaptureViewRef.current?.startDetection();
   };
 
   return (
@@ -43,13 +47,8 @@ export default function ObjectSessionScreen() {
             </View>
           )}
           {sessionState === 'ready' && (
-            <Pressable
-              style={styles.button}
-              onPress={() => {
-                //setSessionState('capturing');
-              }}
-            >
-              <Text>Start Session</Text>
+            <Pressable style={styles.button} onPress={handleStartDetection}>
+              <Text>Start Detection</Text>
             </Pressable>
           )}
         </View>

@@ -2,24 +2,35 @@ import { useEffect, useImperativeHandle, forwardRef, useRef } from 'react';
 import {
   requireNativeComponent,
   type ViewStyle,
+  type NativeSyntheticEvent,
   Platform,
   findNodeHandle,
   NativeModules,
 } from 'react-native';
 import {
-  useObjectCapture,
   type SessionState,
   type TrackingState,
   type FeedbackState,
+  type FeedbackStateChange,
+  type TrackingStateChange,
+  type SessionStateChange,
+  type CaptureComplete,
+  type SessionError,
 } from '../NativeObjectCapture';
 
 export interface ObjectCaptureViewProps {
   style?: ViewStyle;
-  onSessionStateChange?: (state: SessionState) => void;
-  onTrackingStateChange?: (state: TrackingState) => void;
-  onFeedbackStateChange?: (state: FeedbackState[]) => void;
-  onCaptureComplete?: (result: { url: string }) => void;
-  onError?: (error: { message: string }) => void;
+  onSessionStateChange?: (
+    event: NativeSyntheticEvent<SessionStateChange>
+  ) => void;
+  onTrackingStateChange?: (
+    event: NativeSyntheticEvent<TrackingStateChange>
+  ) => void;
+  onFeedbackStateChange?: (
+    event: NativeSyntheticEvent<FeedbackStateChange>
+  ) => void;
+  onCaptureComplete?: (event: NativeSyntheticEvent<CaptureComplete>) => void;
+  onError?: (event: NativeSyntheticEvent<SessionError>) => void;
 }
 
 export interface ObjectCaptureViewRef {
@@ -89,7 +100,7 @@ const ObjectCaptureView = forwardRef<
     },
     ref
   ) => {
-    const { sessionState, trackingState, feedbackState } = useObjectCapture();
+    //useObjectCapture();
     const viewRef = useRef(null);
     const nativeModule = useRef<RNObjectCaptureViewModule | null>(null);
 
@@ -257,17 +268,33 @@ const ObjectCaptureView = forwardRef<
       []
     );
 
-    useEffect(() => {
-      onSessionStateChange?.(sessionState);
-    }, [sessionState, onSessionStateChange]);
+    const _onCaptureComplete = (
+      event: NativeSyntheticEvent<CaptureComplete>
+    ) => {
+      onCaptureComplete?.(event);
+    };
 
-    useEffect(() => {
-      onTrackingStateChange?.(trackingState);
-    }, [trackingState, onTrackingStateChange]);
+    const _onFeedbackStateChange = (
+      event: NativeSyntheticEvent<FeedbackStateChange>
+    ) => {
+      onFeedbackStateChange?.(event);
+    };
 
-    useEffect(() => {
-      onFeedbackStateChange?.(feedbackState);
-    }, [feedbackState, onFeedbackStateChange]);
+    const _onTrackingStateChange = (
+      event: NativeSyntheticEvent<TrackingStateChange>
+    ) => {
+      onTrackingStateChange?.(event);
+    };
+
+    const _onSessionStateChange = (
+      event: NativeSyntheticEvent<SessionStateChange>
+    ) => {
+      onSessionStateChange?.(event);
+    };
+
+    const _onError = (event: NativeSyntheticEvent<SessionError>) => {
+      onError?.(event);
+    };
 
     if (!RNObjectCaptureView) {
       console.warn('RNObjectCaptureView is not available');
@@ -278,8 +305,11 @@ const ObjectCaptureView = forwardRef<
       <RNObjectCaptureView
         ref={viewRef}
         style={style}
-        onCaptureComplete={onCaptureComplete}
-        onError={onError}
+        onCaptureComplete={_onCaptureComplete}
+        onFeedbackStateChange={_onFeedbackStateChange}
+        onTrackingStateChange={_onTrackingStateChange}
+        onSessionStateChange={_onSessionStateChange}
+        onError={_onError}
       />
     );
   }

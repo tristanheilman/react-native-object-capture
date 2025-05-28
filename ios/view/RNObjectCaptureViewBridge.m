@@ -13,4 +13,11 @@ RCT_EXTERN_METHOD(beginNewScan:(nonnull NSNumber *)node)
 RCT_EXTERN_METHOD(finishSession:(nonnull NSNumber *)node)
 RCT_EXTERN_METHOD(cancelSession:(nonnull NSNumber *)node)
 
+// Fix the property exports
+RCT_EXPORT_VIEW_PROPERTY(onCaptureComplete, RCTDirectEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onFeedbackStateChange, RCTDirectEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onTrackingStateChange, RCTDirectEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onSessionStateChange, RCTDirectEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onError, RCTDirectEventBlock)
+
 @end

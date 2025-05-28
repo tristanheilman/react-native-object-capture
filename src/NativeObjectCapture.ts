@@ -1,9 +1,9 @@
 // src/NativeObjectCapture.ts
-import { useEffect, useState } from 'react';
 import {
   NativeEventEmitter,
   NativeModules,
   type NativeModule,
+  type NativeSyntheticEvent,
 } from 'react-native';
 
 export type SessionState =
@@ -28,10 +28,36 @@ export type FeedbackState =
   | 'overCapturing'
   | 'objectNotDetected';
 
+export type SessionStateChange = {
+  state: SessionState;
+  target: number;
+};
+
+export type TrackingStateChange = {
+  tracking: TrackingState;
+  target: number;
+};
+
+export type FeedbackStateChange = {
+  feedback: FeedbackState[];
+  target: number;
+};
+
+export type CaptureComplete = {
+  completed: boolean;
+  target: number;
+};
+
+export type SessionError = {
+  error: string;
+  target: number;
+};
+
 export interface ObjectCaptureEvents {
-  onSessionStateChange: (state: SessionState) => void;
-  onTrackingStateChange: (state: TrackingState) => void;
-  onFeedbackStateChange: (state: FeedbackState) => void;
+  onSessionStateChange: (event: NativeSyntheticEvent<SessionState>) => void;
+  onTrackingStateChange: (event: NativeSyntheticEvent<TrackingState>) => void;
+  onFeedbackStateChange: (event: NativeSyntheticEvent<FeedbackState[]>) => void;
+  onCaptureComplete: (event: NativeSyntheticEvent<boolean>) => void;
 }
 
 // Define the interface for the native module
@@ -54,51 +80,5 @@ export const RNObjectCapture =
 
 // Export the event emitter
 export const objectCaptureEmitter = new NativeEventEmitter(RNObjectCapture);
-
-export const useObjectCapture = () => {
-  const [sessionState, setSessionState] =
-    useState<SessionState>('initializing');
-  const [trackingState, setTrackingState] =
-    useState<TrackingState>('notAvailable');
-  const [feedbackState, setFeedbackState] = useState<FeedbackState[]>([
-    'objectNotDetected',
-  ]);
-
-  useEffect(() => {
-    const subscription = objectCaptureEmitter.addListener(
-      'onSessionStateChange',
-      (event: { state: SessionState }) => {
-        setSessionState(event.state);
-      }
-    );
-
-    const trackingSubscription = objectCaptureEmitter.addListener(
-      'onTrackingStateChange',
-      (event: { tracking: TrackingState }) => {
-        setTrackingState(event.tracking);
-      }
-    );
-
-    const feedbackSubscription = objectCaptureEmitter.addListener(
-      'onFeedbackStateChange',
-      (event: { feedback: FeedbackState[] }) => {
-        setFeedbackState(event.feedback);
-      }
-    );
-
-    return () => {
-      subscription.remove();
-      trackingSubscription.remove();
-      feedbackSubscription.remove();
-    };
-  }, []);
-
-  return {
-    sessionState,
-    trackingState,
-    feedbackState,
-    constants: RNObjectCapture.constants,
-  };
-};
 
 export default RNObjectCapture;

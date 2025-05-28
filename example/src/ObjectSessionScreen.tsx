@@ -1,13 +1,23 @@
-import { useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  type NativeSyntheticEvent,
+} from 'react-native';
 import {
   ObjectCaptureView,
   type SessionState,
-  type ObjectCaptureViewRef,
   type FeedbackState,
   type TrackingState,
+  type SessionStateChange,
+  type FeedbackStateChange,
+  type TrackingStateChange,
+  type SessionError,
+  type CaptureComplete,
 } from 'react-native-object-capture';
-
+import { objectCaptureViewRef } from './utils';
 type ObjectSessionScreenProps = {
   navigation: any;
 };
@@ -15,31 +25,42 @@ type ObjectSessionScreenProps = {
 export default function ObjectSessionScreen({
   navigation,
 }: ObjectSessionScreenProps) {
-  const objectCaptureViewRef = useRef<ObjectCaptureViewRef>(null);
   const [sessionState, setSessionState] =
     useState<SessionState>('initializing');
   const [trackingState, setTrackingState] =
     useState<TrackingState>('notAvailable');
   const [feedbackState, setFeedbackState] = useState<FeedbackState[]>([]);
 
-  const handleSessionStateChange = (state: SessionState) => {
-    setSessionState(state);
+  const handleSessionStateChange = (
+    event: NativeSyntheticEvent<SessionStateChange>
+  ) => {
+    console.log('Session state changed to:', event.nativeEvent);
+    setSessionState(event.nativeEvent.state);
   };
 
-  const handleFeedbackStateChange = (feedback: FeedbackState[]) => {
-    setFeedbackState(feedback);
+  const handleFeedbackStateChange = (
+    event: NativeSyntheticEvent<FeedbackStateChange>
+  ) => {
+    console.log('Feedback state changed to:', event.nativeEvent);
+    setFeedbackState(event.nativeEvent.feedback);
   };
 
-  const handleTrackingStateChange = (tracking: TrackingState) => {
-    setTrackingState(tracking);
+  const handleTrackingStateChange = (
+    event: NativeSyntheticEvent<TrackingStateChange>
+  ) => {
+    console.log('Tracking state changed to:', event.nativeEvent);
+    setTrackingState(event.nativeEvent.tracking);
   };
 
-  const handleCaptureComplete = (result: { url: string }) => {
-    console.log('Capture completed:', result.url);
+  const handleCaptureComplete = (
+    event: NativeSyntheticEvent<CaptureComplete>
+  ) => {
+    console.log('Capture completed:', event.nativeEvent);
+    navigation.navigate('ScanPassStageModal');
   };
 
-  const handleError = (error: { message: string }) => {
-    console.error('Error:', error.message);
+  const handleError = (event: NativeSyntheticEvent<SessionError>) => {
+    console.error('Error:', event.nativeEvent.error);
   };
 
   const handleStartDetection = async () => {
@@ -54,13 +75,15 @@ export default function ObjectSessionScreen({
     await objectCaptureViewRef.current?.startCapturing();
   };
 
-  const handleFinishSession = async () => {
-    await objectCaptureViewRef.current?.finishSession();
-  };
-
   const handleCancelSession = async () => {
     await objectCaptureViewRef.current?.cancelSession();
     navigation.goBack();
+  };
+
+  const showHelp = async () => {
+    // pause the session
+    await objectCaptureViewRef.current?.pauseSession();
+    navigation.navigate('ObjectSessionHelpModal');
   };
 
   return (
@@ -98,6 +121,12 @@ export default function ObjectSessionScreen({
         </Pressable>
       </View>
 
+      <View style={styles.floatingHelpButton}>
+        <Pressable style={styles.button} onPress={showHelp}>
+          <Text>Help</Text>
+        </Pressable>
+      </View>
+
       <View style={styles.floatingContainer}>
         <View style={styles.buttonContainer}>
           {sessionState === 'initializing' && (
@@ -117,16 +146,6 @@ export default function ObjectSessionScreen({
               </Pressable>
               <Pressable style={styles.button} onPress={handleStartCapturing}>
                 <Text>Start Capturing</Text>
-              </Pressable>
-            </View>
-          )}
-          {sessionState === 'capturing' && (
-            <View style={styles.buttonRow}>
-              <Pressable style={styles.button} onPress={handleResetDetection}>
-                <Text>Reset Detection</Text>
-              </Pressable>
-              <Pressable style={styles.button} onPress={handleFinishSession}>
-                <Text>Finish Session</Text>
               </Pressable>
             </View>
           )}
@@ -174,6 +193,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 60,
     left: 0,
+    padding: 16,
+  },
+  floatingHelpButton: {
+    position: 'absolute',
+    top: 60,
+    right: 0,
     padding: 16,
   },
   buttonContainer: {

@@ -11,6 +11,15 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
       >
         <Text>Open Object Capture View</Text>
       </Pressable>
+
+      <Pressable
+        style={styles.button}
+        onPress={() => {
+          navigation.navigate('ScanPassStageModal');
+        }}
+      >
+        <Text>Open ScanPassStageModal</Text>
+      </Pressable>
     </View>
   );
 }
@@ -21,6 +30,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#fff',
+    gap: 10,
   },
   button: {
     backgroundColor: '#CD8987',

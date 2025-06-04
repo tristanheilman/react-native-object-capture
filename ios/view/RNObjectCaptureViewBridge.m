@@ -12,6 +12,7 @@ RCT_EXTERN_METHOD(beginNewScanAfterFlip:(nonnull NSNumber *)node)
 RCT_EXTERN_METHOD(beginNewScan:(nonnull NSNumber *)node)
 RCT_EXTERN_METHOD(finishSession:(nonnull NSNumber *)node)
 RCT_EXTERN_METHOD(cancelSession:(nonnull NSNumber *)node)
+RCT_EXTERN_METHOD(getSessionState:(nonnull NSNumber *)node)
 
 // Fix the property exports
 RCT_EXPORT_VIEW_PROPERTY(onCaptureComplete, RCTDirectEventBlock)

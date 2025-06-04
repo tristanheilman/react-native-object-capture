@@ -1,6 +1,13 @@
+import { useRef } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { ObjectCapturePointCloudView } from 'react-native-object-capture';
+import {
+  ObjectCapturePointCloudView,
+  type ObjectCapturePointCloudViewRef,
+} from 'react-native-object-capture';
 import { objectCaptureViewRef } from './utils';
+import EmptyObjectCapture from './components/EmptyObjectCapture';
+import LoadingObjectCapture from './components/LoadingObjectCapture';
+
 type ObjectSessionHelpModalProps = {
   navigation: any;
 };
@@ -8,6 +15,8 @@ type ObjectSessionHelpModalProps = {
 export default function ObjectSessionHelpModal({
   navigation,
 }: ObjectSessionHelpModalProps) {
+  const pointCloudViewRef = useRef<ObjectCapturePointCloudViewRef>(null);
+
   const handleResumeSession = async () => {
     await objectCaptureViewRef.current?.resumeSession();
     navigation.goBack();
@@ -17,7 +26,13 @@ export default function ObjectSessionHelpModal({
     <View style={styles.container}>
       <Text>Object Session Help</Text>
 
-      <ObjectCapturePointCloudView />
+      <ObjectCapturePointCloudView
+        ref={pointCloudViewRef}
+        // onAppear={getSessionState}
+        // onCloudPointViewAppear={getSessionState}
+        ObjectCaptureEmptyComponent={EmptyObjectCapture}
+        ObjectCaptureLoadingComponent={LoadingObjectCapture}
+      />
 
       <Pressable style={styles.button} onPress={handleResumeSession}>
         <Text>Resume Session</Text>

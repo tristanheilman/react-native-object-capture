@@ -73,6 +73,16 @@ class ObjectCaptureSessionManager: NSObject, ObservableObject {
       self.viewManager?.onError(node, error: error)
     }
 
+    @objc
+    func onCloudPointViewAppear(_ node: NSNumber) {
+        self.pointCloudViewManager?.onCloudPointViewAppear(node)
+    }
+
+    @objc
+    func onAppear(_ node: NSNumber) {
+        self.pointCloudViewManager?.onAppear(node)
+    }
+
     @MainActor
     func setupSession(completion: @escaping (Bool, String?) -> Void) {
         print("Setting up session") // Debug log

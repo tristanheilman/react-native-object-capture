@@ -53,6 +53,14 @@ export type SessionError = {
   target: number;
 };
 
+export type OnAppearEvent = {
+  scanPassCompleted: boolean;
+};
+
+export type OnCloudPointViewAppearEvent = {
+  scanPassCompleted: boolean;
+};
+
 export interface ObjectCaptureEvents {
   onSessionStateChange: (event: NativeSyntheticEvent<SessionState>) => void;
   onTrackingStateChange: (event: NativeSyntheticEvent<TrackingState>) => void;

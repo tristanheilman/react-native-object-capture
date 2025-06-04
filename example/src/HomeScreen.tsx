@@ -20,6 +20,15 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
       >
         <Text>Open ScanPassStageModal</Text>
       </Pressable>
+
+      <Pressable
+        style={styles.button}
+        onPress={() => {
+          navigation.navigate('ObjectSessionHelpModal');
+        }}
+      >
+        <Text>Open ObjectSessionHelpModal</Text>
+      </Pressable>
     </View>
   );
 }

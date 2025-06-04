@@ -4,28 +4,37 @@ import ARKit
 import Metal
 import MetalKit
 
-// RNObjectCapturePointCloudViewWrapper is the wrapper for the RNObjectCapturePointCloudView.
-// It is responsible for displaying the point cloud view.
 struct RNObjectCapturePointCloudViewWrapper: View {
     @ObservedObject var sessionManager: ObjectCaptureSessionManager
 
     var body: some View {
-        ZStack {
-            if let session = sessionManager.session {
-                if (session.userCompletedScanPass) {
-                    VStack {
-                        Text("Current Scan Pass")
-                        .foregroundColor(.black)
-                        CloudPointView(session: session, sessionManager: sessionManager)
-                    }
-                } else {
-                    Text("No session")
-                    .foregroundColor(.black)
+        Group {
+            if let session = sessionManager.session, session.userCompletedScanPass {
+                ZStack {
+                    CloudPointView(session: session, sessionManager: sessionManager)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .onAppear {
+                            handleCloudPointViewAppear()
+                        }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.white)
             } else {
-                Text("No session")
-                .foregroundColor(.black)
+                Color.clear
             }
         }
+        .onAppear {
+            handleAppear()
+        }
+    }
+    
+    private func handleAppear() {
+        print("RNObjectCapturePointCloudViewWrapper ZStack appear called")
+        sessionManager.onAppear(NSNumber(value: 0))
+    }
+
+    private func handleCloudPointViewAppear() {
+        print("RNObjectCapturePointCloudViewWrapper cloud point view appear called")
+        sessionManager.onCloudPointViewAppear(NSNumber(value: 0))
     }
 }

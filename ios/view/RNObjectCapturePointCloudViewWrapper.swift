@@ -12,15 +12,10 @@ struct RNObjectCapturePointCloudViewWrapper: View {
             if let session = sessionManager.session, session.userCompletedScanPass {
                 ZStack {
                     CloudPointView(session: session, sessionManager: sessionManager)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .onAppear {
                             handleCloudPointViewAppear()
                         }
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color.white)
-            } else {
-                Color.clear
             }
         }
         .onAppear {

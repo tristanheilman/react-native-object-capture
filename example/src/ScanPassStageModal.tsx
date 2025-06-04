@@ -1,6 +1,19 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { ObjectCapturePointCloudView } from 'react-native-object-capture';
+import { useRef } from 'react';
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from 'react-native';
+import {
+  ObjectCapturePointCloudView,
+  type ObjectCapturePointCloudViewRef,
+} from 'react-native-object-capture';
 import { objectCaptureViewRef } from './utils';
+import EmptyObjectCapture from './components/EmptyObjectCapture';
+import LoadingObjectCapture from './components/LoadingObjectCapture';
+
 type ScanPassStageModalProps = {
   navigation: any;
 };
@@ -8,6 +21,8 @@ type ScanPassStageModalProps = {
 export default function ScanPassStageModal({
   navigation,
 }: ScanPassStageModalProps) {
+  const pointCloudViewRef = useRef<ObjectCapturePointCloudViewRef>(null);
+  const { width, height } = useWindowDimensions();
   const handleContinue = () => {
     // either call beginNewScan or beginNewScanAfterFlip
     // TODO: figure out the logic that determines which
@@ -26,9 +41,19 @@ export default function ScanPassStageModal({
 
   return (
     <View style={styles.container}>
-      <ObjectCapturePointCloudView />
       <Text>ScanPassStageModal</Text>
       <Text>Segments Completed: 1</Text>
+
+      <ObjectCapturePointCloudView
+        ref={pointCloudViewRef}
+        // height and width must be set for the cloud point view to render
+        style={{ height: height / 2, width: width }}
+        // onAppear={getSessionState}
+        // onCloudPointViewAppear={getSessionState}
+        ObjectCaptureEmptyComponent={EmptyObjectCapture}
+        ObjectCaptureLoadingComponent={LoadingObjectCapture}
+      />
+
       <Pressable style={styles.button} onPress={handleContinue}>
         <Text>Continue</Text>
       </Pressable>

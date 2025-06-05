@@ -12,6 +12,12 @@ import ObjectCapture, {
 } from './NativeObjectCapture';
 import ObjectCaptureView from './components/RNObjectCaptureView';
 import ObjectCapturePointCloudView from './components/RNObjectCapturePointCloudView';
+import PhotogrammetrySession, {
+  type PhotogrammetryProgress,
+  type PhotogrammetryError,
+  type PhotogrammetryEvents,
+  photogrammetryEmitter,
+} from './modules/PhotogrammetrySession';
 
 // Export the view component
 export { ObjectCaptureView, ObjectCapturePointCloudView };
@@ -32,8 +38,15 @@ export type {
 export type { ObjectCaptureViewRef } from './components/RNObjectCaptureView';
 export type { ObjectCapturePointCloudViewRef } from './components/RNObjectCapturePointCloudView';
 
+// Export Photogrammetry types
+export type {
+  PhotogrammetryProgress,
+  PhotogrammetryError,
+  PhotogrammetryEvents,
+};
+
 // Export hooks and utilities
-export { objectCaptureEmitter };
+export { objectCaptureEmitter, photogrammetryEmitter, PhotogrammetrySession };
 
 // Export constants
 export const ObjectCaptureConstants = ObjectCapture.constants;

@@ -14,8 +14,6 @@ struct CloudPointView: View {
     let sessionManager: ObjectCaptureSessionManager
 
     var body: some View {
-        VStack {
-            ObjectCapturePointCloudView(session: session)
-        }
+        ObjectCapturePointCloudView(session: session)
     }
 }

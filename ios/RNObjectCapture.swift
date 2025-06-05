@@ -4,7 +4,14 @@ import React
 @objc(RNObjectCapture)
 class RNObjectCapture: RCTEventEmitter {
     override func supportedEvents() -> [String]! {
-        return ["onSessionStateChange", "onFeedbackStateChange", "onTrackingStateChange", "onCaptureComplete", "onError"]
+        return [
+            "onSessionStateChange",
+            "onFeedbackStateChange",
+            "onTrackingStateChange",
+            "onCaptureComplete",
+            "onError",
+            "onScanPassCompleted",
+        ]
     }
     
     override static func requiresMainQueueSetup() -> Bool {

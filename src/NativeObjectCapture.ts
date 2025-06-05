@@ -66,6 +66,7 @@ export interface ObjectCaptureEvents {
   onTrackingStateChange: (event: NativeSyntheticEvent<TrackingState>) => void;
   onFeedbackStateChange: (event: NativeSyntheticEvent<FeedbackState[]>) => void;
   onCaptureComplete: (event: NativeSyntheticEvent<boolean>) => void;
+  onScanPassCompleted: (event: NativeSyntheticEvent<boolean>) => void;
 }
 
 // Define the interface for the native module

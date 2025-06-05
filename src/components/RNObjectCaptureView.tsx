@@ -30,6 +30,7 @@ export interface ObjectCaptureViewProps {
     event: NativeSyntheticEvent<FeedbackStateChange>
   ) => void;
   onCaptureComplete?: (event: NativeSyntheticEvent<CaptureComplete>) => void;
+  onScanPassCompleted?: (event: NativeSyntheticEvent<boolean>) => void;
   onError?: (event: NativeSyntheticEvent<SessionError>) => void;
 }
 
@@ -96,6 +97,7 @@ const ObjectCaptureView = forwardRef<
       onTrackingStateChange,
       onFeedbackStateChange,
       onCaptureComplete,
+      onScanPassCompleted,
       onError,
     },
     ref
@@ -292,6 +294,10 @@ const ObjectCaptureView = forwardRef<
       onSessionStateChange?.(event);
     };
 
+    const _onScanPassCompleted = (event: NativeSyntheticEvent<boolean>) => {
+      onScanPassCompleted?.(event);
+    };
+
     const _onError = (event: NativeSyntheticEvent<SessionError>) => {
       onError?.(event);
     };
@@ -309,6 +315,7 @@ const ObjectCaptureView = forwardRef<
         onFeedbackStateChange={_onFeedbackStateChange}
         onTrackingStateChange={_onTrackingStateChange}
         onSessionStateChange={_onSessionStateChange}
+        onScanPassCompleted={_onScanPassCompleted}
         onError={_onError}
       />
     );

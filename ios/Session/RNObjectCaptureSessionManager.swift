@@ -10,11 +10,17 @@ import SwiftUI
 class ObjectCaptureSessionManager: NSObject, ObservableObject {
     static let shared = ObjectCaptureSessionManager()
 
+    // ObjectCaptureSession is the main session for the object capture session.
     @Published var session: ObjectCaptureSession?
+    // EventEmitter is the event emitter for the object capture session.
     @Published var eventEmitter: RCTEventEmitter?
+    // Configuration is the configuration for the object capture session.
     private var configuration: ObjectCaptureSession.Configuration?
+    // EventBuffer is the buffer for the object capture session.
     private var eventBuffer: [(String, [String: Any])] = []
+    // ViewManager is the view manager for the object capture session.
     private weak var viewManager: RNObjectCaptureView?
+    // PointCloudViewManager is the point cloud view manager for the object capture session.
     private weak var pointCloudViewManager: RNObjectCapturePointCloudView?
 
     private override init() {
@@ -49,28 +55,51 @@ class ObjectCaptureSessionManager: NSObject, ObservableObject {
     }
 
     @objc
+    func onScanPassCompleted(_ node: NSNumber, completed: Bool) {
+        self.viewManager?.onScanPassCompleted(node, completed: completed)
+        self.eventEmitter?.sendEvent(withName: "onScanPassCompleted", body: [
+            "completed": completed
+        ])
+    }
+
+    @objc
     func onCaptureComplete(_ node: NSNumber, completed: Bool) {
         self.viewManager?.onCaptureComplete(node, completed: completed)
+        self.eventEmitter?.sendEvent(withName: "onCaptureComplete", body: [
+            "completed": completed
+        ])
     }
 
     @objc
     func onFeedbackStateChange(_ node: NSNumber, feedback: [String]) {
         self.viewManager?.onFeedbackStateChange(node, feedback: feedback)
+        self.eventEmitter?.sendEvent(withName: "onFeedbackStateChange", body: [
+            "feedback": feedback
+        ])
     }
 
     @objc
     func onTrackingStateChange(_ node: NSNumber, tracking: String) {
         self.viewManager?.onTrackingStateChange(node, tracking: tracking)
+        self.eventEmitter?.sendEvent(withName: "onTrackingStateChange", body: [
+            "tracking": tracking
+        ])
     }
 
     @objc
     func onSessionStateChange(_ node: NSNumber, state: String) {
         self.viewManager?.onSessionStateChange(node, state: state)
+        self.eventEmitter?.sendEvent(withName: "onSessionStateChange", body: [
+            "state": state
+        ])
     }
 
     @objc
     func onError(_ node: NSNumber, error: String) {
       self.viewManager?.onError(node, error: error)
+      self.eventEmitter?.sendEvent(withName: "onError", body: [
+        "error": error
+      ])
     }
 
     @objc

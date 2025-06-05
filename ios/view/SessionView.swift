@@ -14,27 +14,29 @@ struct SessionView: View {
     let sessionManager: ObjectCaptureSessionManager
 
     var body: some View {
-        VStack {
-            ObjectCaptureView(session: session)
-                .onChange(of: session.state) { _, newState in
-                    handleStateChange(newState)
+        ObjectCaptureView(session: session)
+            .onChange(of: session.state) { _, newState in
+                handleStateChange(newState)
+
+                if newState == .completed {
+                    handleCaptureComplete(true)
                 }
-                .onChange(of: session.feedback) { _, newState in
-                    handleFeedbackChange(newState)
-                }
-                .onChange(of: session.cameraTracking) { _, newState in
-                    handleTrackingChange(newState)
-                }
-                .onChange(of: session.userCompletedScanPass) { _, newState in
-                    handleCaptureComplete(newState)
-                }
-                .onAppear {
-                    handleAppear()
-                }
-                .onDisappear {
-                    handleDisappear()
-                }
-        }
+            }
+            .onChange(of: session.feedback) { _, newState in
+                handleFeedbackChange(newState)
+            }
+            .onChange(of: session.cameraTracking) { _, newState in
+                handleTrackingChange(newState)
+            }
+            .onChange(of: session.userCompletedScanPass) { _, newState in
+                handleScanPassCompleted(newState)
+            }
+            .onAppear {
+                handleAppear()
+            }
+            .onDisappear {
+                handleDisappear()
+            }
     }
 
     private func handleStateChange(_ newState: ObjectCaptureSession.CaptureState) {
@@ -63,6 +65,11 @@ struct SessionView: View {
         sessionManager.onCaptureComplete(NSNumber(value: 0), completed: newState)
     }
 
+    private func handleScanPassCompleted(_ newState: Bool) {
+        print("User completed scan pass changed to \(newState)")
+        sessionManager.onScanPassCompleted(NSNumber(value: 0), completed: newState)
+    }
+
     private func handleAppear() {
         print("ObjectCaptureView appeared")
         if let bridge = RCTBridge.current() {
@@ -77,6 +84,7 @@ struct SessionView: View {
         }
     }
 
+    @MainActor
     private func handleDisappear() {
         print("ObjectCaptureView disappeared")
         sessionManager.cleanupSession { success, error in

@@ -16,6 +16,7 @@ RCT_EXTERN_METHOD(getSessionState:(nonnull NSNumber *)node)
 
 // Fix the property exports
 RCT_EXPORT_VIEW_PROPERTY(onCaptureComplete, RCTDirectEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onScanPassCompleted, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onFeedbackStateChange, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onTrackingStateChange, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onSessionStateChange, RCTDirectEventBlock)

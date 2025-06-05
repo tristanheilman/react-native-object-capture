@@ -10,15 +10,20 @@ import MetalKit
 // It is responsible for displaying the point cloud and the session state.
 @objc(RNObjectCapturePointCloudView)
 class RNObjectCapturePointCloudView: RCTViewManager {
+    // Session manager that is shared between "ObjectCapture" views
     private var _sharedSessionManager: ObjectCaptureSessionManager
+    // Hosting controller for the point cloud view
     private var hostingController: UIHostingController<RNObjectCapturePointCloudViewWrapper>?
+    // View manager for the point cloud view
     private var viewManager: RNObjectCapturePointCloudViewContainer?
+    // Callback for when the point cloud view appears
     private var _onAppear: RCTDirectEventBlock?
+    // Callback for when the point cloud view appears
     private var _onCloudPointViewAppear: RCTDirectEventBlock?
 
     override init() {
         _sharedSessionManager = ObjectCaptureSessionManager.shared
-        super.init()
+        super.init() // must be called before setting the view manager
         _sharedSessionManager.setPointCloudViewManager(self)
     }
 
@@ -27,15 +32,12 @@ class RNObjectCapturePointCloudView: RCTViewManager {
         let hostingController = UIHostingController(rootView: RNObjectCapturePointCloudViewWrapper(
             sessionManager: _sharedSessionManager
         ))
-        self.hostingController = hostingController
         view.hostingController = hostingController
         view.manager = self
-        self.viewManager = view
-
-        print("RNObjectCapturePointCloudView view() called")
         return view
     }
 
+    // Method to get the user completed scan pass
     @objc
     func getUserCompletedScanPass(_ node: NSNumber, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
         Task {
@@ -44,6 +46,7 @@ class RNObjectCapturePointCloudView: RCTViewManager {
         }
     }
 
+    // Method to get the session state
     @objc
     func getSessionState(_ node: NSNumber, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
         Task {
@@ -52,21 +55,25 @@ class RNObjectCapturePointCloudView: RCTViewManager {
         }
     }
 
+    // Callback method when the point cloud view appears
     @objc
     func onAppear(_ node: NSNumber) {
         _onAppear?([:])
     }
 
+    // Callback method when the point cloud view appears
     @objc
     func onCloudPointViewAppear(_ node: NSNumber) {
         _onCloudPointViewAppear?([:])
     }
 
+    // Setter method for the point cloud view appear callback
     @objc
     func setOnAppear(_ onAppear: @escaping RCTDirectEventBlock) {
         _onAppear = onAppear
     }
 
+    // Setter method for the point cloud view appear callback
     @objc
     func setOnCloudPointViewAppear(_ onCloudPointViewAppear: @escaping RCTDirectEventBlock) {
         _onCloudPointViewAppear = onCloudPointViewAppear
@@ -103,7 +110,16 @@ class RNObjectCapturePointCloudViewContainer: UIView {
         }
     }
 
-    // Add these property setters
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        if window == nil {
+            // Clean up when view is removed from window
+            hostingController?.removeFromParent()
+            hostingController = nil
+        }
+    }
+
+    // Setter method for the point cloud view appear callback
     @objc
     func setOnAppear(_ onAppear: @escaping RCTDirectEventBlock) {
         if let viewManager = self.findViewManager() {
@@ -111,6 +127,7 @@ class RNObjectCapturePointCloudViewContainer: UIView {
         }
     }
 
+    // Setter method for the point cloud view appear callback
     @objc
     func setOnCloudPointViewAppear(_ onCloudPointViewAppear: @escaping RCTDirectEventBlock) {
         if let viewManager = self.findViewManager() {

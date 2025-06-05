@@ -8,12 +8,20 @@ import ARKit
 
 @objc(RNObjectCaptureView)
 class RNObjectCaptureView: RCTViewManager {
+    // Session manager that is shared between "ObjectCapture" views
     private var _sharedSessionManager: ObjectCaptureSessionManager
+    // Callback for when the capture is complete
     private var _onCaptureComplete: RCTDirectEventBlock?
+    // Callback for when the feedback state changes
     private var _onFeedbackStateChange: RCTDirectEventBlock?
+    // Callback for when the tracking state changes
     private var _onTrackingStateChange: RCTDirectEventBlock?
+    // Callback for when the session state changes
     private var _onSessionStateChange: RCTDirectEventBlock?
+    // Callback for when an error occurs
     private var _onError: RCTDirectEventBlock?
+    // Callback for when the scan pass is completed
+    private var _onScanPassCompleted: RCTDirectEventBlock?
 
     override init() {
         _sharedSessionManager = ObjectCaptureSessionManager.shared
@@ -29,59 +37,73 @@ class RNObjectCaptureView: RCTViewManager {
         return view
     }
 
-    // REACT NATIVE EVENT HANDLERS
+    // Callback method when the capture is complete
     @objc
     func onCaptureComplete(_ node: NSNumber, completed: Bool) {
         _onCaptureComplete?(["completed": completed])
     }
 
+    // Callback method when the feedback state changes
     @objc
     func onFeedbackStateChange(_ node: NSNumber, feedback: [String]) {
         _onFeedbackStateChange?(["feedback": feedback])
     }
 
+    // Callback method when the tracking state changes
     @objc
     func onTrackingStateChange(_ node: NSNumber, tracking: String) {
         _onTrackingStateChange?(["tracking": tracking])
     }
 
+    // Callback method when the session state changes
     @objc
     func onSessionStateChange(_ node: NSNumber, state: String) {
         _onSessionStateChange?(["state": state])
     }
   
+    // Callback method when an error occurs
     @objc
     func onError(_ node: NSNumber, error: String) {
         _onError?(["error": error])
     }
 
-    // REACT NATIVE PROPERTY SETTING METHODS
+    // Callback method when the scan pass is completed
+    @objc
+    func onScanPassCompleted(_ node: NSNumber, completed: Bool) {
+        _onScanPassCompleted?(["completed": completed])
+    }
+
+    // Setter method for the capture complete callback
     @objc
     func setOnCaptureComplete(_ onCaptureComplete: @escaping RCTDirectEventBlock) {
         _onCaptureComplete = onCaptureComplete
     }
 
+    // Setter method for the feedback state change callback
     @objc
     func setOnFeedbackStateChange(_ onFeedbackStateChange: @escaping RCTDirectEventBlock) {
         _onFeedbackStateChange = onFeedbackStateChange
     }
 
+    // Setter method for the tracking state change callback
     @objc
     func setOnTrackingStateChange(_ onTrackingStateChange: @escaping RCTDirectEventBlock) {
         _onTrackingStateChange = onTrackingStateChange
     }
 
+    // Setter method for the session state change callback
     @objc
     func setOnSessionStateChange(_ onSessionStateChange: @escaping RCTDirectEventBlock) {
         _onSessionStateChange = onSessionStateChange
     }
   
+    // Setter method for the error callback
     @objc
     func setOnError(_ onError: @escaping RCTDirectEventBlock) {
         _onError = onError
     }
 
-    // REACT NATIVE REF METHODS
+    // Will resume the object capture session
     @objc
     func resumeSession(_ node: NSNumber) {
         Task { [weak self] in
@@ -90,6 +112,7 @@ class RNObjectCaptureView: RCTViewManager {
         }
     }
     
+    // Will pause the object capture session
     @objc
     func pauseSession(_ node: NSNumber) {
         Task { [weak self] in
@@ -98,6 +121,7 @@ class RNObjectCaptureView: RCTViewManager {
         }
     }
     
+    // Will start the detection process
     @objc
     func startDetection(_ node: NSNumber) {
         Task { [weak self] in
@@ -106,6 +130,7 @@ class RNObjectCaptureView: RCTViewManager {
         }
     }
     
+    // Will reset the detection process
     @objc
     func resetDetection(_ node: NSNumber) {
         Task { [weak self] in
@@ -114,6 +139,7 @@ class RNObjectCaptureView: RCTViewManager {
         }
     }
     
+    // Will start the capturing process
     @objc
     func startCapturing(_ node: NSNumber) {
         Task { [weak self] in
@@ -122,6 +148,7 @@ class RNObjectCaptureView: RCTViewManager {
         }
     }
     
+    // Will finish the object capture session
     @objc
     func finishSession(_ node: NSNumber) {
         Task { [weak self] in
@@ -130,6 +157,7 @@ class RNObjectCaptureView: RCTViewManager {
         }
     }
 
+    // Will cancel the object capture session
     @objc
     func cancelSession(_ node: NSNumber) {
         Task { [weak self] in
@@ -138,6 +166,7 @@ class RNObjectCaptureView: RCTViewManager {
         }
     }
 
+    // Will begin a new scan after a flip
     @objc
     func beginNewScanAfterFlip(_ node: NSNumber) {
         Task { [weak self] in
@@ -146,6 +175,7 @@ class RNObjectCaptureView: RCTViewManager {
         }
     }
 
+    // Will begin a new scan
     @objc
     func beginNewScan(_ node: NSNumber) {
         Task { [weak self] in
@@ -154,6 +184,7 @@ class RNObjectCaptureView: RCTViewManager {
         }
     }
 
+    // Will get the session state
     @objc
     func getSessionState(_ node: NSNumber) async -> String {
         return await _sharedSessionManager.getSessionState()

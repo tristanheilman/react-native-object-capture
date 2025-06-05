@@ -3,19 +3,6 @@ import PhotogrammetrySession, {
   photogrammetryEmitter,
 } from '../modules/PhotogrammetrySession';
 
-// Mock the native modules
-jest.mock('react-native', () => ({
-  NativeModules: {
-    RNPhotogrammetrySession: {
-      startReconstruction: jest.fn(),
-      cancelReconstruction: jest.fn(),
-    },
-  },
-  NativeEventEmitter: jest.fn().mockImplementation(() => ({
-    addListener: jest.fn().mockReturnValue({ remove: jest.fn() }),
-  })),
-}));
-
 describe('PhotogrammetrySession', () => {
   beforeEach(() => {
     // Clear all mocks before each test

@@ -29,6 +29,15 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
       >
         <Text>Open ObjectSessionHelpModal</Text>
       </Pressable>
+
+      <Pressable
+        style={styles.button}
+        onPress={() => {
+          navigation.navigate('PhotogrammetrySessionScreen');
+        }}
+      >
+        <Text>Open PhotogrammetrySessionScreen</Text>
+      </Pressable>
     </View>
   );
 }

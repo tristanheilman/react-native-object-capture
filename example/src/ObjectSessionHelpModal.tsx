@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import {
   ObjectCapturePointCloudView,
@@ -15,12 +15,21 @@ type ObjectSessionHelpModalProps = {
 export default function ObjectSessionHelpModal({
   navigation,
 }: ObjectSessionHelpModalProps) {
+  const [numberOfScanPassUpdates, setNumberOfScanPassUpdates] = useState(-1);
   const pointCloudViewRef = useRef<ObjectCapturePointCloudViewRef>(null);
 
   const handleResumeSession = async () => {
     await objectCaptureViewRef.current?.resumeSession();
     navigation.goBack();
   };
+
+  useEffect(() => {
+    console.log('objectCaptureViewRef.current', objectCaptureViewRef.current);
+    objectCaptureViewRef.current?.getNumberOfScanPassUpdates().then((count) => {
+      console.log('count', count);
+      setNumberOfScanPassUpdates(count);
+    });
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -33,6 +42,8 @@ export default function ObjectSessionHelpModal({
         ObjectCaptureEmptyComponent={EmptyObjectCapture}
         ObjectCaptureLoadingComponent={LoadingObjectCapture}
       />
+
+      <Text>Number of Scan Pass Updates: {numberOfScanPassUpdates}</Text>
 
       <Pressable style={styles.button} onPress={handleResumeSession}>
         <Text>Resume Session</Text>

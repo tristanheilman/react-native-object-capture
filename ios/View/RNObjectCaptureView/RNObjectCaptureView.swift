@@ -40,6 +40,7 @@ class RNObjectCaptureView: RCTViewManager {
     // Callback method when the capture is complete
     @objc
     func onCaptureComplete(_ node: NSNumber, completed: Bool) {
+        print("onCaptureComplete CALLED", completed)
         _onCaptureComplete?(["completed": completed])
     }
 
@@ -96,6 +97,12 @@ class RNObjectCaptureView: RCTViewManager {
     func setOnSessionStateChange(_ onSessionStateChange: @escaping RCTDirectEventBlock) {
         _onSessionStateChange = onSessionStateChange
     }
+
+    // Setter method for the scan pass completed callback
+    @objc
+    func setOnScanPassCompleted(_ onScanPassCompleted: @escaping RCTDirectEventBlock) {
+        _onScanPassCompleted = onScanPassCompleted
+    }
   
     // Setter method for the error callback
     @objc
@@ -105,114 +112,240 @@ class RNObjectCaptureView: RCTViewManager {
 
     // Will resume the object capture session
     @objc
-    func resumeSession(_ node: NSNumber) {
+    func resumeSession(_ node: NSNumber, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
         Task { [weak self] in
-            guard let self = self else { return }
-          await _sharedSessionManager.resumeSession()
+            guard let self = self else { 
+                reject("ERROR", "Self is nil", nil)
+                return 
+            }
+            do {
+                try await _sharedSessionManager.resumeSession()
+                resolve(nil)
+            } catch {
+                reject("ERROR", error.localizedDescription, nil)
+            }
         }
     }
     
     // Will pause the object capture session
     @objc
-    func pauseSession(_ node: NSNumber) {
+    func pauseSession(_ node: NSNumber, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
         Task { [weak self] in
-            guard let self = self else { return }
-            await _sharedSessionManager.pauseSession()
+            guard let self = self else { 
+                reject("ERROR", "Self is nil", nil)
+                return 
+            }
+            do {
+                try await _sharedSessionManager.pauseSession()
+                resolve(nil)
+            } catch {
+                reject("ERROR", error.localizedDescription, nil)
+            }
         }
     }
     
     // Will start the detection process
     @objc
-    func startDetection(_ node: NSNumber) {
+    func startDetection(_ node: NSNumber, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
         Task { [weak self] in
-            guard let self = self else { return }
-            await _sharedSessionManager.startDetection()
+            guard let self = self else { 
+                reject("ERROR", "Self is nil", nil)
+                return 
+            }
+            do {
+                try await _sharedSessionManager.startDetection()
+                resolve(nil)
+            } catch {
+                reject("ERROR", error.localizedDescription, nil)
+            }
         }
     }
     
     // Will reset the detection process
     @objc
-    func resetDetection(_ node: NSNumber) {
+    func resetDetection(_ node: NSNumber, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
         Task { [weak self] in
-            guard let self = self else { return }
-            await _sharedSessionManager.resetDetection()
+            guard let self = self else { 
+                reject("ERROR", "Self is nil", nil)
+                return 
+            }
+            do {
+                try await _sharedSessionManager.resetDetection()
+                resolve(nil)
+            } catch {
+                reject("ERROR", error.localizedDescription, nil)
+            }
         }
     }
     
     // Will start the capturing process
     @objc
-    func startCapturing(_ node: NSNumber) {
+    func startCapturing(_ node: NSNumber, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
         Task { [weak self] in
-            guard let self = self else { return }
-            await _sharedSessionManager.startCapturing()
+            guard let self = self else { 
+                reject("ERROR", "Self is nil", nil)
+                return 
+            }
+            do {
+                try await _sharedSessionManager.startCapturing()
+                resolve(nil)
+            } catch {
+                reject("ERROR", error.localizedDescription, nil)
+            }
         }
     }
     
     // Will finish the object capture session
     @objc
-    func finishSession(_ node: NSNumber) {
+    func finishSession(_ node: NSNumber, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
         Task { [weak self] in
-            guard let self = self else { return }
-            await _sharedSessionManager.finishSession()
+            guard let self = self else { 
+                reject("ERROR", "Self is nil", nil)
+                return 
+            }
+            do {
+                try await _sharedSessionManager.finishSession()
+                resolve(nil)
+            } catch {
+                reject("ERROR", error.localizedDescription, nil)
+            }
         }
     }
 
     // Will cancel the object capture session
     @objc
-    func cancelSession(_ node: NSNumber) {
+    func cancelSession(_ node: NSNumber, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
         Task { [weak self] in
-            guard let self = self else { return }
-            await _sharedSessionManager.cancelSession()
+            guard let self = self else { 
+                reject("ERROR", "Self is nil", nil)
+                return 
+            }
+            do {
+                try await _sharedSessionManager.cancelSession()
+                resolve(nil)
+            } catch {
+                reject("ERROR", error.localizedDescription, nil)
+            }
         }
     }
 
     // Will begin a new scan after a flip
     @objc
-    func beginNewScanAfterFlip(_ node: NSNumber) {
+    func beginNewScanAfterFlip(_ node: NSNumber, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
         Task { [weak self] in
-            guard let self = self else { return }
-            await _sharedSessionManager.beginNewScanAfterFlip()
+            guard let self = self else { 
+                reject("ERROR", "Self is nil", nil)
+                return 
+            }
+            do {
+                try await _sharedSessionManager.beginNewScanAfterFlip()
+                resolve(nil)
+            } catch {
+                reject("ERROR", error.localizedDescription, nil)
+            }
         }
     }
 
     // Will begin a new scan
     @objc
-    func beginNewScan(_ node: NSNumber) {
+    func beginNewScan(_ node: NSNumber, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
         Task { [weak self] in
-            guard let self = self else { return }
-            await _sharedSessionManager.beginNewScan()
+            guard let self = self else { 
+                reject("ERROR", "Self is nil", nil)
+                return 
+            }
+            do {
+                try await _sharedSessionManager.beginNewScan()
+                resolve(nil)
+            } catch {
+                reject("ERROR", error.localizedDescription, nil)
+            }
         }
     }
 
     // Will get the session state
     @objc
-    func getSessionState(_ node: NSNumber) async -> String {
-        return await _sharedSessionManager.getSessionState()
+    func getSessionState(_ node: NSNumber, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        Task {
+            do {
+                let state = await _sharedSessionManager.getSessionState()
+                resolve(state)
+            } catch {
+                reject("ERROR", error.localizedDescription, nil)
+            }
+        }
     }
 
     @objc
-    func isDeviceSupported(_ node: NSNumber) async -> Bool {
-        return await _sharedSessionManager.isDeviceSupported()
+    func isDeviceSupported(_ node: NSNumber, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        Task {
+            do {
+                let supported = await _sharedSessionManager.isDeviceSupported()
+                resolve(supported)
+            } catch {
+                reject("ERROR", error.localizedDescription, nil)
+            }
+        }
     }
 
     @objc
-    func getTrackingState(_ node: NSNumber) async -> String {
-        return await _sharedSessionManager.getTrackingState()
+    func getTrackingState(_ node: NSNumber, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        Task {
+            do {
+                let state = await _sharedSessionManager.getTrackingState()
+                resolve(state)
+            } catch {
+                reject("ERROR", error.localizedDescription, nil)
+            }
+        }
     }
 
     @objc
-    func getFeedbackState(_ node: NSNumber) async -> [String] {
-        return await _sharedSessionManager.getFeedbackState()
+    func getFeedbackState(_ node: NSNumber, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        Task {
+            do {
+                let state = await _sharedSessionManager.getFeedbackState()
+                resolve(state)
+            } catch {
+                reject("ERROR", error.localizedDescription, nil)
+            }
+        }
     }
 
     @objc
-    func getNumberOfShotsTaken(_ node: NSNumber) async -> Int {
-        return await _sharedSessionManager.getNumberOfShotsTaken()
+    func getNumberOfShotsTaken(_ node: NSNumber, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        Task {
+            do {
+                let count = await _sharedSessionManager.getNumberOfShotsTaken()
+                resolve(count)
+            } catch {
+                reject("ERROR", error.localizedDescription, nil)
+            }
+        }
     }
 
     @objc
-    func getUserCompletedScanState(_ node: NSNumber) async -> Bool {
-        return await _sharedSessionManager.getUserCompletedScanState()
+    func getNumberOfScanPassUpdates(_ node: NSNumber, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        Task {
+            do {
+                let count = await _sharedSessionManager.getNumberOfScanPassUpdates()
+                resolve(count)
+            } catch {
+                reject("ERROR", error.localizedDescription, nil)
+            }
+        }
+    }
+
+    @objc
+    func getUserCompletedScanState(_ node: NSNumber, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        Task {
+            do {
+                let completed = await _sharedSessionManager.getUserCompletedScanState()
+                resolve(completed)
+            } catch {
+                reject("ERROR", error.localizedDescription, nil)
+            }
+        }
     }
 
     override static func requiresMainQueueSetup() -> Bool {
@@ -278,6 +411,13 @@ class RNObjectCaptureViewContainer: UIView {
     func setOnError(_ onError: @escaping RCTDirectEventBlock) {
         if let viewManager = self.findViewManager() {
             viewManager.setOnError(onError)
+        }
+    }
+
+    @objc
+    func setOnScanPassCompleted(_ onScanPassCompleted: @escaping RCTDirectEventBlock) {
+        if let viewManager = self.findViewManager() {
+            viewManager.setOnScanPassCompleted(onScanPassCompleted)
         }
     }
 

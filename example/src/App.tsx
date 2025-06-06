@@ -4,8 +4,10 @@ import HomeScreen from './HomeScreen';
 import ObjectSessionScreen from './ObjectSessionScreen';
 import ScanPassStageModal from './ScanPassStageModal';
 import ObjectSessionHelpModal from './ObjectSessionHelpModal';
+import PhotogrammetrySessionScreen from './PhotogrammetrySessionScreen';
 
 const Stack = createNativeStackNavigator();
+
 export default function App() {
   return (
     <NavigationContainer>
@@ -30,6 +32,15 @@ export default function App() {
         <Stack.Screen
           name="ObjectSessionHelpModal"
           component={ObjectSessionHelpModal}
+          options={{
+            headerShown: false,
+            presentation: 'modal',
+            gestureEnabled: false,
+          }}
+        />
+        <Stack.Screen
+          name="PhotogrammetrySessionScreen"
+          component={PhotogrammetrySessionScreen}
           options={{
             headerShown: false,
             presentation: 'modal',

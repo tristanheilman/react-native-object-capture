@@ -17,10 +17,6 @@ struct SessionView: View {
         ObjectCaptureView(session: session)
             .onChange(of: session.state) { _, newState in
                 handleStateChange(newState)
-
-                if newState == .completed {
-                    handleCaptureComplete(true)
-                }
             }
             .onChange(of: session.feedback) { _, newState in
                 handleFeedbackChange(newState)
@@ -44,6 +40,9 @@ struct SessionView: View {
         let stateString = newState.stringValue
         print("Converted state to string: \(stateString)")
         sessionManager.onSessionStateChange(NSNumber(value: 0), state: stateString)
+        if stateString == "completed" {
+            handleCaptureComplete(true)
+        }
     }
 
     private func handleFeedbackChange(_ newState: Set<ObjectCaptureSession.Feedback>) {

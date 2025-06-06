@@ -48,6 +48,11 @@ export type CaptureComplete = {
   target: number;
 };
 
+export type ScanPassCompleted = {
+  completed: boolean;
+  target: number;
+};
+
 export type SessionError = {
   error: string;
   target: number;
@@ -65,8 +70,8 @@ export interface ObjectCaptureEvents {
   onSessionStateChange: (event: NativeSyntheticEvent<SessionState>) => void;
   onTrackingStateChange: (event: NativeSyntheticEvent<TrackingState>) => void;
   onFeedbackStateChange: (event: NativeSyntheticEvent<FeedbackState[]>) => void;
-  onCaptureComplete: (event: NativeSyntheticEvent<boolean>) => void;
-  onScanPassCompleted: (event: NativeSyntheticEvent<boolean>) => void;
+  onCaptureComplete: (event: NativeSyntheticEvent<CaptureComplete>) => void;
+  onScanPassCompleted: (event: NativeSyntheticEvent<ScanPassCompleted>) => void;
 }
 
 // Define the interface for the native module

@@ -8,6 +8,7 @@ import ObjectCapture, {
   type FeedbackStateChange,
   type CaptureComplete,
   type SessionError,
+  type ScanPassCompleted,
   objectCaptureEmitter,
 } from './NativeObjectCapture';
 import ObjectCaptureView from './components/RNObjectCaptureView';
@@ -16,7 +17,8 @@ import PhotogrammetrySession, {
   type PhotogrammetryProgress,
   type PhotogrammetryError,
   type PhotogrammetryEvents,
-  photogrammetryEmitter,
+  type PhotogrammetrySessionState,
+  type PhotogrammetrySessionOptions,
 } from './modules/PhotogrammetrySession';
 
 // Export the view component
@@ -33,6 +35,7 @@ export type {
   TrackingStateChange,
   FeedbackStateChange,
   CaptureComplete,
+  ScanPassCompleted,
   SessionError,
 };
 export type { ObjectCaptureViewRef } from './components/RNObjectCaptureView';
@@ -43,10 +46,12 @@ export type {
   PhotogrammetryProgress,
   PhotogrammetryError,
   PhotogrammetryEvents,
+  PhotogrammetrySessionState,
+  PhotogrammetrySessionOptions,
 };
 
 // Export hooks and utilities
-export { objectCaptureEmitter, photogrammetryEmitter, PhotogrammetrySession };
+export { objectCaptureEmitter, PhotogrammetrySession };
 
 // Export constants
 export const ObjectCaptureConstants = ObjectCapture.constants;

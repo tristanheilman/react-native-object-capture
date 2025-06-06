@@ -16,6 +16,7 @@ import {
   type SessionStateChange,
   type CaptureComplete,
   type SessionError,
+  type ScanPassCompleted,
 } from '../NativeObjectCapture';
 
 export interface ObjectCaptureViewProps {
@@ -31,7 +32,9 @@ export interface ObjectCaptureViewProps {
     event: NativeSyntheticEvent<FeedbackStateChange>
   ) => void;
   onCaptureComplete?: (event: NativeSyntheticEvent<CaptureComplete>) => void;
-  onScanPassCompleted?: (event: NativeSyntheticEvent<boolean>) => void;
+  onScanPassCompleted?: (
+    event: NativeSyntheticEvent<ScanPassCompleted>
+  ) => void;
   onError?: (event: NativeSyntheticEvent<SessionError>) => void;
 }
 
@@ -51,6 +54,7 @@ export interface ObjectCaptureViewRef {
   getUserCompletedScanState: () => Promise<boolean>;
   isDeviceSupported: () => Promise<boolean>;
   getSessionState: () => Promise<SessionState>;
+  getNumberOfScanPassUpdates: () => Promise<number>;
 }
 
 // Define the native module interface
@@ -70,6 +74,7 @@ interface RNObjectCaptureViewModule {
   getUserCompletedScanState: (node: number) => Promise<boolean>;
   isDeviceSupported: (node: number) => Promise<boolean>;
   getSessionState: (node: number) => Promise<SessionState>;
+  getNumberOfScanPassUpdates: (node: number) => Promise<number>;
 }
 
 // Only require the native component on iOS
@@ -167,6 +172,16 @@ const ObjectCaptureView = forwardRef<
             throw new Error('View node not found');
           }
           return nativeModule.current.getNumberOfShotsTaken(node);
+        },
+        getNumberOfScanPassUpdates: async () => {
+          if (!nativeModule.current || !viewRef.current) {
+            throw new Error('View or native module not found');
+          }
+          const node = findNodeHandle(viewRef.current);
+          if (!node) {
+            throw new Error('View node not found');
+          }
+          return nativeModule.current.getNumberOfScanPassUpdates(node);
         },
         getUserCompletedScanState: async () => {
           if (!nativeModule.current || !viewRef.current) {
@@ -296,7 +311,9 @@ const ObjectCaptureView = forwardRef<
       onSessionStateChange?.(event);
     };
 
-    const _onScanPassCompleted = (event: NativeSyntheticEvent<boolean>) => {
+    const _onScanPassCompleted = (
+      event: NativeSyntheticEvent<ScanPassCompleted>
+    ) => {
       onScanPassCompleted?.(event);
     };
 

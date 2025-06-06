@@ -1,5 +1,6 @@
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
+  Alert,
   Pressable,
   StyleSheet,
   Text,
@@ -23,10 +24,22 @@ export default function ScanPassStageModal({
 }: ScanPassStageModalProps) {
   const pointCloudViewRef = useRef<ObjectCapturePointCloudViewRef>(null);
   const { width, height } = useWindowDimensions();
+  const [numberOfScanPassUpdates, setNumberOfScanPassUpdates] = useState(-1);
+
   const handleContinue = () => {
     // either call beginNewScan or beginNewScanAfterFlip
     // TODO: figure out the logic that determines which
-    objectCaptureViewRef.current?.beginNewScan();
+    Alert.alert('Flip object?', 'Do you want to flip the object?', [
+      {
+        text: 'Flip',
+        onPress: () => objectCaptureViewRef.current?.beginNewScanAfterFlip(),
+      },
+      {
+        text: 'No',
+        onPress: () => objectCaptureViewRef.current?.beginNewScan(),
+      },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
     navigation.goBack();
   };
 
@@ -39,10 +52,18 @@ export default function ScanPassStageModal({
     navigation.goBack();
   };
 
+  useEffect(() => {
+    console.log('objectCaptureViewRef.current', objectCaptureViewRef.current);
+    objectCaptureViewRef.current?.getNumberOfScanPassUpdates().then((count) => {
+      console.log('count', count);
+      setNumberOfScanPassUpdates(count);
+    });
+  }, []);
+
   return (
     <View style={styles.container}>
       <Text>ScanPassStageModal</Text>
-      <Text>Segments Completed: 1</Text>
+      <Text>Segments Completed: {numberOfScanPassUpdates}</Text>
 
       <ObjectCapturePointCloudView
         ref={pointCloudViewRef}

@@ -16,6 +16,7 @@ import {
   type TrackingStateChange,
   type SessionError,
   type CaptureComplete,
+  type ScanPassCompleted,
 } from 'react-native-object-capture';
 import { objectCaptureViewRef } from './utils';
 type ObjectSessionScreenProps = {
@@ -30,6 +31,7 @@ export default function ObjectSessionScreen({
   const [trackingState, setTrackingState] =
     useState<TrackingState>('notAvailable');
   const [feedbackState, setFeedbackState] = useState<FeedbackState[]>([]);
+  const [numberOfScanPassCompleted, setNumberOfScanPassCompleted] = useState(0);
 
   const handleSessionStateChange = (
     event: NativeSyntheticEvent<SessionStateChange>
@@ -56,6 +58,14 @@ export default function ObjectSessionScreen({
     event: NativeSyntheticEvent<CaptureComplete>
   ) => {
     console.log('Capture completed:', event.nativeEvent);
+    //navigation.navigate('ScanPassStageModal');
+  };
+
+  const handleScanPassCompleted = (
+    event: NativeSyntheticEvent<ScanPassCompleted>
+  ) => {
+    console.log('Scan pass completed:', event.nativeEvent);
+    setNumberOfScanPassCompleted(numberOfScanPassCompleted + 1);
     navigation.navigate('ScanPassStageModal');
   };
 
@@ -94,6 +104,7 @@ export default function ObjectSessionScreen({
         onSessionStateChange={handleSessionStateChange}
         onFeedbackStateChange={handleFeedbackStateChange}
         onTrackingStateChange={handleTrackingStateChange}
+        onScanPassCompleted={handleScanPassCompleted}
         onCaptureComplete={handleCaptureComplete}
         onError={handleError}
       />

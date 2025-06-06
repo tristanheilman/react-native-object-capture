@@ -22,6 +22,12 @@ export type PhotogrammetrySkippedSample = {
   id: string;
 };
 
+export type PhotogrammetrySessionState = {
+  state: string;
+  progress: number;
+  result: string | null;
+};
+
 export interface PhotogrammetryEvents {
   onProgress: (event: NativeSyntheticEvent<PhotogrammetryProgress>) => void;
   onComplete: () => void;
@@ -40,7 +46,7 @@ export interface PhotogrammetryEvents {
   onUnknownOutput: () => void;
 }
 
-type PhotogrammetrySessionOptions = {
+export type PhotogrammetrySessionOptions = {
   inputPath: string;
   checkpointPath: string;
   outputPath: string;
@@ -48,11 +54,11 @@ type PhotogrammetrySessionOptions = {
 
 // Define the interface for the native module
 interface RNPhotogrammetrySessionInterface extends NativeModule {
-  startReconstruction({
-    inputPath,
-    checkpointPath,
-    outputPath,
-  }: PhotogrammetrySessionOptions): Promise<boolean>;
+  startReconstruction(
+    inputPath: string,
+    checkpointPath: string,
+    outputPath: string
+  ): Promise<boolean>;
   cancelReconstruction(): Promise<boolean>;
 }
 
@@ -78,11 +84,11 @@ class PhotogrammetrySession {
     checkpointPath,
     outputPath,
   }: PhotogrammetrySessionOptions) {
-    return RNPhotogrammetrySession.startReconstruction({
+    return RNPhotogrammetrySession.startReconstruction(
       inputPath,
       checkpointPath,
-      outputPath,
-    });
+      outputPath
+    );
   }
 
   async cancelReconstruction() {
@@ -105,11 +111,11 @@ class PhotogrammetrySession {
     );
   }
 
-  addErrorListener(callback: (error: string) => void) {
+  addErrorListener(callback: (error: Error) => void) {
     this.listeners.error = this.eventEmitter.addListener(
       'onError',
-      (event: NativeSyntheticEvent<PhotogrammetryError>) => {
-        callback(event.nativeEvent.error);
+      (event: NativeSyntheticEvent<Error>) => {
+        callback(event.nativeEvent);
       }
     );
   }

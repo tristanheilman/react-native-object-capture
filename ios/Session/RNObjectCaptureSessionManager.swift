@@ -22,6 +22,8 @@ class ObjectCaptureSessionManager: NSObject, ObservableObject {
     private weak var viewManager: RNObjectCaptureView?
     // PointCloudViewManager is the point cloud view manager for the object capture session.
     private weak var pointCloudViewManager: RNObjectCapturePointCloudView?
+    // Number of scan pass' completed
+    private var numberOfScanPassCompleted: Int = 0
 
     private override init() {
         super.init()
@@ -60,6 +62,7 @@ class ObjectCaptureSessionManager: NSObject, ObservableObject {
         self.eventEmitter?.sendEvent(withName: "onScanPassCompleted", body: [
             "completed": completed
         ])
+        numberOfScanPassCompleted += 1
     }
 
     @objc
@@ -363,6 +366,11 @@ class ObjectCaptureSessionManager: NSObject, ObservableObject {
     @MainActor
     func getUserCompletedScanState() -> Bool {
         return session?.userCompletedScanPass ?? false
+    }
+
+    @MainActor
+    func getNumberOfScanPassUpdates() -> Int {
+        return numberOfScanPassCompleted
     }
 
     @MainActor

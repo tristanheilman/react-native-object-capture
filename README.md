@@ -23,7 +23,30 @@ AR object capture session for React Native using Apple's Object Capture API. Thi
 npm install react-native-object-capture
 ```
 
-## Usage
+## Components
+
+### ObjectCaptureView
+
+The main component for capturing 3D objects. It provides a camera interface with real-time feedback and controls for the capture process.
+
+#### Props
+
+| Prop | Type | Required | Description |
+|------|------|----------|-------------|
+| `style` | ViewStyle | No | Style object for the camera view container |
+| `onSessionStateChange` | (state: SessionState) => void | No | Callback fired when the capture session state changes |
+| `onCaptureComplete` | (result: { url: string }) => void | No | Callback fired when object capture is complete, providing URL to the captured 3D model |
+| `onError` | (error: { message: string }) => void | No | Callback fired when an error occurs during capture |
+| `enableObjectDetection` | boolean | No | Enable/disable automatic object detection. Default: true |
+| `objectDetectionThreshold` | number | No | Sensitivity threshold for object detection (0.0 to 1.0). Default: 0.5 |
+| `guidanceMode` | 'automatic' \| 'manual' | No | Mode for providing capture guidance. Default: 'automatic' |
+| `maxCaptureFrames` | number | No | Maximum number of frames to capture. Default: 250 |
+
+#### SessionState Type
+
+The `SessionState` type represents the current state of the capture session:
+
+### Example
 
 ```jsx
 import { useRef, useState } from 'react';
@@ -34,16 +57,9 @@ import {
   type ObjectCaptureViewRef,
 } from 'react-native-object-capture';
 
-type ObjectSessionScreenProps = {
-  navigation: any;
-};
-
-export default function ObjectSessionScreen({
-  navigation,
-}: ObjectSessionScreenProps) {
+export default function ObjectSessionScreen() {
   const objectCaptureViewRef = useRef<ObjectCaptureViewRef>(null);
-  const [sessionState, setSessionState] =
-    useState<SessionState>('initializing');
+  const [sessionState, setSessionState] = useState<SessionState>('initializing');
 
   const handleSessionStateChange = (state: SessionState) => {
     setSessionState(state);
@@ -57,27 +73,6 @@ export default function ObjectSessionScreen({
     console.error('Error:', error.message);
   };
 
-  const handleStartDetection = async () => {
-    await objectCaptureViewRef.current?.startDetection();
-  };
-
-  const handleResetDetection = async () => {
-    await objectCaptureViewRef.current?.resetDetection();
-  };
-
-  const handleStartCapturing = async () => {
-    await objectCaptureViewRef.current?.startCapturing();
-  };
-
-  const handleFinishSession = async () => {
-    await objectCaptureViewRef.current?.finishSession();
-  };
-
-  const handleCancelSession = async () => {
-    await objectCaptureViewRef.current?.cancelSession();
-    navigation.goBack();
-  };
-
   return (
     <View style={styles.container}>
       <ObjectCaptureView
@@ -87,89 +82,125 @@ export default function ObjectSessionScreen({
         onCaptureComplete={handleCaptureComplete}
         onError={handleError}
       />
-
-      <View style={styles.floatingBackButton}>
-        <Pressable style={styles.button} onPress={handleCancelSession}>
-          <Text>Cancel</Text>
-        </Pressable>
-      </View>
-
-      <View style={styles.floatingContainer}>
-        <View style={styles.buttonContainer}>
-          {sessionState === 'initializing' && (
-            <View style={styles.button}>
-              <Text>Initializing...</Text>
-            </View>
-          )}
-          {sessionState === 'ready' && (
-            <Pressable style={styles.button} onPress={handleStartDetection}>
-              <Text>Start Detection</Text>
-            </Pressable>
-          )}
-          {sessionState === 'detecting' && (
-            <View style={styles.buttonRow}>
-              <Pressable style={styles.button} onPress={handleResetDetection}>
-                <Text>Reset Detection</Text>
-              </Pressable>
-              <Pressable style={styles.button} onPress={handleStartCapturing}>
-                <Text>Start Capturing</Text>
-              </Pressable>
-            </View>
-          )}
-          {sessionState === 'capturing' && (
-            <View style={styles.buttonRow}>
-              <Pressable style={styles.button} onPress={handleResetDetection}>
-                <Text>Reset Detection</Text>
-              </Pressable>
-              <Pressable style={styles.button} onPress={handleFinishSession}>
-                <Text>Finish Session</Text>
-              </Pressable>
-            </View>
-          )}
-        </View>
-      </View>
+      
+      {/* Add your UI controls here */}
     </View>
   );
 }
+```
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  button: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#CD8987',
-    borderRadius: 5,
-  },
-  floatingContainer: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    paddingBottom: 30,
-    paddingTop: 16,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-  },
-  floatingBackButton: {
-    position: 'absolute',
-    top: 60,
-    left: 0,
-    padding: 16,
-  },
-  buttonContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-});
+### CloudPointView
+
+Displays a real-time point cloud visualization of the captured object. This component is useful for providing visual feedback during the capture process.
+
+#### Props
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| style | ViewStyle | No | Style object for the cloud point view container |
+| ref | RefObject<ObjectCapturePointCloudViewRef> | No | Ref object to access view methods |
+| `onAppear` | () => void | No | Callback fired when the view appears |
+| `onCloudPointViewAppear` | () => void | No | Callback fired when the cloud point visualization appears |
+| `ObjectCaptureEmptyComponent` | ComponentType | No | Component to render when no point cloud data is available |
+| `ObjectCaptureLoadingComponent` | ComponentType | No | Component to render while point cloud data is loading |
+
+
+```jsx
+import { useRef } from 'react';
+import { View, StyleSheet } from 'react-native';
+import {
+  ObjectCapturePointCloudView,
+  type ObjectCapturePointCloudViewRef,
+} from 'react-native-object-capture';
+
+export default function CloudPointViewScreen() {
+  const pointCloudViewRef = useRef<ObjectCapturePointCloudViewRef>(null);
+
+  const handleAppear = () => {
+    // Handle view appear event
+  };
+
+  const handleCloudPointViewAppear = () => {
+    // Handle cloud point view appear event
+  };
+
+  return (
+    <View style={styles.container}>
+      <ObjectCapturePointCloudView
+        ref={pointCloudViewRef}
+        style={styles.container}
+        onAppear={handleAppear}
+        onCloudPointViewAppear={handleCloudPointViewAppear}
+        ObjectCaptureEmptyComponent={EmptyComponent}
+        ObjectCaptureLoadingComponent={LoadingComponent}
+      />
+    </View>
+  );
+}
+```
+
+### PhotogrammetrySession
+
+Handles the processing of captured images into a 3D model. This component manages the reconstruction process and provides progress updates.
+
+#### Event Listeners
+
+| Event | Description |
+|-------|-------------|
+| `onProgress(event: { progress: number })` | Fired when reconstruction progress updates |
+| `onComplete()` | Fired when reconstruction is successfully completed |
+| `onError(event: { error: string })` | Fired when an error occurs during reconstruction |
+| `onCancelled()` | Fired when reconstruction is cancelled |
+| `onRequestComplete()` | Fired when request is completed |
+| `onInputComplete()` | Fired when input processing is completed |
+| `onInvalidSample(event: { id: string, reason: string })` | Fired when a sample is invalid |
+| `onSkippedSample(event: { id: string })` | Fired when a sample is skipped |
+| `onAutomaticDownsampling()` | Fired when automatic downsampling occurs |
+| `onProcessingCancelled()` | Fired when processing is cancelled |
+| `onUnknownOutput()` | Fired when output type is unknown |
+
+#### Methods
+
+The PhotogrammetrySession provides the following methods:
+
+| Method | Description |
+|--------|-------------|
+| `startReconstruction(config: ReconstructionConfig)` | Starts the 3D model reconstruction process |
+| `cancelReconstruction()` | Cancels an ongoing reconstruction |
+
+##### ReconstructionConfig
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `inputPath` | string | Yes | Directory containing input images |
+| `outputPath` | string | Yes | Path where the USDZ model will be saved |
+| `checkpointPath` | string | No | Directory for saving reconstruction checkpoints |
+
+
+```jsx
+import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import PhotogrammetrySession from 'react-native-object-capture';
+
+export default function PhotogrammetryScreen() {
+  const handleStartReconstruction = async () => {
+    try {
+      await PhotogrammetrySession.startReconstruction({
+        inputPath: 'Images/',
+        checkpointPath: 'Snapshots/',
+        outputPath: 'Reconstruction/model.usdz',
+      });
+    } catch (error) {
+      console.error('Reconstruction failed:', error);
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text>Photogrammetry Session</Text>
+      {/* Add your UI controls here */}
+    </View>
+  );
+}
 ```
 
 ## Session States

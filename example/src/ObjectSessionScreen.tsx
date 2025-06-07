@@ -66,6 +66,7 @@ export default function ObjectSessionScreen({
   ) => {
     console.log('Scan pass completed:', event.nativeEvent);
     setNumberOfScanPassCompleted(numberOfScanPassCompleted + 1);
+    objectCaptureViewRef.current?.pauseSession();
     navigation.navigate('ScanPassStageModal');
   };
 

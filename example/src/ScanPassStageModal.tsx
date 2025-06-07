@@ -32,20 +32,28 @@ export default function ScanPassStageModal({
     Alert.alert('Flip object?', 'Do you want to flip the object?', [
       {
         text: 'Flip',
-        onPress: () => objectCaptureViewRef.current?.beginNewScanAfterFlip(),
+        onPress: () => {
+          objectCaptureViewRef.current?.beginNewScanAfterFlip();
+          objectCaptureViewRef.current?.resumeSession();
+          navigation.goBack();
+        },
       },
       {
         text: 'No',
-        onPress: () => objectCaptureViewRef.current?.beginNewScan(),
+        onPress: () => {
+          objectCaptureViewRef.current?.beginNewScan();
+          objectCaptureViewRef.current?.resumeSession();
+          navigation.goBack();
+        },
       },
       { text: 'Cancel', style: 'cancel' },
     ]);
-    navigation.goBack();
   };
 
   const handleFinish = () => {
     objectCaptureViewRef.current?.finishSession();
-    navigation.goBack();
+    navigation.popToTop();
+    navigation.navigate('PhotogrammetrySessionScreen');
   };
 
   const handleCancel = () => {
@@ -54,6 +62,7 @@ export default function ScanPassStageModal({
 
   useEffect(() => {
     console.log('objectCaptureViewRef.current', objectCaptureViewRef.current);
+    objectCaptureViewRef.current?.pauseSession();
     objectCaptureViewRef.current?.getNumberOfScanPassUpdates().then((count) => {
       console.log('count', count);
       setNumberOfScanPassUpdates(count);

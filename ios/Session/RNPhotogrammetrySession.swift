@@ -31,86 +31,99 @@ class RNPhotogrammetrySession: RCTEventEmitter {
     
     @objc
     func startReconstruction(_ inputPath: String, 
-                           checkpointPath: String,
-                           outputPath: String,
-                           resolver resolve: @escaping RCTPromiseResolveBlock,
-                           rejecter reject: @escaping RCTPromiseRejectBlock) {
+            checkpointPath: String,
+            outputPath: String,
+            resolver resolve: @escaping RCTPromiseResolveBlock,
+            rejecter reject: @escaping RCTPromiseRejectBlock) {
+        
         Task {
             do {
+                print("Starting reconstruction with input path: \(inputPath)")
                 var configuration = PhotogrammetrySession.Configuration()
-                configuration.checkpointDirectory = URL(fileURLWithPath: checkpointPath)
+                configuration.checkpointDirectory = getDocumentsDirectory().appendingPathComponent(checkpointPath)
                 
                 let session = try PhotogrammetrySession(
-                    input: URL(fileURLWithPath: inputPath),
+                    input: getDocumentsDirectory().appendingPathComponent(inputPath),
                     configuration: configuration
                 )
                 
                 self.session = session
+                print("Session created successfully")
                 
                 try session.process(requests: [
-                    .modelFile(url: URL(fileURLWithPath: outputPath))
+                    .modelFile(url: getDocumentsDirectory().appendingPathComponent(outputPath))
                 ])
+                print("Processing started")
                 
-                for try await output in session.outputs {
-                    switch output {
-                        case .processingComplete:
-                            // RealityKit has processed all requests.
-                            sendEvent(withName: "onComplete", body: [:])
-                            resolve(true)
-                        case .requestError(let request, let error):
-                            // Request encountered an error.
-                            sendEvent(withName: "onError", body: ["error": error.localizedDescription])
-                            reject("ERROR", error.localizedDescription, nil)
-                        case .requestComplete(let request, let result):
-                            // RealityKit has finished processing a request.
-                            sendEvent(withName: "onRequestComplete", body: [:])
-                            resolve(true)
-                        case .requestProgress(let request, let fractionComplete):
-                            // Periodic progress update. Update UI here.
-                            sendEvent(withName: "onProgress", body: ["progress": fractionComplete])
-                            resolve(true)
-                         case .requestProgressInfo(let request, let progressInfo):
-                             // Periodic progress info update.
-                             //sendEvent(withName: "onProgress", body: ["progress": progressInfo.fractionComplete])
-                             resolve(true)
-                        case .inputComplete:
-                            // Ingestion of images is complete and processing begins.
-                            sendEvent(withName: "onInputComplete", body: [:])
-                            resolve(true)
-                        case .invalidSample(let id, let reason):
-                            // RealityKit deemed a sample invalid and didn't use it.
-                            sendEvent(withName: "onInvalidSample", body: ["id": id, "reason": reason])
-                            resolve(true)
-                        case .skippedSample(let id):
-                            // RealityKit was unable to use a provided sample.
-                            sendEvent(withName: "onSkippedSample", body: ["id": id])
-                            resolve(true)
-                        case .automaticDownsampling:
-                            // RealityKit downsampled the input images because of
-                            // resource constraints.
-                            sendEvent(withName: "onAutomaticDownsampling", body: [:])
-                            resolve(true)
-                        case .processingCancelled:
-                            // Processing was canceled.
-                            sendEvent(withName: "onProcessingCancelled", body: [:])
-                            resolve(true)
-                        case .stitchingIncomplete:
-                            // Stitching is incomplete.
-                            //sendEvent(withName: "onStitchingIncomplete", body: [:])
-                            resolve(true)
-                        @unknown default:
-                                // Unrecognized output.
-                                sendEvent(withName: "onUnknownOutput", body: [:])
+                do {
+                    for try await output in session.outputs {
+                        print("Received output: \(output)")
+                        
+                        switch output {
+                            case .processingComplete:
+                                print("Processing complete")
+                                sendEvent(withName: "onComplete", body: [:])
                                 resolve(true)
+                                return
+                            case .requestError(let request, let error):
+                                print("Request error received: \(error)")
+                                sendEvent(withName: "onError", body: ["error": error.localizedDescription])
+                                reject("ERROR", error.localizedDescription, nil)
+                                return
+                            case .requestComplete(let request, let result):
+                                print("Request complete")
+                                sendEvent(withName: "onRequestComplete", body: [:])
+                                return
+                            case .requestProgress(let request, let fractionComplete):
+                                print("Progress: \(fractionComplete)")
+                                sendEvent(withName: "onProgress", body: ["progress": fractionComplete])
+                                return
+                            case .requestProgressInfo(let request, let progressInfo):
+                                print("Progress info: \(progressInfo)")
+                                return
+                            case .inputComplete:
+                                print("Input complete")
+                                sendEvent(withName: "onInputComplete", body: [:])
+                                return
+                            case .invalidSample(let id, let reason):
+                                print("Invalid sample: \(id), reason: \(reason)")
+                                sendEvent(withName: "onInvalidSample", body: ["id": id, "reason": reason])
+                                return
+                            case .skippedSample(let id):
+                                print("Skipped sample: \(id)")
+                                sendEvent(withName: "onSkippedSample", body: ["id": id])
+                                return
+                            case .automaticDownsampling:
+                                print("Automatic downsampling")
+                                sendEvent(withName: "onAutomaticDownsampling", body: [:])
+                                return
+                            case .processingCancelled:
+                                print("Processing cancelled")
+                                sendEvent(withName: "onProcessingCancelled", body: [:])
+                                resolve(true)
+                                return
+                            case .stitchingIncomplete:
+                                print("Stitching incomplete")
+                                return
+                            @unknown default:
+                                print("Unknown output type")
+                                sendEvent(withName: "onUnknownOutput", body: [:])
+                                return
+                        }
                     }
+                } catch {
+                    print("Error during processing: \(error)")
+                    sendEvent(withName: "onError", body: ["error": error.localizedDescription])
+                    reject("ERROR", error.localizedDescription, nil)
                 }
             } catch {
+                print("Caught error in startReconstruction: \(error)")
                 sendEvent(withName: "onError", body: ["error": error.localizedDescription])
                 reject("ERROR", error.localizedDescription, nil)
             }
         }
     }
-    
+        
     @objc
     func cancelReconstruction(_ resolve: @escaping RCTPromiseResolveBlock,
                             rejecter reject: @escaping RCTPromiseRejectBlock) {
@@ -118,5 +131,9 @@ class RNPhotogrammetrySession: RCTEventEmitter {
             session?.cancel()
             resolve(true)
         }
+    }
+
+    private func getDocumentsDirectory() -> URL {
+        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
     }
 }

@@ -29,9 +29,9 @@ export type PhotogrammetrySessionState = {
 };
 
 export interface PhotogrammetryEvents {
-  onProgress: (event: NativeSyntheticEvent<PhotogrammetryProgress>) => void;
+  onProgress: (event: PhotogrammetryProgress) => void;
   onComplete: () => void;
-  onError: (event: NativeSyntheticEvent<PhotogrammetryError>) => void;
+  onError: (event: PhotogrammetryError) => void;
   onCancelled: () => void;
   onRequestComplete: () => void;
   onInputComplete: () => void;
@@ -98,8 +98,9 @@ class PhotogrammetrySession {
   addProgressListener(callback: (progress: number) => void) {
     this.listeners.progress = this.eventEmitter.addListener(
       'onProgress',
-      (event: NativeSyntheticEvent<PhotogrammetryProgress>) => {
-        callback(event.nativeEvent.progress);
+      (event: PhotogrammetryProgress) => {
+        console.log('event', event);
+        callback(event.progress);
       }
     );
   }
@@ -111,11 +112,12 @@ class PhotogrammetrySession {
     );
   }
 
-  addErrorListener(callback: (error: Error) => void) {
+  addErrorListener(callback: (error: string) => void) {
     this.listeners.error = this.eventEmitter.addListener(
       'onError',
-      (event: NativeSyntheticEvent<Error>) => {
-        callback(event.nativeEvent);
+      (event: PhotogrammetryError) => {
+        console.log('error event', event);
+        callback(event.error);
       }
     );
   }

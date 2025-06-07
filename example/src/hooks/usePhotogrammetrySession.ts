@@ -19,7 +19,8 @@ const usePhotogrammetrySession = ({
       setProgress(currProgress);
     });
     PhotogrammetrySession.addErrorListener((err) => {
-      setError(err);
+      console.log('error', err);
+      setError(new Error(err));
     });
     PhotogrammetrySession.addCompleteListener(() => {
       setResult('completed');

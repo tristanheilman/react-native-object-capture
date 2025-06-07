@@ -1,6 +1,6 @@
 {
   "name": "react-native-object-capture",
-  "version": "0.1.0-rc.1",
+  "version": "0.1.0",
   "description": "AR object capture session for React Native",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",

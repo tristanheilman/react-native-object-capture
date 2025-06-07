@@ -26,11 +26,11 @@ describe('PhotogrammetrySession', () => {
 
       expect(
         NativeModules.RNPhotogrammetrySession.startReconstruction
-      ).toHaveBeenCalledWith({
-        inputPath: mockOptions.inputPath,
-        checkpointPath: mockOptions.checkpointPath,
-        outputPath: mockOptions.outputPath,
-      });
+      ).toHaveBeenCalledWith(
+        mockOptions.inputPath,
+        mockOptions.checkpointPath,
+        mockOptions.outputPath
+      );
     });
 
     it('should handle native module errors', async () => {

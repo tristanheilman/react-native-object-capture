@@ -39,10 +39,10 @@ The main component for capturing 3D objects. It provides a camera interface with
 | `ref` | RefObject<ObjectCapturePointCloudViewRef> | No | Ref object to access view methods |
 | `onCaptureComplete` | (evt: NativeSyntheticEvent<CaptureComplete>) => void | No | Callback fired when object capture is complete |
 | `onScanPassCompletd` | (evt: NativeSyntheticEvent<ScanPassCompleted>) => void | No | Callback fired when a scan pass is completed. It is recommended to complete 3 scan pass' before finishing the object capture session |
-| `onSessionStateChange` | (evt: NativeSyntheticEvent<SessionStateChange>) => void | No | Callback fired when the capture session state changes |
-| `onTrackingStateChange` | (evt: NativeSyntheticEvent<TrackingStateChange>) => void | No | Callback fired when the tracking state changes |
-| `onFeedbackStateChange` | (evt: NativeSyntheticEvent<TrackingStateChange>) => void | No | Callback fired when the feedback state changes |
-| `onError` | (error: { message: string }) => void | No | Callback fired when an error occurs during capture |
+| `onSessionStateChange` | (evt: `NativeSyntheticEvent<SessionStateChange>`) => void | No | Callback fired when the capture session state changes |
+| `onTrackingStateChange` | (evt: `NativeSyntheticEvent<TrackingStateChange>`) => void | No | Callback fired when the tracking state changes |
+| `onFeedbackStateChange` | (evt: `NativeSyntheticEvent<TrackingStateChange>`) => void | No | Callback fired when the feedback state changes |
+| `onError` | (evt: `NativeSyntheticEvent<SessionError>`) => void | No | Callback fired when an error occurs during capture |
 
 #### Methods
 

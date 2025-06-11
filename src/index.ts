@@ -9,7 +9,6 @@ import ObjectCapture, {
   type CaptureComplete,
   type SessionError,
   type ScanPassCompleted,
-  objectCaptureEmitter,
 } from './NativeObjectCapture';
 import ObjectCaptureView from './components/RNObjectCaptureView';
 import ObjectCapturePointCloudView from './components/RNObjectCapturePointCloudView';
@@ -51,7 +50,7 @@ export type {
 };
 
 // Export hooks and utilities
-export { objectCaptureEmitter, PhotogrammetrySession };
+export { PhotogrammetrySession };
 
 // Export constants
 export const ObjectCaptureConstants = ObjectCapture.constants;

@@ -77,14 +77,9 @@ export interface ObjectCaptureEvents {
 // Define the interface for the native module
 interface RNObjectCaptureInterface extends NativeModule {
   constants: {
-    SessionState: {
-      initializing: string;
-      ready: string;
-      capturing: string;
-      processing: string;
-      completed: string;
-      failed: string;
-    };
+    SessionState: SessionState;
+    FeedbackState: [FeedbackState];
+    TrackingState: TrackingState;
   };
 }
 

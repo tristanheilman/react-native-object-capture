@@ -144,20 +144,26 @@ class PhotogrammetrySession {
   }
 
   addInvalidSampleListener(
-    callback: (event: NativeSyntheticEvent<PhotogrammetryInvalidSample>) => void
+    callback: (event: PhotogrammetryInvalidSample) => void
   ) {
     this.listeners.invalidSample = this.eventEmitter.addListener(
       'onInvalidSample',
-      callback
+      (event: PhotogrammetryInvalidSample) => {
+        console.log('error event', event);
+        callback(event);
+      }
     );
   }
 
   addSkippedSampleListener(
-    callback: (event: NativeSyntheticEvent<PhotogrammetrySkippedSample>) => void
+    callback: (event: PhotogrammetrySkippedSample) => void
   ) {
     this.listeners.skippedSample = this.eventEmitter.addListener(
       'onSkippedSample',
-      callback
+      (event: PhotogrammetrySkippedSample) => {
+        console.log('error event', event);
+        callback(event);
+      }
     );
   }
 

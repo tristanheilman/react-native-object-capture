@@ -9,7 +9,7 @@
 > 
 > Use at your own risk and expect breaking changes in future releases.
 
-AR object capture session for React Native using Apple's Object Capture API. This library provides a React Native wrapper for capturing 3D objects using the device's camera.
+AR object capture session for React Native using Apple's Object Capture API. This library provides a React Native wrapper for capturing 3D objects using the device's camera. This library does not currently work for Android.
 
 ## Requirements
 
@@ -21,7 +21,10 @@ AR object capture session for React Native using Apple's Object Capture API. Thi
 
 ```sh
 npm install react-native-object-capture
+
+yarn add react-native-object-capture
 ```
+
 
 ## Components
 
@@ -33,18 +36,33 @@ The main component for capturing 3D objects. It provides a camera interface with
 
 | Prop | Type | Required | Description |
 |------|------|----------|-------------|
-| `style` | ViewStyle | No | Style object for the camera view container |
-| `onSessionStateChange` | (state: SessionState) => void | No | Callback fired when the capture session state changes |
-| `onCaptureComplete` | (result: { url: string }) => void | No | Callback fired when object capture is complete, providing URL to the captured 3D model |
+| `ref` | RefObject<ObjectCapturePointCloudViewRef> | No | Ref object to access view methods |
+| `onCaptureComplete` | (evt: NativeSyntheticEvent<CaptureComplete>) => void | No | Callback fired when object capture is complete |
+| `onScanPassCompletd` | (evt: NativeSyntheticEvent<ScanPassCompleted>) => void | No | Callback fired when a scan pass is completed. It is recommended to complete 3 scan pass' before finishing the object capture session |
+| `onSessionStateChange` | (evt: NativeSyntheticEvent<SessionStateChange>) => void | No | Callback fired when the capture session state changes |
+| `onTrackingStateChange` | (evt: NativeSyntheticEvent<TrackingStateChange>) => void | No | Callback fired when the tracking state changes |
+| `onFeedbackStateChange` | (evt: NativeSyntheticEvent<TrackingStateChange>) => void | No | Callback fired when the feedback state changes |
 | `onError` | (error: { message: string }) => void | No | Callback fired when an error occurs during capture |
-| `enableObjectDetection` | boolean | No | Enable/disable automatic object detection. Default: true |
-| `objectDetectionThreshold` | number | No | Sensitivity threshold for object detection (0.0 to 1.0). Default: 0.5 |
-| `guidanceMode` | 'automatic' \| 'manual' | No | Mode for providing capture guidance. Default: 'automatic' |
-| `maxCaptureFrames` | number | No | Maximum number of frames to capture. Default: 250 |
 
-#### SessionState Type
+#### Methods
 
-The `SessionState` type represents the current state of the capture session:
+| Method | Description |
+|--------|-------------|
+| `resumeSession` | Resumes a paused session |
+| `pauseSession` | Pauses a session |
+| `startDetection` | When called the current Object Capture Session will begin detecting objects in the current view |
+| `resetDetection` | When called the current Object Capture Session will reset any detected objects |
+| `startCapturing` | When called the Object Capture Session will transition from SessionState.detecting to SessionState.capturing |
+| `beginNewScanAfterFlip` | If the object is flippable, then calling this method will begin a new capture session to capture a new orientation of the object |
+| `beginNewScan` | When called this method will begin a new scan for the Object Capture Session |
+| `cancelSession` | Call this method when cleaning up and tearing down the Object Capture Session |
+| `isDeviceSupported` | Resumes boolean value indicating if the device supports AR and LiDAR |
+| `getSessionState` | Returns the current SessionState |
+| `getTrackingState` | Returns the current TrackingState |
+| `getFeedbackState` | Returns the current FeedbackState |
+| `getNumberOfShotsTaken` | Returns integer count of images taken for current Object Capture Session |
+| `getUserCompletedScanState` | Returns boolean if the current scan pass is completed |
+| `getNumberOfScanPassUpdates` | Returns the number of scan pass' completed |
 
 ### Example
 
@@ -97,8 +115,8 @@ Displays a real-time point cloud visualization of the captured object. This comp
 
 | Name | Type | Required | Description |
 |------|------|----------|-------------|
-| style | ViewStyle | No | Style object for the cloud point view container |
-| ref | RefObject<ObjectCapturePointCloudViewRef> | No | Ref object to access view methods |
+| `ref` | RefObject<ObjectCapturePointCloudViewRef> | No | Ref object to access view methods |
+| `containerStyle` | ViewStyle | No | Style object for the cloud point view container |
 | `onAppear` | () => void | No | Callback fired when the view appears |
 | `onCloudPointViewAppear` | () => void | No | Callback fired when the cloud point visualization appears |
 | `ObjectCaptureEmptyComponent` | ComponentType | No | Component to render when no point cloud data is available |
@@ -125,16 +143,14 @@ export default function CloudPointViewScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <ObjectCapturePointCloudView
-        ref={pointCloudViewRef}
-        style={styles.container}
-        onAppear={handleAppear}
-        onCloudPointViewAppear={handleCloudPointViewAppear}
-        ObjectCaptureEmptyComponent={EmptyComponent}
-        ObjectCaptureLoadingComponent={LoadingComponent}
-      />
-    </View>
+    <ObjectCapturePointCloudView
+      ref={pointCloudViewRef}
+      style={styles.container}
+      onAppear={handleAppear}
+      onCloudPointViewAppear={handleCloudPointViewAppear}
+      ObjectCaptureEmptyComponent={EmptyComponent}
+      ObjectCaptureLoadingComponent={LoadingComponent}
+    />
   );
 }
 ```
@@ -145,28 +161,26 @@ Handles the processing of captured images into a 3D model. This component manage
 
 #### Event Listeners
 
-| Event | Description |
-|-------|-------------|
-| `onProgress(event: { progress: number })` | Fired when reconstruction progress updates |
-| `onComplete()` | Fired when reconstruction is successfully completed |
-| `onError(event: { error: string })` | Fired when an error occurs during reconstruction |
-| `onCancelled()` | Fired when reconstruction is cancelled |
-| `onRequestComplete()` | Fired when request is completed |
-| `onInputComplete()` | Fired when input processing is completed |
-| `onInvalidSample(event: { id: string, reason: string })` | Fired when a sample is invalid |
-| `onSkippedSample(event: { id: string })` | Fired when a sample is skipped |
-| `onAutomaticDownsampling()` | Fired when automatic downsampling occurs |
-| `onProcessingCancelled()` | Fired when processing is cancelled |
-| `onUnknownOutput()` | Fired when output type is unknown |
+| Event Listener | Callback | Description |
+|-------|------|-------------|
+| `addProgressListner` | (progress: number) => void | Fired when reconstruction progress updates |
+| `addCompleteListener` | () => void | Fired when reconstruction is successfully completed |
+| `addErrorListener` | (error: string) => void | Fired when an error occurs during reconstruction |
+| `addCancelledListener` | () => void | Fired when reconstruction is cancelled |
+| `addRequestCompletListener` | () => void | Fired when request is completed |
+| `addInputCompleteListener` | () => void | Fired when input processing is completed |
+| `addInvalidSampleListener` | ({ id: string, reason: string }) | Fired when a sample is invalid |
+| `addSkippedSampleListener` | ({ id: string }) => void | Fired when a sample is skipped |
+| `addAutomaticDownsamplingListener` | () => void | Fired when automatic downsampling occurs |
+| `addProcessingCancelledListener` | () => void | Fired when processing is cancelled |
+| `addUnknownOutputListener` | () => void | Fired when output type is unknown |
 
 #### Methods
-
-The PhotogrammetrySession provides the following methods:
-
-| Method | Description |
-|--------|-------------|
-| `startReconstruction(config: ReconstructionConfig)` | Starts the 3D model reconstruction process |
-| `cancelReconstruction()` | Cancels an ongoing reconstruction |
+| Method | Paramaters | Description |
+|--------|------------|-------------|
+| `startReconstruction` | (config: ReconstructionConfig) => void | Starts the 3D model reconstruction process |
+| `cancelReconstruction` | () => void | Cancels an ongoing reconstruction |
+| `removeAllListeners` | () => void | Call this to cleanup any added listeners |
 
 ##### ReconstructionConfig
 
@@ -174,7 +188,7 @@ The PhotogrammetrySession provides the following methods:
 |----------|------|----------|-------------|
 | `inputPath` | string | Yes | Directory containing input images |
 | `outputPath` | string | Yes | Path where the USDZ model will be saved |
-| `checkpointPath` | string | No | Directory for saving reconstruction checkpoints |
+| `checkpointPath` | string | Yes | Directory for saving reconstruction checkpoints |
 
 
 ```jsx
@@ -214,6 +228,27 @@ The `ObjectCaptureView` component emits state changes through the `onSessionStat
 - `processing`: The captured images are being processed
 - `completed`: The capture and processing are complete
 - `failed`: An error occurred during the capture process
+
+## Feedback State
+
+The `ObjectCaptureView` component emits feedback changes through the `onFeedbackStateChange` callback. The possible states are:
+
+- `objectTooClose` : The detected object is too close to the camera
+- `objectTooFar` : The detected object is too far from the camera
+- `movingTooFast` : The camera capture session is panning too quickly to capture accurately
+- `enviornmentLowLight` : The capture enviornment does not have sufficient lighting for accurate object capture
+- `enviornmentTooDark` : The capture enviornment does not have sufficient lighting for any object capturing
+- `objectNotFlippable` : The detected object is not flippable
+-  `overCapturing` : The current session has overcaptured for the current scan pass
+- `objectNotDetected` : The capture session can not find the defined / detected object
+
+## Tracking State
+
+The `ObjectCaptureView` component emits state changes through the `onTrackingStateChange` callback. The possible states are:
+
+- `notAvailable` : Tracking is not currently availalbe
+- `limited` : Tracking is limited with current conditions
+- `normal` : Tracking is not blocked by any conditions
 
 ## Permissions
 

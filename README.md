@@ -9,6 +9,8 @@
 > 
 > Use at your own risk and expect breaking changes in future releases.
 
+[![CI](https://github.com/tristanheilman/react-native-object-capture/actions/workflows/ci.yml/badge.svg)](https://github.com/tristanheilman/react-native-object-capture/actions/workflows/ci.yml)
+
 AR object capture session for React Native using Apple's Object Capture API. This library provides a React Native wrapper for capturing 3D objects using the device's camera. This library does not currently work for Android.
 
 ## Requirements
@@ -18,13 +20,22 @@ AR object capture session for React Native using Apple's Object Capture API. Thi
 - React Native 0.76.0 or later
 
 ## Installation
+1. Install library
 
-```sh
-npm install react-native-object-capture
+    from npm
+    ```
+    npm install react-native-object-capture
+    ```
 
-yarn add react-native-object-capture
+    from yarn
+    ```
+    yarn add react-native-object-capture
+    ```
+
+2. Link native code
 ```
-
+cd ios && pod installs
+```
 
 ## Components
 

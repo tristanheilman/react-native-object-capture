@@ -101,7 +101,6 @@ export default function ObjectSessionScreen({
     <View style={styles.container}>
       <ObjectCaptureView
         ref={objectCaptureViewRef}
-        style={styles.container}
         onSessionStateChange={handleSessionStateChange}
         onFeedbackStateChange={handleFeedbackStateChange}
         onTrackingStateChange={handleTrackingStateChange}

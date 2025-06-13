@@ -1,7 +1,6 @@
 import { useEffect, useImperativeHandle, forwardRef, useRef } from 'react';
 import {
   requireNativeComponent,
-  type ViewStyle,
   type NativeSyntheticEvent,
   Platform,
   findNodeHandle,
@@ -20,8 +19,6 @@ import {
 } from '../NativeObjectCapture';
 
 export interface ObjectCaptureViewProps {
-  style?: ViewStyle;
-  testID?: string;
   onSessionStateChange?: (
     event: NativeSyntheticEvent<SessionStateChange>
   ) => void;
@@ -98,8 +95,6 @@ const ObjectCaptureView = forwardRef<
 >(
   (
     {
-      style,
-      testID,
       onSessionStateChange,
       onTrackingStateChange,
       onFeedbackStateChange,
@@ -329,8 +324,6 @@ const ObjectCaptureView = forwardRef<
     return (
       <RNObjectCaptureView
         ref={viewRef}
-        testID={testID}
-        style={style}
         onCaptureComplete={_onCaptureComplete}
         onFeedbackStateChange={_onFeedbackStateChange}
         onTrackingStateChange={_onTrackingStateChange}

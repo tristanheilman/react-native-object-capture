@@ -77,7 +77,7 @@ export default function ScanPassStageModal({
       <ObjectCapturePointCloudView
         ref={pointCloudViewRef}
         // height and width must be set for the cloud point view to render
-        style={{ height: height / 2, width: width }}
+        containerStyle={{ height: height / 2, width: width }}
         // onAppear={getSessionState}
         // onCloudPointViewAppear={getSessionState}
         ObjectCaptureEmptyComponent={EmptyObjectCapture}

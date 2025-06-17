@@ -14,13 +14,14 @@ export default function PhotogrammetrySessionScreen({
 
   return (
     <View style={styles.container}>
-      <Text>Photogrammetry Session Screen</Text>
+      <View style={styles.header}>
+        <Pressable style={styles.button} onPress={handleGoBack}>
+          <Text>Go Back</Text>
+        </Pressable>
+        <Text style={styles.title}>Photogrammetry Session</Text>
+      </View>
 
       <PhotogrammetrySession />
-
-      <Pressable style={styles.button} onPress={handleGoBack}>
-        <Text>Go Back</Text>
-      </Pressable>
     </View>
   );
 }
@@ -28,10 +29,21 @@ export default function PhotogrammetrySessionScreen({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: 'flex-start',
     backgroundColor: '#fff',
     gap: 10,
+    padding: 20,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  header: {
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    width: '100%',
   },
   button: {
     backgroundColor: '#CD8987',

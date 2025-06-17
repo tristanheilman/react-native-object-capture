@@ -1,47 +1,50 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-  Pressable,
-} from 'react-native';
+import { View, Text, StyleSheet, Pressable, TextInput } from 'react-native';
 import usePhotogrammetrySession from '../hooks/usePhotogrammetrySession';
+import { useState } from 'react';
 
 const PhotogrammetrySession = () => {
-  const {
-    error,
-    progress,
-    result,
-    imageDirectoryContents,
-    checkpointDirectoryContents,
-    outputDirectoryContents,
-    startReconstruction,
-  } = usePhotogrammetrySession({
-    imagesDirectory: 'Images/',
-    checkpointDirectory: 'Snapshots/',
-    outputPath: 'Outputs/model.usdz',
-  });
+  const [modelName, setModelName] = useState('model.usdz');
+  const { error, progress, result, startReconstruction, cancelReconstruction } =
+    usePhotogrammetrySession();
 
-  console.log('imageDirectoryContents', imageDirectoryContents);
-  console.log('checkpointDirectoryContents', checkpointDirectoryContents);
-  console.log('outputDirectoryContents', outputDirectoryContents);
-  console.log('result', result);
-  console.log('error', error);
-  console.log('progress', progress);
-
+  console.log('progress', progress, typeof progress);
   return (
     <View style={styles.container}>
-      {progress === 0 ? (
-        <Pressable style={styles.button} onPress={startReconstruction}>
-          <Text>Start Reconstruction</Text>
-        </Pressable>
+      <View style={styles.inputContainer}>
+        <Text style={styles.labelText}>Model Name</Text>
+        <TextInput
+          style={styles.input}
+          value={modelName}
+          onChangeText={setModelName}
+        />
+      </View>
+      {progress > 0 && progress < 1 ? (
+        <View style={styles.progressContainer}>
+          <Pressable style={styles.button} onPress={cancelReconstruction}>
+            <Text>Cancel Reconstruction</Text>
+          </Pressable>
+          <Text style={styles.progressText}>
+            Progress: {(progress * 100)?.toFixed(2)}%
+          </Text>
+        </View>
       ) : (
-        result === null &&
-        error === null && <ActivityIndicator size="large" color="blue" />
+        result !== 'completed' && (
+          <Pressable
+            style={styles.button}
+            onPress={() =>
+              startReconstruction({
+                imagesDirectory: 'Images/',
+                checkpointDirectory: 'Snapshots/',
+                outputPath: `Outputs/${modelName}`,
+              })
+            }
+          >
+            <Text>Start Reconstruction</Text>
+          </Pressable>
+        )
       )}
       {error && <Text style={styles.error}>Error: {error?.message}</Text>}
-      <Text style={styles.text}>Progress: {progress}</Text>
-      <Text style={styles.text}>Result: {result || 'No result'}</Text>
+      <Text style={styles.resultText}>Result: {result || 'No result yet'}</Text>
     </View>
   );
 };
@@ -52,7 +55,15 @@ const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
     alignItems: 'flex-start',
-    paddingHorizontal: 20,
+    marginTop: 20,
+    width: '100%',
+    gap: 20,
+  },
+  progressContainer: {
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
   },
   button: {
     backgroundColor: '#CD8987',
@@ -60,8 +71,27 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 5,
   },
-  text: {
-    color: 'blue',
+  inputContainer: {
+    width: '100%',
+    gap: 5,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: 'gray',
+    padding: 15,
+    borderRadius: 5,
+    width: '100%',
+  },
+  labelText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  progressText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  resultText: {
+    fontSize: 20,
   },
   error: {
     color: 'red',

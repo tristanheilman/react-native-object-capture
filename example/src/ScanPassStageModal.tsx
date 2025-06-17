@@ -86,7 +86,6 @@ export default function ScanPassStageModal({
         style={{
           height: height / 2,
           width: width,
-          backgroundColor: 'black',
         }}
         // onAppear={getSessionState}
         // onCloudPointViewAppear={getSessionState}

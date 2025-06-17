@@ -5,7 +5,7 @@ import ARKit
 // LoadingView is the view that is displayed when the session is loading.
 // It is responsible for displaying a progress view and a text label.
 struct LoadingView: View {
-    let sessionManager: ObjectCaptureSessionManager
+    let sessionManager: RNObjectCaptureSessionManager
 
     var body: some View {
         VStack {

@@ -101,6 +101,9 @@ export default function ObjectSessionScreen({
     <View style={styles.container}>
       <ObjectCaptureView
         ref={objectCaptureViewRef}
+        style={styles.container}
+        checkpointDirectory={'Snapshots/'}
+        imagesDirectory={'Images/'}
         onSessionStateChange={handleSessionStateChange}
         onFeedbackStateChange={handleFeedbackStateChange}
         onTrackingStateChange={handleTrackingStateChange}

@@ -5,6 +5,8 @@
 
 RCT_EXPORT_VIEW_PROPERTY(onAppear, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onCloudPointViewAppear, RCTDirectEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(checkpointDirectory, NSString)
+RCT_EXPORT_VIEW_PROPERTY(imagesDirectory, NSString)
 
 RCT_EXTERN_METHOD(getUserCompletedScanPass:(nonnull NSNumber *)node
                   resolver:(RCTPromiseResolveBlock)resolve

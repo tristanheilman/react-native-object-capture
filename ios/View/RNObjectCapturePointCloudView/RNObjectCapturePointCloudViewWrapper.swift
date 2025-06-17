@@ -5,13 +5,13 @@ import Metal
 import MetalKit
 
 struct RNObjectCapturePointCloudViewWrapper: View {
-    @ObservedObject var sessionManager: ObjectCaptureSessionManager
+    @ObservedObject var sessionManager: RNObjectCaptureSessionManager
 
     var body: some View {
         Group {
-            if let session = sessionManager.session, session.userCompletedScanPass {
+            if let session = sessionManager.session {
                 ZStack {
-                    CloudPointView(session: session, sessionManager: sessionManager)
+                    CloudPointView(session: session)
                         .onAppear {
                             handleCloudPointViewAppear()
                         }

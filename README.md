@@ -75,7 +75,7 @@ The main component for capturing 3D objects. It provides a camera interface with
 | `getUserCompletedScanState` | Returns boolean if the current scan pass is completed |
 | `getNumberOfScanPassUpdates` | Returns the number of scan pass' completed |
 
-### Example
+#### Example
 
 ```jsx
 import { useRef, useState } from 'react';
@@ -133,6 +133,7 @@ Displays a real-time point cloud visualization of the captured object. This comp
 | `ObjectCaptureEmptyComponent` | ComponentType | No | Component to render when no point cloud data is available |
 | `ObjectCaptureLoadingComponent` | ComponentType | No | Component to render while point cloud data is loading |
 
+#### Example
 
 ```jsx
 import { useRef } from 'react';
@@ -164,6 +165,43 @@ export default function CloudPointViewScreen() {
     />
   );
 }
+```
+
+### QuickLookView
+
+Displays a QLPreviewController for the selected model file passed as a prop.
+
+#### Props
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `path` | String | Yes | The path to the model file |
+| `style` | ViewStyle | Yes | Style object for the cloud point view container |
+
+#### Example
+
+```jsx
+import { StyleSheet, Text, View } from 'react-native';
+import { QuickLookView } from 'react-native-object-capture';
+
+type ModelOutputScreenProps = {
+  route: any;
+};
+
+export default function ModelOutputScreen({ route }: ModelOutputScreenProps) {
+  const { path } = route.params;
+
+  return (
+     <QuickLookView path={path} style={styles.quickLookView} />
+  );
+}
+
+const styles = StyleSheet.create({
+  quickLookView: {
+    width: '100%',
+    height: '100%',
+  },
+});
 ```
 
 ### PhotogrammetrySession

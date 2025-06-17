@@ -7,7 +7,7 @@ import MetalKit
 // RNObjectCaptureViewWrapper is the wrapper for the RNObjectCaptureView.
 // It is responsible for displaying the session view or the loading view.
 struct RNObjectCaptureViewWrapper: View {
-    @ObservedObject var sessionManager: ObjectCaptureSessionManager
+    @ObservedObject var sessionManager: RNObjectCaptureSessionManager
 
     var body: some View {
         ZStack {

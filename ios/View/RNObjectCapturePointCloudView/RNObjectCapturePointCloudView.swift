@@ -11,7 +11,7 @@ import MetalKit
 @objc(RNObjectCapturePointCloudView)
 class RNObjectCapturePointCloudView: RCTViewManager {
     // Session manager that is shared between "ObjectCapture" views
-    private var _sharedSessionManager: ObjectCaptureSessionManager
+    private var _sharedSessionManager: RNObjectCaptureSessionManager
     // Hosting controller for the point cloud view
     private var hostingController: UIHostingController<RNObjectCapturePointCloudViewWrapper>?
     // View manager for the point cloud view
@@ -22,7 +22,7 @@ class RNObjectCapturePointCloudView: RCTViewManager {
     private var _onCloudPointViewAppear: RCTDirectEventBlock?
 
     override init() {
-        _sharedSessionManager = ObjectCaptureSessionManager.shared
+        _sharedSessionManager = RNObjectCaptureSessionManager.shared
         super.init() // must be called before setting the view manager
         _sharedSessionManager.setPointCloudViewManager(self)
     }
@@ -79,6 +79,15 @@ class RNObjectCapturePointCloudView: RCTViewManager {
         _onCloudPointViewAppear = onCloudPointViewAppear
     }
 
+    @objc
+    func setCheckpointDirectory(_ checkpointDirectory: String) {
+        _sharedSessionManager.setCheckpointDirectory(checkpointDirectory)
+    }
+
+    @objc
+    func setImagesDirectory(_ imagesDirectory: String) {
+        _sharedSessionManager.setImagesDirectory(imagesDirectory)
+    }
 
     override static func requiresMainQueueSetup() -> Bool {
         return true
@@ -132,6 +141,20 @@ class RNObjectCapturePointCloudViewContainer: UIView {
     func setOnCloudPointViewAppear(_ onCloudPointViewAppear: @escaping RCTDirectEventBlock) {
         if let viewManager = self.findViewManager() {
             viewManager.setOnCloudPointViewAppear(onCloudPointViewAppear)
+        }
+    }
+
+    @objc
+    func setCheckpointDirectory(_ checkpointDirectory: String) {
+        if let viewManager = self.findViewManager() {
+            viewManager.setCheckpointDirectory(checkpointDirectory)
+        }
+    }
+    
+    @objc
+    func setImagesDirectory(_ imagesDirectory: String) {
+        if let viewManager = self.findViewManager() {
+            viewManager.setImagesDirectory(imagesDirectory)
         }
     }
 

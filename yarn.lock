@@ -10778,6 +10778,7 @@ __metadata:
     react-native: 0.79.2
     react-native-builder-bob: ^0.40.11
     react-native-monorepo-config: ^0.1.9
+    react-native-permissions: ^5.4.1
     react-native-safe-area-context: ^5.4.1
     react-native-screens: ^4.10.0
   languageName: unknown
@@ -10819,6 +10820,20 @@ __metadata:
     react-native: "*"
   languageName: unknown
   linkType: soft
+
+"react-native-permissions@npm:^5.4.1":
+  version: 5.4.1
+  resolution: "react-native-permissions@npm:5.4.1"
+  peerDependencies:
+    react: ">=18.1.0"
+    react-native: ">=0.70.0"
+    react-native-windows: ">=0.70.0"
+  peerDependenciesMeta:
+    react-native-windows:
+      optional: true
+  checksum: ef3951cd9ff50299fa427d3bf939f4f02183b246fe4bd79a519cfa62b575d3e82ab6f5f31066620208df03f0c0b1b49c28ce9bd995ef0419300436256a7a099d
+  languageName: node
+  linkType: hard
 
 "react-native-safe-area-context@npm:^5.4.1":
   version: 5.4.1

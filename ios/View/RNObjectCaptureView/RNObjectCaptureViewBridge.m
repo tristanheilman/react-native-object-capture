@@ -73,5 +73,7 @@ RCT_EXPORT_VIEW_PROPERTY(onFeedbackStateChange, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onTrackingStateChange, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onSessionStateChange, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onError, RCTDirectEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(checkpointDirectory, NSString)
+RCT_EXPORT_VIEW_PROPERTY(imagesDirectory, NSString)
 
 @end

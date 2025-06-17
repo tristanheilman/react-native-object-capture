@@ -11,7 +11,6 @@ import ARKit
 // It also handles the appearance and disappearance of the view.
 struct CloudPointView: View {
     let session: ObjectCaptureSession
-    let sessionManager: ObjectCaptureSessionManager
 
     var body: some View {
         ObjectCapturePointCloudView(session: session)

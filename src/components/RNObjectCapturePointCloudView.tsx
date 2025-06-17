@@ -16,7 +16,9 @@ import {
 } from '../NativeObjectCapture';
 
 export interface ObjectCapturePointCloudViewProps {
-  containerStyle?: ViewStyle;
+  style?: ViewStyle;
+  checkpointDirectory: string;
+  imagesDirectory: string;
   onAppear?: (event: NativeSyntheticEvent<OnAppearEvent>) => void;
   onCloudPointViewAppear?: (
     event: NativeSyntheticEvent<OnCloudPointViewAppearEvent>
@@ -65,7 +67,9 @@ const ObjectCapturePointCloudView = forwardRef<
 >(
   (
     {
-      containerStyle,
+      style,
+      checkpointDirectory,
+      imagesDirectory,
       onAppear,
       onCloudPointViewAppear,
       ObjectCaptureEmptyComponent,
@@ -150,9 +154,12 @@ const ObjectCapturePointCloudView = forwardRef<
     }
 
     return (
-      <View style={containerStyle}>
+      <View style={style}>
         <RNObjectCapturePointCloudView
           ref={viewRef}
+          style={style}
+          checkpointDirectory={checkpointDirectory}
+          imagesDirectory={imagesDirectory}
           onAppear={checkScanPass}
           onCloudPointViewAppear={_onCloudPointViewAppear}
         />

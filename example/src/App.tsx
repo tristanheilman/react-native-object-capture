@@ -5,6 +5,8 @@ import ObjectSessionScreen from './ObjectSessionScreen';
 import ScanPassStageModal from './ScanPassStageModal';
 import ObjectSessionHelpModal from './ObjectSessionHelpModal';
 import PhotogrammetrySessionScreen from './PhotogrammetrySessionScreen';
+import ModelOutputListScreen from './ModelOutputListScreen';
+import ModelOutputScreen from './ModelOutputScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -47,6 +49,11 @@ export default function App() {
             gestureEnabled: false,
           }}
         />
+        <Stack.Screen
+          name="ModelOutputListScreen"
+          component={ModelOutputListScreen}
+        />
+        <Stack.Screen name="ModelOutputScreen" component={ModelOutputScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

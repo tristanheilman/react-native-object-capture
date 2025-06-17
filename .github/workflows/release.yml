@@ -23,6 +23,14 @@ jobs:
           git config --global user.name 'GitHub Actions'
           git config --global user.email 'github-actions@github.com'
 
+      - name: Create .npmrc file
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+          echo "registry=https://registry.npmjs.org/" >> .npmrc
+          echo "always-auth=true" >> .npmrc
+
       - name: Create Release Pull Request or Publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

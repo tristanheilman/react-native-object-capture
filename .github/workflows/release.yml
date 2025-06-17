@@ -35,4 +35,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          RELEASE_IT_NPM_PUBLISH: true
+          RELEASE_IT_NONINTERACTIVE: true
         run: yarn release

@@ -20,7 +20,7 @@ AR object capture session for React Native using Apple's Object Capture API. Thi
 - React Native 0.76.0 or later
 
 ## Installation
-1. Install library
+1. Install library (latest: **0.2.1**)
 
     from npm
     ```

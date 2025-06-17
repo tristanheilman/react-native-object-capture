@@ -12,9 +12,9 @@ describe('PhotogrammetrySession', () => {
   describe('startReconstruction', () => {
     it('should call native module with correct parameters', async () => {
       const mockOptions = {
-        inputPath: '/path/to/input',
-        checkpointPath: '/path/to/checkpoints',
-        outputPath: '/path/to/output.usdz',
+        imagesDirectory: '/path/to/input',
+        checkpointDirectory: '/path/to/checkpoints',
+        outputPath: 'Outputs/model.usdz',
       };
 
       // Mock successful response
@@ -27,17 +27,17 @@ describe('PhotogrammetrySession', () => {
       expect(
         NativeModules.RNPhotogrammetrySession.startReconstruction
       ).toHaveBeenCalledWith(
-        mockOptions.inputPath,
-        mockOptions.checkpointPath,
+        mockOptions.imagesDirectory,
+        mockOptions.checkpointDirectory,
         mockOptions.outputPath
       );
     });
 
     it('should handle native module errors', async () => {
       const mockOptions = {
-        inputPath: '/path/to/input',
-        checkpointPath: '/path/to/checkpoints',
-        outputPath: '/path/to/output.usdz',
+        imagesDirectory: '/path/to/input',
+        checkpointDirectory: '/path/to/checkpoints',
+        outputPath: 'Outputs/model.usdz',
       };
 
       // Mock error response

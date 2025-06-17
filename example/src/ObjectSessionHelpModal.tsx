@@ -37,6 +37,8 @@ export default function ObjectSessionHelpModal({
 
       <ObjectCapturePointCloudView
         ref={pointCloudViewRef}
+        imagesDirectory="Images/"
+        checkpointDirectory="Snapshots/"
         // onAppear={getSessionState}
         // onCloudPointViewAppear={getSessionState}
         ObjectCaptureEmptyComponent={EmptyObjectCapture}

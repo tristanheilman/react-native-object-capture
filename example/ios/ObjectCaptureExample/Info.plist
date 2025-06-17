@@ -32,10 +32,10 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
-  <key>NSCameraUsageDescription</key>
-  <string>This app needs camera access to capture 3D models of objects</string>
-  <key>NSPhotoLibraryUsageDescription</key>
-  <string>This app needs photo library access to save captured 3D models</string>
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs camera access to capture 3D models of objects</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs photo library access to save captured 3D models</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>This app may use your location while in foreground</string>
 	<key>UILaunchStoryboardName</key>

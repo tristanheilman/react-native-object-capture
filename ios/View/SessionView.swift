@@ -11,7 +11,7 @@ import ARKit
 // It also handles the appearance and disappearance of the view.
 struct SessionView: View {
     let session: ObjectCaptureSession
-    let sessionManager: ObjectCaptureSessionManager
+    let sessionManager: RNObjectCaptureSessionManager
 
     var body: some View {
         ObjectCaptureView(session: session)

@@ -2,6 +2,7 @@ import { useEffect, useImperativeHandle, forwardRef, useRef } from 'react';
 import {
   requireNativeComponent,
   type NativeSyntheticEvent,
+  type ViewStyle,
   Platform,
   findNodeHandle,
   NativeModules,
@@ -19,6 +20,9 @@ import {
 } from '../NativeObjectCapture';
 
 export interface ObjectCaptureViewProps {
+  style?: ViewStyle;
+  checkpointDirectory: string;
+  imagesDirectory: string;
   onSessionStateChange?: (
     event: NativeSyntheticEvent<SessionStateChange>
   ) => void;
@@ -95,6 +99,9 @@ const ObjectCaptureView = forwardRef<
 >(
   (
     {
+      style,
+      checkpointDirectory,
+      imagesDirectory,
       onSessionStateChange,
       onTrackingStateChange,
       onFeedbackStateChange,
@@ -104,7 +111,6 @@ const ObjectCaptureView = forwardRef<
     },
     ref
   ) => {
-    //useObjectCapture();
     const viewRef = useRef(null);
     const nativeModule = useRef<RNObjectCaptureViewModule | null>(null);
 
@@ -324,6 +330,9 @@ const ObjectCaptureView = forwardRef<
     return (
       <RNObjectCaptureView
         ref={viewRef}
+        style={style}
+        checkpointDirectory={checkpointDirectory}
+        imagesDirectory={imagesDirectory}
         onCaptureComplete={_onCaptureComplete}
         onFeedbackStateChange={_onFeedbackStateChange}
         onTrackingStateChange={_onTrackingStateChange}

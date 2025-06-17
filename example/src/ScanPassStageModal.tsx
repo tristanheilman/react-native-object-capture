@@ -51,9 +51,13 @@ export default function ScanPassStageModal({
   };
 
   const handleFinish = () => {
-    objectCaptureViewRef.current?.finishSession();
-    navigation.popToTop();
-    navigation.navigate('PhotogrammetrySessionScreen');
+    try {
+      objectCaptureViewRef.current?.finishSession();
+      navigation.popToTop();
+      navigation.navigate('PhotogrammetrySessionScreen');
+    } catch (err) {
+      console.error('Failed to finish session:', err);
+    }
   };
 
   const handleCancel = () => {
@@ -76,8 +80,14 @@ export default function ScanPassStageModal({
 
       <ObjectCapturePointCloudView
         ref={pointCloudViewRef}
+        checkpointDirectory={'Snapshots/'}
+        imagesDirectory={'Images/'}
         // height and width must be set for the cloud point view to render
-        containerStyle={{ height: height / 2, width: width }}
+        style={{
+          height: height / 2,
+          width: width,
+          backgroundColor: 'black',
+        }}
         // onAppear={getSessionState}
         // onCloudPointViewAppear={getSessionState}
         ObjectCaptureEmptyComponent={EmptyObjectCapture}

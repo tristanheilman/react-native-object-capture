@@ -7,8 +7,8 @@ import ARKit
 import SwiftUI
 
 
-class ObjectCaptureSessionManager: NSObject, ObservableObject {
-    static let shared = ObjectCaptureSessionManager()
+class RNObjectCaptureSessionManager: NSObject, ObservableObject {
+    static let shared = RNObjectCaptureSessionManager()
 
     // ObjectCaptureSession is the main session for the object capture session.
     @Published var session: ObjectCaptureSession?
@@ -24,6 +24,10 @@ class ObjectCaptureSessionManager: NSObject, ObservableObject {
     private weak var pointCloudViewManager: RNObjectCapturePointCloudView?
     // Number of scan pass' completed
     private var numberOfScanPassCompleted: Int = 0
+    // Checkpoint directory file path
+    private var checkpointDirectory: String = "Snapshots/"
+    // Images directory file path
+    private var imagesDirectory: String = "Images/"
 
     private override init() {
         super.init()
@@ -45,6 +49,14 @@ class ObjectCaptureSessionManager: NSObject, ObservableObject {
             emitter.sendEvent(withName: name, body: body)
         }
         eventBuffer.removeAll()
+    }
+
+    func setCheckpointDirectory(_ directory: String) {
+        self.checkpointDirectory = directory
+    }
+
+    func setImagesDirectory(_ directory: String) {
+        self.imagesDirectory = directory
     }
 
     func sendEvent(name: String, body: [String: Any]) {
@@ -194,12 +206,12 @@ class ObjectCaptureSessionManager: NSObject, ObservableObject {
     @MainActor
     private func finishSetup(completion: @escaping (Bool, String?) -> Void) {
         // Create new configuration
-        let checkpointDirectory = getDocumentsDirectory().appendingPathComponent("Snapshots/")
+        let appendedCheckpointDir = self.getCheckpointDirectory()
         
         // Create checkpoint directory if it doesn't exist
-        if !FileManager.default.fileExists(atPath: checkpointDirectory.path) {
+        if !FileManager.default.fileExists(atPath: appendedCheckpointDir.path) {
             do {
-                try FileManager.default.createDirectory(at: checkpointDirectory, withIntermediateDirectories: true)
+                try FileManager.default.createDirectory(at: appendedCheckpointDir, withIntermediateDirectories: true)
             } catch {
                 print("Failed to create checkpoint directory: \(error)")
                 completion(false, "Failed to create checkpoint directory")
@@ -208,10 +220,8 @@ class ObjectCaptureSessionManager: NSObject, ObservableObject {
         } else {
             // Clear existing checkpoint directory
             do {
-                let contents = try FileManager.default.contentsOfDirectory(at: checkpointDirectory, includingPropertiesForKeys: nil)
-                for file in contents {
-                    try FileManager.default.removeItem(at: file)
-                }
+                try? FileManager.default.removeItem(at: appendedCheckpointDir)
+                try? FileManager.default.createDirectory(at: appendedCheckpointDir, withIntermediateDirectories: true)
             } catch {
                 print("Failed to clear checkpoint directory: \(error)")
                 completion(false, "Failed to clear checkpoint directory")
@@ -220,15 +230,15 @@ class ObjectCaptureSessionManager: NSObject, ObservableObject {
         }
         
         var config = ObjectCaptureSession.Configuration()
-        config.checkpointDirectory = checkpointDirectory
+        config.checkpointDirectory = self.getCheckpointDirectory()
 
         // Create directories if they don't exist
-        let imagesDirectory = getDocumentsDirectory().appendingPathComponent("Images/")
+        let appendedImagesDirectory = self.getImagesDirectory()
         
         // Create directory if it doesn't exist
-        if !FileManager.default.fileExists(atPath: imagesDirectory.path) {
+        if !FileManager.default.fileExists(atPath: appendedImagesDirectory.path) {
             do {
-                try FileManager.default.createDirectory(at: imagesDirectory, withIntermediateDirectories: true)
+                try FileManager.default.createDirectory(at: appendedImagesDirectory, withIntermediateDirectories: true)
             } catch {
                 print("Failed to create images directory: \(error)")
                 completion(false, "Failed to create images directory")
@@ -237,10 +247,8 @@ class ObjectCaptureSessionManager: NSObject, ObservableObject {
         } else {
             // Clear existing directory
             do {
-                let contents = try FileManager.default.contentsOfDirectory(at: imagesDirectory, includingPropertiesForKeys: nil)
-                for file in contents {
-                    try FileManager.default.removeItem(at: file)
-                }
+                try? FileManager.default.removeItem(at: appendedImagesDirectory)
+                try? FileManager.default.createDirectory(at: appendedImagesDirectory, withIntermediateDirectories: true)
             } catch {
                 print("Failed to clear images directory: \(error)")
                 completion(false, "Failed to clear images directory")
@@ -252,7 +260,7 @@ class ObjectCaptureSessionManager: NSObject, ObservableObject {
         let newSession = ObjectCaptureSession()
         
         // Start the session
-        newSession.start(imagesDirectory: imagesDirectory, configuration: config)
+        newSession.start(imagesDirectory: self.getImagesDirectory(), configuration: config)
         self.session = newSession
         self.configuration = config
         
@@ -296,7 +304,7 @@ class ObjectCaptureSessionManager: NSObject, ObservableObject {
 
     @MainActor
     func startDetection() async {
-        print("Starting detection [ObjectCaptureSessionManager]") // Debug log
+        print("Starting detection [RNObjectCaptureSessionManager]") // Debug log
         if let existingSession = session {
             existingSession.startDetecting()
         }
@@ -339,7 +347,44 @@ class ObjectCaptureSessionManager: NSObject, ObservableObject {
         print("Finishing session") // Debug log
         if let existingSession = session {
             existingSession.finish()
+
+            // Add a small delay to allow files to be written
+            try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+            
+            // Verify the files
+            let filesValid = verifyImageFiles()
+            if !filesValid {
+                print("Warning: Some image files are empty or invalid")
+                eventEmitter?.sendEvent(withName: "onError", body: [
+                    "error": "Some image files were not properly written"
+                ])
+            }
+            
             session = nil
+        }
+    }
+
+    @MainActor
+    private func verifyImageFiles() -> Bool {
+        let fileManager = FileManager.default
+        let imagesDir = getImagesDirectory()
+        
+        do {
+            let contents = try fileManager.contentsOfDirectory(at: imagesDir, includingPropertiesForKeys: [.fileSizeKey])
+            for url in contents {
+                let attributes = try fileManager.attributesOfItem(atPath: url.path)
+                let fileSize = attributes[.size] as? UInt64 ?? 0
+                print("File: \(url.lastPathComponent), Size: \(fileSize) bytes")
+                
+                if fileSize == 0 {
+                    print("Warning: Empty file detected: \(url.lastPathComponent)")
+                    return false
+                }
+            }
+            return true
+        } catch {
+            print("Error verifying image files: \(error)")
+            return false
         }
     }
 
@@ -376,6 +421,16 @@ class ObjectCaptureSessionManager: NSObject, ObservableObject {
     @MainActor
     func isDeviceSupported() -> Bool {
         return ObjectCaptureSession.isSupported
+    }
+
+    private func getCheckpointDirectory() -> URL {
+        print("Getting checkpoint directory", self.checkpointDirectory) // Debug log
+      return getDocumentsDirectory().appendingPathComponent(self.checkpointDirectory)
+    }
+
+    private func getImagesDirectory() -> URL {
+        print("Getting images directory", self.imagesDirectory) // Debug log
+      return getDocumentsDirectory().appendingPathComponent(self.imagesDirectory)
     }
 
     private func getDocumentsDirectory() -> URL {

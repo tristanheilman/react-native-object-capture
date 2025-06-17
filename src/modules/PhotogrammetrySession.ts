@@ -47,19 +47,30 @@ export interface PhotogrammetryEvents {
 }
 
 export type PhotogrammetrySessionOptions = {
-  inputPath: string;
-  checkpointPath: string;
+  imagesDirectory: string;
+  checkpointDirectory: string;
   outputPath: string;
 };
 
 // Define the interface for the native module
 interface RNPhotogrammetrySessionInterface extends NativeModule {
   startReconstruction(
-    inputPath: string,
-    checkpointPath: string,
+    imagesDirectory: string,
+    checkpointDirectory: string,
     outputPath: string
   ): Promise<boolean>;
   cancelReconstruction(): Promise<boolean>;
+  listDirectoryContents(directory: string): Promise<{
+    path: string;
+    exists: boolean;
+    files: {
+      name: string;
+      path: string;
+      size: number;
+      creationDate: number;
+      isDirectory: boolean;
+    }[];
+  }>;
 }
 
 // Export the native module with proper typing
@@ -80,19 +91,23 @@ class PhotogrammetrySession {
   }
 
   async startReconstruction({
-    inputPath,
-    checkpointPath,
+    imagesDirectory,
+    checkpointDirectory,
     outputPath,
   }: PhotogrammetrySessionOptions) {
     return RNPhotogrammetrySession.startReconstruction(
-      inputPath,
-      checkpointPath,
+      imagesDirectory,
+      checkpointDirectory,
       outputPath
     );
   }
 
   async cancelReconstruction() {
     return RNPhotogrammetrySession.cancelReconstruction();
+  }
+
+  async listDirectoryContents(directory: string) {
+    return RNPhotogrammetrySession.listDirectoryContents(directory);
   }
 
   addProgressListener(callback: (progress: number) => void) {

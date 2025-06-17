@@ -9,7 +9,7 @@ import ARKit
 @objc(RNObjectCaptureView)
 class RNObjectCaptureView: RCTViewManager {
     // Session manager that is shared between "ObjectCapture" views
-    private var _sharedSessionManager: ObjectCaptureSessionManager
+    private var _sharedSessionManager: RNObjectCaptureSessionManager
     // Callback for when the capture is complete
     private var _onCaptureComplete: RCTDirectEventBlock?
     // Callback for when the feedback state changes
@@ -24,7 +24,7 @@ class RNObjectCaptureView: RCTViewManager {
     private var _onScanPassCompleted: RCTDirectEventBlock?
 
     override init() {
-        _sharedSessionManager = ObjectCaptureSessionManager.shared
+        _sharedSessionManager = RNObjectCaptureSessionManager.shared
         super.init()
         _sharedSessionManager.setViewManager(self)
     }
@@ -109,6 +109,19 @@ class RNObjectCaptureView: RCTViewManager {
     func setOnError(_ onError: @escaping RCTDirectEventBlock) {
         _onError = onError
     }
+
+    // Setter method for the checkpoint directory
+    @objc
+    func setCheckpointDirectory(_ checkpointDirectory: String) {
+        _sharedSessionManager.setCheckpointDirectory(checkpointDirectory)
+    }
+
+    // Setter method for the images directory
+    @objc
+    func setImagesDirectory(_ imagesDirectory: String) {
+        _sharedSessionManager.setImagesDirectory(imagesDirectory)
+    }
+    
 
     // Will resume the object capture session
     @objc
@@ -418,6 +431,20 @@ class RNObjectCaptureViewContainer: UIView {
     func setOnScanPassCompleted(_ onScanPassCompleted: @escaping RCTDirectEventBlock) {
         if let viewManager = self.findViewManager() {
             viewManager.setOnScanPassCompleted(onScanPassCompleted)
+        }
+    }
+
+    @objc
+    func setCheckpointDirectory(_ checkpointDirectory: String) {
+        if let viewManager = self.findViewManager() {
+            viewManager.setCheckpointDirectory(checkpointDirectory)
+        }
+    }
+
+    @objc
+    func setImagesDirectory(_ imagesDirectory: String) {
+        if let viewManager = self.findViewManager() {
+            viewManager.setImagesDirectory(imagesDirectory)
         }
     }
 

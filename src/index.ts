@@ -12,20 +12,23 @@ import ObjectCapture, {
 } from './NativeObjectCapture';
 import ObjectCaptureView from './components/RNObjectCaptureView';
 import ObjectCapturePointCloudView from './components/RNObjectCapturePointCloudView';
+import QuickLookView from './components/RNQuickLookView';
 import PhotogrammetrySession, {
   type PhotogrammetryProgress,
   type PhotogrammetryError,
   type PhotogrammetryEvents,
   type PhotogrammetrySessionState,
   type PhotogrammetrySessionOptions,
+  type PhotogrammetryDirectoryContents,
 } from './modules/PhotogrammetrySession';
 
 // Export the view component
-export { ObjectCaptureView, ObjectCapturePointCloudView };
+export { ObjectCaptureView, ObjectCapturePointCloudView, QuickLookView };
 
 // Export types
 export type { ObjectCaptureViewProps } from './components/RNObjectCaptureView';
 export type { ObjectCapturePointCloudViewProps } from './components/RNObjectCapturePointCloudView';
+export type { QuickLookViewProps } from './components/RNQuickLookView';
 export type {
   SessionState,
   TrackingState,
@@ -47,6 +50,7 @@ export type {
   PhotogrammetryEvents,
   PhotogrammetrySessionState,
   PhotogrammetrySessionOptions,
+  PhotogrammetryDirectoryContents,
 };
 
 // Export hooks and utilities

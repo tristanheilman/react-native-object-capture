@@ -50,6 +50,15 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
         <Text>Open PhotogrammetrySessionScreen</Text>
       </Pressable>
 
+      <Pressable
+        style={styles.button}
+        onPress={() => {
+          navigation.navigate('ModelOutputListScreen');
+        }}
+      >
+        <Text>View Model Outputs</Text>
+      </Pressable>
+
       <View style={styles.permissionsContainer} />
       <Text>Permissions</Text>
       <Pressable

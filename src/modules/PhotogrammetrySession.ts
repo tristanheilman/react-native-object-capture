@@ -22,6 +22,18 @@ export type PhotogrammetrySkippedSample = {
   id: string;
 };
 
+export type PhotogrammetryDirectoryContents = {
+  path: string;
+  exists: boolean;
+  files: {
+    name: string;
+    path: string;
+    size: number;
+    creationDate: number;
+    isDirectory: boolean;
+  }[];
+};
+
 export type PhotogrammetrySessionState = {
   state: string;
   progress: number;
@@ -60,17 +72,9 @@ interface RNPhotogrammetrySessionInterface extends NativeModule {
     outputPath: string
   ): Promise<boolean>;
   cancelReconstruction(): Promise<boolean>;
-  listDirectoryContents(directory: string): Promise<{
-    path: string;
-    exists: boolean;
-    files: {
-      name: string;
-      path: string;
-      size: number;
-      creationDate: number;
-      isDirectory: boolean;
-    }[];
-  }>;
+  listDirectoryContents(
+    directory: string
+  ): Promise<PhotogrammetryDirectoryContents>;
 }
 
 // Export the native module with proper typing

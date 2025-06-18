@@ -6,6 +6,7 @@ import {
 } from 'react-native';
 
 export interface QuickLookViewProps {
+  testID?: string;
   style?: ViewStyle;
   path: string;
 }
@@ -23,15 +24,19 @@ const RNQuickLookView = Platform.select({
   default: () => null,
 })();
 
-const QuickLookView = ({ style, path }: QuickLookViewProps) => {
-  if (!RNQuickLookView) {
+const QuickLookView = ({
+  style,
+  testID = 'RNQuickLookView',
+  path,
+}: QuickLookViewProps) => {
+  if (!RNQuickLookView || Platform.OS !== 'ios') {
     console.warn('RNQuickLookView is not available');
     return null;
   }
 
   return (
     <View style={style}>
-      <RNQuickLookView style={style} path={path} />
+      <RNQuickLookView testID={testID} style={style} path={path} />
     </View>
   );
 };

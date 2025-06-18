@@ -3,6 +3,8 @@
 jest.mock('react-native', () => {
   const RN = jest.requireActual('react-native'); // use original implementation, which comes with mocks out of the box
 
+  RN.Platform.OS = 'ios';
+
   // mock modules/components created by assigning to NativeModules
   RN.NativeModules.RNObjectCaptureView = {
     resumeSession: jest.fn(),
@@ -17,14 +19,21 @@ jest.mock('react-native', () => {
     getTrackingState: jest.fn(),
     getFeedbackState: jest.fn(),
     getNumberOfShotsTaken: jest.fn(),
+    getNumberOfScanPassUpdates: jest.fn(),
     getUserCompletedScanState: jest.fn(),
     isDeviceSupported: jest.fn(),
     getSessionState: jest.fn(),
   };
 
+  RN.NativeModules.RNObjectCapturePointCloudView = {
+    getSessionState: jest.fn(),
+    getUserCompletedScanPass: jest.fn(),
+  };
+
   RN.NativeModules.RNPhotogrammetrySession = {
     startReconstruction: jest.fn(),
     cancelReconstruction: jest.fn(),
+    listDirectoryContents: jest.fn(),
     addErrorListener: jest.fn(),
     addRequestCompleteListener: jest.fn(),
     addInputCompleteListener: jest.fn(),

@@ -16,6 +16,7 @@ import {
 } from '../NativeObjectCapture';
 
 export interface ObjectCapturePointCloudViewProps {
+  testID?: string;
   style?: ViewStyle;
   checkpointDirectory: string;
   imagesDirectory: string;
@@ -68,12 +69,13 @@ const ObjectCapturePointCloudView = forwardRef<
   (
     {
       style,
+      testID = 'RNObjectCapturePointCloudView',
       checkpointDirectory,
       imagesDirectory,
-      onAppear,
-      onCloudPointViewAppear,
       ObjectCaptureEmptyComponent,
       ObjectCaptureLoadingComponent,
+      onAppear,
+      onCloudPointViewAppear,
     },
     ref
   ) => {
@@ -156,6 +158,7 @@ const ObjectCapturePointCloudView = forwardRef<
     return (
       <View style={style}>
         <RNObjectCapturePointCloudView
+          testID={testID}
           ref={viewRef}
           style={style}
           checkpointDirectory={checkpointDirectory}
@@ -169,7 +172,7 @@ const ObjectCapturePointCloudView = forwardRef<
           ) : (
             ObjectCaptureLoadingComponent
           )
-        ) : !isScanPassCompleted && ObjectCaptureEmptyComponent ? (
+        ) : !loading && !isScanPassCompleted && ObjectCaptureEmptyComponent ? (
           typeof ObjectCaptureEmptyComponent === 'function' ? (
             <ObjectCaptureEmptyComponent />
           ) : (

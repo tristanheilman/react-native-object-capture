@@ -65,7 +65,6 @@ export default function ScanPassStageModal({
   };
 
   useEffect(() => {
-    console.log('objectCaptureViewRef.current', objectCaptureViewRef.current);
     objectCaptureViewRef.current?.pauseSession();
     objectCaptureViewRef.current?.getNumberOfScanPassUpdates().then((count) => {
       console.log('count', count);

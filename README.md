@@ -20,7 +20,7 @@ AR object capture session for React Native using Apple's Object Capture API. Thi
 - React Native 0.76.0 or later
 
 ## Installation
-1. Install library (latest: **0.2.1**)
+1. Install library
 
     from npm
     ```
@@ -48,6 +48,9 @@ The main component for capturing 3D objects. It provides a camera interface with
 | Prop | Type | Required | Description |
 |------|------|----------|-------------|
 | `ref` | RefObject<ObjectCapturePointCloudViewRef> | No | Ref object to access view methods |
+| `style` | ViewStyle | Yes | Style object for the cloud point view container |
+| `checkpointDirectory` | String | Yes | Directory to use for the object capture session |
+| `imagesDirectory` | String | Yes | Directory to use to save image captures during object capture session |
 | `onCaptureComplete` | (evt: `NativeSyntheticEvent<CaptureComplete>`) => void | No | Callback fired when object capture is complete |
 | `onScanPassCompleted` | (evt: `NativeSyntheticEvent<ScanPassCompleted>`) => void | No | Callback fired when a scan pass is completed. It is recommended to complete 3 scan pass' before finishing the object capture session |
 | `onSessionStateChange` | (evt: `NativeSyntheticEvent<SessionStateChange>`) => void | No | Callback fired when the capture session state changes |
@@ -78,28 +81,97 @@ The main component for capturing 3D objects. It provides a camera interface with
 #### Example
 
 ```jsx
-import { useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  type NativeSyntheticEvent,
+} from 'react-native';
 import {
   ObjectCaptureView,
   type SessionState,
-  type ObjectCaptureViewRef,
+  type FeedbackState,
+  type TrackingState,
+  type SessionStateChange,
+  type FeedbackStateChange,
+  type TrackingStateChange,
+  type SessionError,
+  type CaptureComplete,
+  type ScanPassCompleted,
 } from 'react-native-object-capture';
+import { objectCaptureViewRef } from './utils';
 
-export default function ObjectSessionScreen() {
-  const objectCaptureViewRef = useRef<ObjectCaptureViewRef>(null);
-  const [sessionState, setSessionState] = useState<SessionState>('initializing');
+type ObjectSessionScreenProps = {
+  navigation: any;
+};
 
-  const handleSessionStateChange = (state: SessionState) => {
-    setSessionState(state);
+export default function ObjectSessionScreen({
+  navigation,
+}: ObjectSessionScreenProps) {
+  const [sessionState, setSessionState] =
+    useState<SessionState>('initializing');
+  const [trackingState, setTrackingState] =
+    useState<TrackingState>('notAvailable');
+  const [feedbackState, setFeedbackState] = useState<FeedbackState[]>([]);
+  const [numberOfScanPassCompleted, setNumberOfScanPassCompleted] = useState(0);
+
+  const handleSessionStateChange = (
+    event: NativeSyntheticEvent<SessionStateChange>
+  ) => {
+    console.log('Session state changed to:', event.nativeEvent);
+    setSessionState(event.nativeEvent.state);
   };
 
-  const handleCaptureComplete = (result: { url: string }) => {
-    console.log('Capture completed:', result.url);
+  const handleFeedbackStateChange = (
+    event: NativeSyntheticEvent<FeedbackStateChange>
+  ) => {
+    console.log('Feedback state changed to:', event.nativeEvent);
+    setFeedbackState(event.nativeEvent.feedback);
   };
 
-  const handleError = (error: { message: string }) => {
-    console.error('Error:', error.message);
+  const handleTrackingStateChange = (
+    event: NativeSyntheticEvent<TrackingStateChange>
+  ) => {
+    console.log('Tracking state changed to:', event.nativeEvent);
+    setTrackingState(event.nativeEvent.tracking);
+  };
+
+  const handleCaptureComplete = (
+    event: NativeSyntheticEvent<CaptureComplete>
+  ) => {
+    console.log('Capture completed:', event.nativeEvent);
+  };
+
+  const handleScanPassCompleted = (
+    event: NativeSyntheticEvent<ScanPassCompleted>
+  ) => {
+    console.log('Scan pass completed:', event.nativeEvent);
+    setNumberOfScanPassCompleted(numberOfScanPassCompleted + 1);
+    objectCaptureViewRef.current?.pauseSession();
+    navigation.navigate('ScanPassStageModal');
+  };
+
+  const handleError = (event: NativeSyntheticEvent<SessionError>) => {
+    console.error('Error:', event.nativeEvent.error);
+  };
+
+  const handleStartDetection = async () => {
+    await objectCaptureViewRef.current?.startDetection();
+  };
+
+  const handleResetDetection = async () => {
+    await objectCaptureViewRef.current?.resetDetection();
+  };
+
+  const handleStartCapturing = async () => {
+    await objectCaptureViewRef.current?.startCapturing();
+  };
+
+  const handleCancelSession = async () => {
+    await objectCaptureViewRef.current?.cancelSession();
+    navigation.goBack();
   };
 
   return (
@@ -107,7 +179,12 @@ export default function ObjectSessionScreen() {
       <ObjectCaptureView
         ref={objectCaptureViewRef}
         style={styles.container}
+        checkpointDirectory={'Snapshots/'}
+        imagesDirectory={'Images/'}
         onSessionStateChange={handleSessionStateChange}
+        onFeedbackStateChange={handleFeedbackStateChange}
+        onTrackingStateChange={handleTrackingStateChange}
+        onScanPassCompleted={handleScanPassCompleted}
         onCaptureComplete={handleCaptureComplete}
         onError={handleError}
       />
@@ -118,7 +195,7 @@ export default function ObjectSessionScreen() {
 }
 ```
 
-### CloudPointView
+### ObjectCapturePointCloudView
 
 Displays a real-time point cloud visualization of the captured object. This component is useful for providing visual feedback during the capture process.
 
@@ -127,7 +204,9 @@ Displays a real-time point cloud visualization of the captured object. This comp
 | Name | Type | Required | Description |
 |------|------|----------|-------------|
 | `ref` | RefObject<ObjectCapturePointCloudViewRef> | No | Ref object to access view methods |
-| `containerStyle` | ViewStyle | No | Style object for the cloud point view container |
+| `style` | ViewStyle | Yes | Style object for the cloud point view container |
+| `checkpointDirectory` | String | Yes | Directory that was used for the object capture session |
+| `imagesDirectory` | String | Yes | Directory that was used to save image captures during object capture session |
 | `onAppear` | () => void | No | Callback fired when the view appears |
 | `onCloudPointViewAppear` | () => void | No | Callback fired when the cloud point visualization appears |
 | `ObjectCaptureEmptyComponent` | ComponentType | No | Component to render when no point cloud data is available |
@@ -136,35 +215,105 @@ Displays a real-time point cloud visualization of the captured object. This comp
 #### Example
 
 ```jsx
-import { useRef } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import {
+  Alert,
+  Pressable,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import {
   ObjectCapturePointCloudView,
   type ObjectCapturePointCloudViewRef,
 } from 'react-native-object-capture';
+import { objectCaptureViewRef } from './utils';
+import EmptyObjectCapture from './components/EmptyObjectCapture';
+import LoadingObjectCapture from './components/LoadingObjectCapture';
 
-export default function CloudPointViewScreen() {
+type ScanPassStageModalProps = {
+  navigation: any;
+};
+
+export default function ScanPassStageModal({
+  navigation,
+}: ScanPassStageModalProps) {
   const pointCloudViewRef = useRef<ObjectCapturePointCloudViewRef>(null);
+  const { width, height } = useWindowDimensions();
+  const [numberOfScanPassUpdates, setNumberOfScanPassUpdates] = useState(-1);
 
-  const handleAppear = () => {
-    // Handle view appear event
+  const handleContinue = () => {
+    // Call beginNewScanAfterFlip or beginNewScan
+    // objectCaptureViewRef.current?.beginNewScanAfterFlip();
+    // objectCaptureViewRef.current?.resumeSession();
+    // navigation.goBack();
+
+    objectCaptureViewRef.current?.beginNewScan();
+    objectCaptureViewRef.current?.resumeSession();
+    navigation.goBack();
   };
 
-  const handleCloudPointViewAppear = () => {
-    // Handle cloud point view appear event
+  const handleFinish = () => {
+    try {
+      objectCaptureViewRef.current?.finishSession();
+      navigation.popToTop();
+      navigation.navigate('PhotogrammetrySessionScreen');
+    } catch (err) {
+      console.error('Failed to finish session:', err);
+    }
   };
+
+  const handleCancel = () => {
+    navigation.goBack();
+  };
+
+  useEffect(() => {
+    objectCaptureViewRef.current?.pauseSession();
+    objectCaptureViewRef.current?.getNumberOfScanPassUpdates().then((count) => {
+      setNumberOfScanPassUpdates(count);
+    });
+  }, []);
 
   return (
-    <ObjectCapturePointCloudView
-      ref={pointCloudViewRef}
-      style={styles.container}
-      onAppear={handleAppear}
-      onCloudPointViewAppear={handleCloudPointViewAppear}
-      ObjectCaptureEmptyComponent={EmptyComponent}
-      ObjectCaptureLoadingComponent={LoadingComponent}
-    />
+    <View style={styles.container}>
+      <Text>ScanPassStageModal</Text>
+      <Text>Segments Completed: {numberOfScanPassUpdates}</Text>
+
+      <ObjectCapturePointCloudView
+        ref={pointCloudViewRef}
+        checkpointDirectory={'Snapshots/'}
+        imagesDirectory={'Images/'}
+        // height and width must be set for 
+        // the cloud point view to render
+        style={{
+          height: height / 2,
+          width: width,
+        }}
+        ObjectCaptureEmptyComponent={EmptyObjectCapture}
+        ObjectCaptureLoadingComponent={LoadingObjectCapture}
+      />
+
+      {/* Add your UI controls here */}
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+    gap: 10,
+  },
+  button: {
+    backgroundColor: '#CD8987',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 5,
+  },
+});
 ```
 
 ### QuickLookView
@@ -231,31 +380,55 @@ Handles the processing of captured images into a 3D model. This component manage
 | `cancelReconstruction` | () => void | Cancels an ongoing reconstruction |
 | `removeAllListeners` | () => void | Call this to cleanup any added listeners |
 
-##### ReconstructionConfig
-
-| Property | Type | Required | Description |
-|----------|------|----------|-------------|
-| `inputPath` | string | Yes | Directory containing input images |
-| `outputPath` | string | Yes | Path where the USDZ model will be saved |
-| `checkpointPath` | string | Yes | Directory for saving reconstruction checkpoints |
-
-
 ```jsx
+import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
-import PhotogrammetrySession from 'react-native-object-capture';
+import {
+  PhotogrammetrySession,
+  type PhotogrammetrySessionOptions,
+} from 'react-native-object-capture';
 
 export default function PhotogrammetryScreen() {
+  const [error, setError] = useState<Error | null>(null);
+  const [progress, setProgress] = useState<number>(0);
+  const [result, setResult] = useState<string | null>(null);
+
   const handleStartReconstruction = async () => {
     try {
       await PhotogrammetrySession.startReconstruction({
-        inputPath: 'Images/',
-        checkpointPath: 'Snapshots/',
+        imagesDirectory: 'Images/',
+        checkpointDirectory: 'Snapshots/',
         outputPath: 'Reconstruction/model.usdz',
       });
     } catch (error) {
       console.error('Reconstruction failed:', error);
     }
   };
+
+  const cancelReconstruction = async () => {
+    await PhotogrammetrySession.cancelReconstruction();
+  };
+
+  useEffect(() => {
+    PhotogrammetrySession.addProgressListener((currProgress) => {
+      setProgress(currProgress);
+    });
+    PhotogrammetrySession.addErrorListener((err) => {
+      console.log('error', err);
+      setError(new Error(err));
+    });
+    PhotogrammetrySession.addCompleteListener(() => {
+      setResult('completed');
+    });
+    PhotogrammetrySession.addCancelledListener(() => {
+      setResult('cancelled');
+    });
+
+    return () => {
+      PhotogrammetrySession.cancelReconstruction();
+      PhotogrammetrySession.removeAllListeners();
+    };
+  }, []);
 
   return (
     <View style={styles.container}>

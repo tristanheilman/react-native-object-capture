@@ -3,7 +3,7 @@ import PhotogrammetrySession, {
   photogrammetryEmitter,
 } from '../modules/PhotogrammetrySession';
 
-describe('PhotogrammetrySession', () => {
+describe('RNPhotogrammetrySession', () => {
   beforeEach(() => {
     // Clear all mocks before each test
     jest.clearAllMocks();

@@ -22,6 +22,11 @@ jest.mock('react-native', () => {
     getSessionState: jest.fn(),
   };
 
+  RN.NativeModules.RNObjectCapturePointCloudView = {
+    getSessionState: jest.fn(),
+    getUserCompletedScanPass: jest.fn(),
+  };
+
   RN.NativeModules.RNPhotogrammetrySession = {
     startReconstruction: jest.fn(),
     cancelReconstruction: jest.fn(),

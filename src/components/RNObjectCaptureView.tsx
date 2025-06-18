@@ -21,6 +21,7 @@ import {
 
 export interface ObjectCaptureViewProps {
   style?: ViewStyle;
+  testID?: string;
   checkpointDirectory: string;
   imagesDirectory: string;
   onSessionStateChange?: (
@@ -100,6 +101,7 @@ const ObjectCaptureView = forwardRef<
   (
     {
       style,
+      testID = 'RNObjectCaptureView',
       checkpointDirectory,
       imagesDirectory,
       onSessionStateChange,
@@ -331,6 +333,7 @@ const ObjectCaptureView = forwardRef<
       <RNObjectCaptureView
         ref={viewRef}
         style={style}
+        testID={testID}
         checkpointDirectory={checkpointDirectory}
         imagesDirectory={imagesDirectory}
         onCaptureComplete={_onCaptureComplete}

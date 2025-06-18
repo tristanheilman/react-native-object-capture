@@ -208,7 +208,6 @@ class PhotogrammetrySession {
   }
 
   removeAllListeners() {
-    console.log('removeAllListeners', this.listeners);
     Object.values(this.listeners).forEach((listener) => listener.remove());
     this.listeners = {};
   }

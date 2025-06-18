@@ -150,7 +150,7 @@ const ObjectCapturePointCloudView = forwardRef<
       onCloudPointViewAppear?.(event);
     };
 
-    if (!RNObjectCapturePointCloudView) {
+    if (!RNObjectCapturePointCloudView || Platform.OS !== 'ios') {
       console.warn('RNObjectCapturePointCloudView is not available');
       return null;
     }

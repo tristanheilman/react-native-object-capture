@@ -87,3 +87,6 @@ nitrogen/
 
 # Secrets
 .env.secrets
+
+# Jest
+coverage/

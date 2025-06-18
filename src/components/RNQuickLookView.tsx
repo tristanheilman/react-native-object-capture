@@ -29,7 +29,7 @@ const QuickLookView = ({
   testID = 'RNQuickLookView',
   path,
 }: QuickLookViewProps) => {
-  if (!RNQuickLookView) {
+  if (!RNQuickLookView || Platform.OS !== 'ios') {
     console.warn('RNQuickLookView is not available');
     return null;
   }

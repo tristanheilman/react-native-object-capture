@@ -83,6 +83,7 @@ interface RNObjectCaptureViewModule {
 const RNObjectCaptureView = Platform.select({
   ios: () => {
     try {
+      console.log('Loading RNObjectCaptureView');
       return requireNativeComponent<ObjectCaptureViewProps>(
         'RNObjectCaptureView'
       );
@@ -91,7 +92,14 @@ const RNObjectCaptureView = Platform.select({
       return null;
     }
   },
-  default: () => null,
+  default: () => {
+    console.warn('RNObjectCaptureView is not available on this platform');
+    return null;
+  },
+  android: () => {
+    console.warn('RNObjectCaptureView is not available on this platform');
+    return null;
+  },
 })();
 
 const ObjectCaptureView = forwardRef<
@@ -324,7 +332,7 @@ const ObjectCaptureView = forwardRef<
       onError?.(event);
     };
 
-    if (!RNObjectCaptureView) {
+    if (!RNObjectCaptureView || Platform.OS !== 'ios') {
       console.warn('RNObjectCaptureView is not available');
       return null;
     }

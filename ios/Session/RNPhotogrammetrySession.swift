@@ -51,15 +51,28 @@ class RNPhotogrammetrySession: RCTEventEmitter {
                     return
                 }
 
-                // Parse the model name path
-                let modelPathComponents = outputPath.components(separatedBy: "/")
-                let outputDirectoryName = modelPathComponents[0] // "Outputs"
-                let modelFileName = modelPathComponents[1] // "model.usdz"
-                
-                // Create output directory
-                let outputDirectory = documentsPath.appendingPathComponent(outputDirectoryName)
-                let outputURL = outputDirectory.appendingPathComponent(modelFileName)
-                
+                // Resolve the output path relative to the documents directory. Accepts a bare
+                // filename ("model.usdz") or any nesting depth ("Outputs/chair/model.usdz").
+                let relativeOutputPath = outputPath.trimmingCharacters(in: CharacterSet(charactersIn: "/ "))
+
+                guard !relativeOutputPath.isEmpty else {
+                    reject("OUTPUT_ERROR", "outputPath must not be empty", nil)
+                    return
+                }
+
+                let outputURL = documentsPath.appendingPathComponent(relativeOutputPath)
+
+                guard !outputURL.pathExtension.isEmpty else {
+                    reject(
+                        "OUTPUT_ERROR",
+                        "outputPath must include a filename with an extension, e.g. \"Outputs/model.usdz\" (received \"\(outputPath)\")",
+                        nil
+                    )
+                    return
+                }
+
+                let outputDirectory = outputURL.deletingLastPathComponent()
+
                 print("Output directory path: \(outputDirectory.path)")
                 print("Output file path: \(outputURL.path)")
             

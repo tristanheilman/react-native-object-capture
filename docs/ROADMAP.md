@@ -140,7 +140,7 @@ and this library depends on both.
 - [x] Podspec: removed the hard dependency on `React-Codegen`, renamed to `ReactCodegen` in
       RN 0.75, which would fail to resolve on any current version.
 
-**Remaining — native layer:**
+**Remaining — native layer.** Step-by-step guide in [`NATIVE_MIGRATION_PLAN.md`](NATIVE_MIGRATION_PLAN.md):
 
 - [ ] `RCTViewComponentView` subclasses for the three views, replacing the `RCTViewManager`
       classes, with the SwiftUI hosting controllers reparented onto them

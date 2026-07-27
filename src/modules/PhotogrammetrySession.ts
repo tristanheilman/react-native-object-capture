@@ -4,6 +4,7 @@ import {
   type NativeModule,
   type NativeSyntheticEvent,
 } from 'react-native';
+import NativePhotogrammetrySession from '../specs/NativePhotogrammetrySession';
 
 export type PhotogrammetryProgress = {
   progress: number;
@@ -108,9 +109,10 @@ interface RNPhotogrammetrySessionInterface extends NativeModule {
   ): Promise<PhotogrammetryDirectoryContents>;
 }
 
-// Export the native module with proper typing
-export const RNPhotogrammetrySession =
-  NativeModules.RNPhotogrammetrySession as RNPhotogrammetrySessionInterface;
+// Resolved through TurboModuleRegistry, which falls back to NativeModules when
+// the New Architecture is not enabled, so this works under both.
+export const RNPhotogrammetrySession = (NativePhotogrammetrySession ??
+  NativeModules.RNPhotogrammetrySession) as RNPhotogrammetrySessionInterface;
 
 // Export the event emitter
 export const photogrammetryEmitter = new NativeEventEmitter(

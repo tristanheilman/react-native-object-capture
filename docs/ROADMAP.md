@@ -117,16 +117,38 @@ Contained changes, verifiable with typecheck/lint/tests, no architecture churn.
 - [ ] Document `finishSession` — implemented end-to-end, used by the example, missing from the
       README methods table
 
-### Phase 1 — New Architecture migration
+### Phase 1 — New Architecture migration *(in progress)*
 
 Required before anyone can use this on a current React Native. RN 0.82 removed the legacy
-opt-out; 0.83 removed the legacy code.
+opt-out; 0.83 removed the legacy code. The interop layer is not a way out: view commands and
+event emitters are [precisely the cases it handles incorrectly](https://github.com/reactwg/react-native-new-architecture/discussions/266),
+and this library depends on both.
 
-- [ ] `codegenNativeComponent` + `RCTViewComponentView` for all three native views
-- [ ] Real `TurboModuleRegistry` specs for both native modules (the existing `codegenConfig` is
-      vestigial — nothing uses it)
+**Done — JS/codegen layer:**
+
+- [x] Codegen specs for all three views (`src/specs/*NativeComponent.ts`) and both modules
+      (`src/specs/Native*.ts`). `codegenConfig` now points at `src/specs` with `type: "all"`;
+      it was previously `type: "modules"` against a directory with no specs in it, so codegen
+      produced nothing.
+- [x] **Moved the 16 imperative methods off the view and onto a `RNObjectCaptureSession`
+      module.** They each took a react tag that was never read — all 22 native method bodies
+      operated on `RNObjectCaptureSessionManager.shared`. Modelling them as a module drops
+      `findNodeHandle` (which has no place under the New Architecture), lets them keep
+      returning promises (view commands cannot), and removed ~160 lines of duplicated
+      null-checking boilerplate.
+- [x] Ref APIs preserved as thin delegates, so this is not a breaking change.
+- [x] Podspec: removed the hard dependency on `React-Codegen`, renamed to `ReactCodegen` in
+      RN 0.75, which would fail to resolve on any current version.
+
+**Remaining — native layer:**
+
+- [ ] `RCTViewComponentView` subclasses for the three views, replacing the `RCTViewManager`
+      classes, with the SwiftUI hosting controllers reparented onto them
+- [ ] Component descriptors + `RCT_EXPORT_VIEW_COMPONENT` registration
+- [ ] TurboModule conformance for `RNObjectCaptureSession`, `RNPhotogrammetrySession` and
+      `RNObjectCapture` (Swift needs an ObjC++ shim to vend `getTurboModule:`)
 - [ ] Bump the example app off `react-native@0.79.2`
-- [ ] Verify on device — Phase 0 and 1 are both written blind; nothing here has been compiled
+- [ ] **Verify on device.** Everything in Phase 0 and 1 has been written without a compiler.
 
 ### Phase 2 — Product surface
 

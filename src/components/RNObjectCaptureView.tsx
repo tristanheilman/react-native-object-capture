@@ -1,11 +1,8 @@
-import { useEffect, useImperativeHandle, forwardRef, useRef } from 'react';
+import { useImperativeHandle, forwardRef } from 'react';
 import {
-  requireNativeComponent,
+  Platform,
   type NativeSyntheticEvent,
   type ViewStyle,
-  Platform,
-  findNodeHandle,
-  NativeModules,
 } from 'react-native';
 import {
   type SessionState,
@@ -18,6 +15,21 @@ import {
   type SessionError,
   type ScanPassCompleted,
 } from '../NativeObjectCapture';
+import RNObjectCaptureView from '../specs/RNObjectCaptureViewNativeComponent';
+import ObjectCaptureSession from '../modules/ObjectCaptureSession';
+
+/**
+ * The public event payload types carry `target`, which React Native injects
+ * into every direct event at runtime but which codegen does not model in the
+ * spec. The runtime shape is identical, so this only reconciles the two static
+ * views of the same object.
+ */
+const asNativeHandler = <Public, Native>(
+  handler: ((event: NativeSyntheticEvent<Public>) => void) | undefined
+): ((event: NativeSyntheticEvent<Native>) => void) | undefined =>
+  handler as unknown as
+    | ((event: NativeSyntheticEvent<Native>) => void)
+    | undefined;
 
 export interface ObjectCaptureViewProps {
   style?: ViewStyle;
@@ -59,49 +71,13 @@ export interface ObjectCaptureViewRef {
   getNumberOfScanPassUpdates: () => Promise<number>;
 }
 
-// Define the native module interface
-interface RNObjectCaptureViewModule {
-  resumeSession: (node: number) => Promise<void>;
-  pauseSession: (node: number) => Promise<void>;
-  startDetection: (node: number) => Promise<void>;
-  resetDetection: (node: number) => Promise<void>;
-  startCapturing: (node: number) => Promise<void>;
-  beginNewScanAfterFlip: (node: number) => Promise<void>;
-  beginNewScan: (node: number) => Promise<void>;
-  finishSession: (node: number) => Promise<void>;
-  cancelSession: (node: number) => Promise<void>;
-  getTrackingState: (node: number) => Promise<TrackingState>;
-  getFeedbackState: (node: number) => Promise<FeedbackState[]>;
-  getNumberOfShotsTaken: (node: number) => Promise<number>;
-  getUserCompletedScanState: (node: number) => Promise<boolean>;
-  isDeviceSupported: (node: number) => Promise<boolean>;
-  getSessionState: (node: number) => Promise<SessionState>;
-  getNumberOfScanPassUpdates: (node: number) => Promise<number>;
-}
-
-// Only require the native component on iOS
-const RNObjectCaptureView = Platform.select({
-  ios: () => {
-    try {
-      console.log('Loading RNObjectCaptureView');
-      return requireNativeComponent<ObjectCaptureViewProps>(
-        'RNObjectCaptureView'
-      );
-    } catch (e) {
-      console.error('Failed to load RNObjectCaptureView:', e);
-      return null;
-    }
-  },
-  default: () => {
-    console.warn('RNObjectCaptureView is not available on this platform');
-    return null;
-  },
-  android: () => {
-    console.warn('RNObjectCaptureView is not available on this platform');
-    return null;
-  },
-})();
-
+/**
+ * The ref API is kept for backwards compatibility, but it now delegates
+ * straight to the `ObjectCaptureSession` module. The session is a singleton
+ * natively, so these calls were never scoped to a view instance - the react tag
+ * they used to pass was ignored. Prefer importing `ObjectCaptureSession`
+ * directly; this ref will likely be deprecated.
+ */
 const ObjectCaptureView = forwardRef<
   ObjectCaptureViewRef,
   ObjectCaptureViewProps
@@ -121,235 +97,25 @@ const ObjectCaptureView = forwardRef<
     },
     ref
   ) => {
-    const viewRef = useRef(null);
-    const nativeModule = useRef<RNObjectCaptureViewModule | null>(null);
+    useImperativeHandle(ref, () => ObjectCaptureSession, []);
 
-    useEffect(() => {
-      if (Platform.OS === 'ios') {
-        nativeModule.current =
-          NativeModules.RNObjectCaptureView as RNObjectCaptureViewModule;
-      }
-    }, []);
-
-    useImperativeHandle(
-      ref,
-      () => ({
-        isDeviceSupported: async () => {
-          if (!nativeModule.current || !viewRef.current) {
-            throw new Error('View or native module not found');
-          }
-          const node = findNodeHandle(viewRef.current);
-          if (!node) {
-            throw new Error('View node not found');
-          }
-          return nativeModule.current.isDeviceSupported(node);
-        },
-        getSessionState: async () => {
-          if (!nativeModule.current || !viewRef.current) {
-            throw new Error('View or native module not found');
-          }
-          const node = findNodeHandle(viewRef.current);
-          if (!node) {
-            throw new Error('View node not found');
-          }
-          return nativeModule.current.getSessionState(node);
-        },
-        getTrackingState: async () => {
-          if (!nativeModule.current || !viewRef.current) {
-            throw new Error('View or native module not found');
-          }
-          const node = findNodeHandle(viewRef.current);
-          if (!node) {
-            throw new Error('View node not found');
-          }
-          return nativeModule.current.getTrackingState(node);
-        },
-        getFeedbackState: async () => {
-          if (!nativeModule.current || !viewRef.current) {
-            throw new Error('View or native module not found');
-          }
-          const node = findNodeHandle(viewRef.current);
-          if (!node) {
-            throw new Error('View node not found');
-          }
-          return nativeModule.current.getFeedbackState(node);
-        },
-        getNumberOfShotsTaken: async () => {
-          if (!nativeModule.current || !viewRef.current) {
-            throw new Error('View or native module not found');
-          }
-          const node = findNodeHandle(viewRef.current);
-          if (!node) {
-            throw new Error('View node not found');
-          }
-          return nativeModule.current.getNumberOfShotsTaken(node);
-        },
-        getNumberOfScanPassUpdates: async () => {
-          if (!nativeModule.current || !viewRef.current) {
-            throw new Error('View or native module not found');
-          }
-          const node = findNodeHandle(viewRef.current);
-          if (!node) {
-            throw new Error('View node not found');
-          }
-          return nativeModule.current.getNumberOfScanPassUpdates(node);
-        },
-        getUserCompletedScanState: async () => {
-          if (!nativeModule.current || !viewRef.current) {
-            throw new Error('View or native module not found');
-          }
-          const node = findNodeHandle(viewRef.current);
-          if (!node) {
-            throw new Error('View node not found');
-          }
-          return nativeModule.current.getUserCompletedScanState(node);
-        },
-        cancelSession: async () => {
-          if (!nativeModule.current || !viewRef.current) {
-            throw new Error('View or native module not found');
-          }
-          const node = findNodeHandle(viewRef.current);
-          if (!node) {
-            throw new Error('View node not found');
-          }
-          return nativeModule.current.cancelSession(node);
-        },
-        resumeSession: async () => {
-          if (!nativeModule.current || !viewRef.current) {
-            throw new Error('View or native module not found');
-          }
-          const node = findNodeHandle(viewRef.current);
-          if (!node) {
-            throw new Error('View node not found');
-          }
-          return nativeModule.current.resumeSession(node);
-        },
-        pauseSession: async () => {
-          if (!nativeModule.current || !viewRef.current) {
-            throw new Error('View or native module not found');
-          }
-          const node = findNodeHandle(viewRef.current);
-          if (!node) {
-            throw new Error('View node not found');
-          }
-          return nativeModule.current.pauseSession(node);
-        },
-        startDetection: async () => {
-          if (!nativeModule.current || !viewRef.current) {
-            throw new Error('View or native module not found');
-          }
-          const node = findNodeHandle(viewRef.current);
-          if (!node) {
-            throw new Error('View node not found');
-          }
-          return nativeModule.current.startDetection(node);
-        },
-        resetDetection: async () => {
-          if (!nativeModule.current || !viewRef.current) {
-            throw new Error('View or native module not found');
-          }
-          const node = findNodeHandle(viewRef.current);
-          if (!node) {
-            throw new Error('View node not found');
-          }
-          return nativeModule.current.resetDetection(node);
-        },
-        startCapturing: async () => {
-          if (!nativeModule.current || !viewRef.current) {
-            throw new Error('View or native module not found');
-          }
-          const node = findNodeHandle(viewRef.current);
-          if (!node) {
-            throw new Error('View node not found');
-          }
-          return nativeModule.current.startCapturing(node);
-        },
-        beginNewScanAfterFlip: async () => {
-          if (!nativeModule.current || !viewRef.current) {
-            throw new Error('View or native module not found');
-          }
-          const node = findNodeHandle(viewRef.current);
-          if (!node) {
-            throw new Error('View node not found');
-          }
-          return nativeModule.current.beginNewScanAfterFlip(node);
-        },
-        beginNewScan: async () => {
-          if (!nativeModule.current || !viewRef.current) {
-            throw new Error('View or native module not found');
-          }
-          const node = findNodeHandle(viewRef.current);
-          if (!node) {
-            throw new Error('View node not found');
-          }
-          return nativeModule.current.beginNewScan(node);
-        },
-        finishSession: async () => {
-          if (!nativeModule.current || !viewRef.current) {
-            throw new Error('View or native module not found');
-          }
-          const node = findNodeHandle(viewRef.current);
-          if (!node) {
-            throw new Error('View node not found');
-          }
-          return nativeModule.current.finishSession(node);
-        },
-      }),
-      []
-    );
-
-    const _onCaptureComplete = (
-      event: NativeSyntheticEvent<CaptureComplete>
-    ) => {
-      onCaptureComplete?.(event);
-    };
-
-    const _onFeedbackStateChange = (
-      event: NativeSyntheticEvent<FeedbackStateChange>
-    ) => {
-      onFeedbackStateChange?.(event);
-    };
-
-    const _onTrackingStateChange = (
-      event: NativeSyntheticEvent<TrackingStateChange>
-    ) => {
-      onTrackingStateChange?.(event);
-    };
-
-    const _onSessionStateChange = (
-      event: NativeSyntheticEvent<SessionStateChange>
-    ) => {
-      onSessionStateChange?.(event);
-    };
-
-    const _onScanPassCompleted = (
-      event: NativeSyntheticEvent<ScanPassCompleted>
-    ) => {
-      onScanPassCompleted?.(event);
-    };
-
-    const _onError = (event: NativeSyntheticEvent<SessionError>) => {
-      onError?.(event);
-    };
-
-    if (!RNObjectCaptureView || Platform.OS !== 'ios') {
-      console.warn('RNObjectCaptureView is not available');
+    if (Platform.OS !== 'ios') {
+      console.warn('RNObjectCaptureView is only available on iOS');
       return null;
     }
 
     return (
       <RNObjectCaptureView
-        ref={viewRef}
         style={style}
         testID={testID}
         checkpointDirectory={checkpointDirectory}
         imagesDirectory={imagesDirectory}
-        onCaptureComplete={_onCaptureComplete}
-        onFeedbackStateChange={_onFeedbackStateChange}
-        onTrackingStateChange={_onTrackingStateChange}
-        onSessionStateChange={_onSessionStateChange}
-        onScanPassCompleted={_onScanPassCompleted}
-        onError={_onError}
+        onCaptureComplete={asNativeHandler(onCaptureComplete)}
+        onFeedbackStateChange={asNativeHandler(onFeedbackStateChange)}
+        onTrackingStateChange={asNativeHandler(onTrackingStateChange)}
+        onSessionStateChange={asNativeHandler(onSessionStateChange)}
+        onScanPassCompleted={asNativeHandler(onScanPassCompleted)}
+        onError={asNativeHandler(onError)}
       />
     );
   }

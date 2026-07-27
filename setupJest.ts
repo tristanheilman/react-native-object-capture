@@ -5,8 +5,10 @@ jest.mock('react-native', () => {
 
   RN.Platform.OS = 'ios';
 
-  // mock modules/components created by assigning to NativeModules
-  RN.NativeModules.RNObjectCaptureView = {
+  // Imperative session control. TurboModuleRegistry.get falls back to
+  // NativeModules when there is no turbo module proxy, which is the case under
+  // Jest, so mocking here covers both lookup paths.
+  RN.NativeModules.RNObjectCaptureSession = {
     resumeSession: jest.fn(),
     pauseSession: jest.fn(),
     startDetection: jest.fn(),
@@ -23,11 +25,6 @@ jest.mock('react-native', () => {
     getUserCompletedScanState: jest.fn(),
     isDeviceSupported: jest.fn(),
     getSessionState: jest.fn(),
-  };
-
-  RN.NativeModules.RNObjectCapturePointCloudView = {
-    getSessionState: jest.fn(),
-    getUserCompletedScanPass: jest.fn(),
   };
 
   RN.NativeModules.RNPhotogrammetrySession = {

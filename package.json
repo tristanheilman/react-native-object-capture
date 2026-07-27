@@ -159,8 +159,8 @@
   },
   "codegenConfig": {
     "name": "ObjectCaptureSpec",
-    "type": "modules",
-    "jsSrcsDir": "src",
+    "type": "all",
+    "jsSrcsDir": "src/specs",
     "android": {
       "javaPackageName": "com.objectcapture"
     }

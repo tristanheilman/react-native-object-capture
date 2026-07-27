@@ -60,5 +60,12 @@ export type {
 // Export hooks and utilities
 export { PhotogrammetrySession };
 
+/**
+ * Imperative control over the shared Object Capture session. Prefer this over
+ * the `ObjectCaptureView` ref - the session is a singleton natively, so these
+ * calls were never scoped to a view instance.
+ */
+export { default as ObjectCaptureSession } from './modules/ObjectCaptureSession';
+
 // Export constants
 export const ObjectCaptureConstants = ObjectCapture.constants;

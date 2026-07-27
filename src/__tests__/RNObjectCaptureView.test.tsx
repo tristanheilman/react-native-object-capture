@@ -2,7 +2,6 @@ import React from 'react';
 import { render, act } from '@testing-library/react-native';
 import { Platform, NativeModules } from 'react-native';
 import { ObjectCaptureView, type ObjectCaptureViewRef } from '../index';
-import * as Handle from 'react-native/Libraries/ReactNative/RendererProxy';
 
 describe('RNObjectCaptureView', () => {
   beforeEach(() => {
@@ -71,10 +70,24 @@ describe('RNObjectCaptureView', () => {
   describe('imperative methods', () => {
     let ref: React.RefObject<ObjectCaptureViewRef | null>;
 
+    // Each of these used to resolve a react tag via findNodeHandle and pass it
+    // to a view manager method that ignored it. The ref now delegates straight
+    // to the session module, so there is no per-view state to set up.
+    const VOID_METHODS = [
+      'resumeSession',
+      'pauseSession',
+      'startDetection',
+      'resetDetection',
+      'startCapturing',
+      'beginNewScanAfterFlip',
+      'beginNewScan',
+      'finishSession',
+      'cancelSession',
+    ] as const;
+
     beforeEach(() => {
       jest.clearAllMocks();
       ref = React.createRef();
-
       render(
         <ObjectCaptureView
           ref={ref}
@@ -84,452 +97,141 @@ describe('RNObjectCaptureView', () => {
       );
     });
 
-    afterEach(() => {
-      if (ref.current) {
-        ref.current = null;
-      }
-    });
+    it.each(VOID_METHODS)('calls %s on the session module', async (method) => {
+      const native = NativeModules.RNObjectCaptureSession[method] as jest.Mock;
+      native.mockResolvedValue(undefined);
 
-    it('calls resumeSession on native module', async () => {
       await act(async () => {
-        await ref.current?.resumeSession();
+        await ref.current?.[method]();
       });
 
-      expect(
-        NativeModules.RNObjectCaptureView.resumeSession
-      ).toHaveBeenCalledTimes(1);
+      expect(native).toHaveBeenCalledTimes(1);
+      // No react tag is passed any more - the session is a singleton.
+      expect(native).toHaveBeenCalledWith();
     });
 
-    it('calls pauseSession on native module', async () => {
-      await act(async () => {
-        await ref.current?.pauseSession();
-      });
-
-      expect(
-        NativeModules.RNObjectCaptureView.pauseSession
-      ).toHaveBeenCalledTimes(1);
-    });
-
-    it('calls startDetection on native module', async () => {
-      await act(async () => {
-        await ref.current?.startDetection();
-      });
-
-      expect(
-        NativeModules.RNObjectCaptureView.startDetection
-      ).toHaveBeenCalledTimes(1);
-    });
-
-    it('calls resetDetection on native module', async () => {
-      await act(async () => {
-        await ref.current?.resetDetection();
-      });
-
-      expect(
-        NativeModules.RNObjectCaptureView.resetDetection
-      ).toHaveBeenCalledTimes(1);
-    });
-
-    it('calls startCapturing on native module', async () => {
-      await act(async () => {
-        await ref.current?.startCapturing();
-      });
-
-      expect(
-        NativeModules.RNObjectCaptureView.startCapturing
-      ).toHaveBeenCalledTimes(1);
-    });
-
-    it('calls beginNewScanAfterFlip on native module', async () => {
-      await act(async () => {
-        await ref.current?.beginNewScanAfterFlip();
-      });
-
-      expect(
-        NativeModules.RNObjectCaptureView.beginNewScanAfterFlip
-      ).toHaveBeenCalledTimes(1);
-    });
-
-    it('calls beginNewScan on native module', async () => {
-      await act(async () => {
-        await ref.current?.beginNewScan();
-      });
-
-      expect(
-        NativeModules.RNObjectCaptureView.beginNewScan
-      ).toHaveBeenCalledTimes(1);
-    });
-
-    it('calls finishSession on native module', async () => {
-      await act(async () => {
-        await ref.current?.finishSession();
-      });
-
-      expect(
-        NativeModules.RNObjectCaptureView.finishSession
-      ).toHaveBeenCalledTimes(1);
-    });
-
-    it('calls cancelSession on native module', async () => {
-      await act(async () => {
-        await ref.current?.cancelSession();
-      });
-
-      expect(
-        NativeModules.RNObjectCaptureView.cancelSession
-      ).toHaveBeenCalledTimes(1);
-    });
-
-    it('calls getTrackingState on native module', async () => {
-      await act(async () => {
-        await ref.current?.getTrackingState();
-      });
-
-      expect(
-        NativeModules.RNObjectCaptureView.getTrackingState
-      ).toHaveBeenCalledTimes(1);
-    });
-
-    it('calls getFeedbackState on native module', async () => {
-      await act(async () => {
-        await ref.current?.getFeedbackState();
-      });
-
-      expect(
-        NativeModules.RNObjectCaptureView.getFeedbackState
-      ).toHaveBeenCalledTimes(1);
-    });
-
-    it('calls getNumberOfShotsTaken on native module', async () => {
-      await act(async () => {
-        await ref.current?.getNumberOfShotsTaken();
-      });
-
-      expect(
-        NativeModules.RNObjectCaptureView.getNumberOfShotsTaken
-      ).toHaveBeenCalledTimes(1);
-    });
-
-    it('calls getNumberOfScanPassUpdates on native module', async () => {
-      await act(async () => {
-        await ref.current?.getNumberOfScanPassUpdates();
-      });
-
-      expect(
-        NativeModules.RNObjectCaptureView.getNumberOfScanPassUpdates
-      ).toHaveBeenCalledTimes(1);
-    });
-
-    it('calls getUserCompletedScanState on native module', async () => {
-      await act(async () => {
-        await ref.current?.getUserCompletedScanState();
-      });
-
-      expect(
-        NativeModules.RNObjectCaptureView.getUserCompletedScanState
-      ).toHaveBeenCalledTimes(1);
-    });
-
-    it('calls isDeviceSupported on native module', async () => {
-      await act(async () => {
-        await ref.current?.isDeviceSupported();
-      });
-
-      expect(
-        NativeModules.RNObjectCaptureView.isDeviceSupported
-      ).toHaveBeenCalledTimes(1);
-    });
-
-    it('calls getSessionState on native module', async () => {
-      await act(async () => {
-        await ref.current?.getSessionState();
-      });
-
-      expect(
-        NativeModules.RNObjectCaptureView.getSessionState
-      ).toHaveBeenCalledTimes(1);
-    });
-
-    it('gets session state from native module', async () => {
-      const mockState = 'ready';
+    it('returns the session state from the session module', async () => {
       (
-        NativeModules.RNObjectCaptureView.getSessionState as jest.Mock
-      ).mockResolvedValue(mockState);
+        NativeModules.RNObjectCaptureSession.getSessionState as jest.Mock
+      ).mockResolvedValue('detecting');
 
-      const state = await act(async () => {
-        return await ref.current?.getSessionState();
+      await act(async () => {
+        await expect(ref.current?.getSessionState()).resolves.toBe('detecting');
       });
-
-      expect(state).toBe(mockState);
-      expect(
-        NativeModules.RNObjectCaptureView.getSessionState
-      ).toHaveBeenCalledTimes(1);
     });
 
-    // Add similar tests for other imperative methods
-  });
+    it('returns the tracking state from the session module', async () => {
+      (
+        NativeModules.RNObjectCaptureSession.getTrackingState as jest.Mock
+      ).mockResolvedValue('normal');
 
-  describe('error handling for android', () => {
-    let query: (testID: string) => HTMLElement | null;
-    let ref: React.RefObject<ObjectCaptureViewRef | null>;
-
-    beforeEach(() => {
-      jest.clearAllMocks();
-      Platform.OS = 'android';
-
-      ref = React.createRef();
-      const { queryByTestId } = render(
-        <ObjectCaptureView
-          ref={ref}
-          checkpointDirectory="test"
-          imagesDirectory="test"
-        />
-      );
-
-      query = queryByTestId;
+      await act(async () => {
+        await expect(ref.current?.getTrackingState()).resolves.toBe('normal');
+      });
     });
 
-    it('returns null when platform is not iOS', () => {
-      expect(query('RNObjectCaptureView')).toBeNull();
+    it('returns the feedback state from the session module', async () => {
+      (
+        NativeModules.RNObjectCaptureSession.getFeedbackState as jest.Mock
+      ).mockResolvedValue(['objectTooClose']);
+
+      await act(async () => {
+        await expect(ref.current?.getFeedbackState()).resolves.toEqual([
+          'objectTooClose',
+        ]);
+      });
     });
 
-    it('fails to call pauseSession on native module', async () => {
-      await expect(ref.current?.pauseSession()).rejects.toThrow(
-        'View or native module not found'
-      );
+    it('returns the number of shots taken', async () => {
+      (
+        NativeModules.RNObjectCaptureSession.getNumberOfShotsTaken as jest.Mock
+      ).mockResolvedValue(42);
+
+      await act(async () => {
+        await expect(ref.current?.getNumberOfShotsTaken()).resolves.toBe(42);
+      });
     });
 
-    it('fails to call resumeSession on native module', async () => {
-      await expect(ref.current?.resumeSession()).rejects.toThrow(
-        'View or native module not found'
-      );
+    it('returns the number of scan pass updates', async () => {
+      (
+        NativeModules.RNObjectCaptureSession
+          .getNumberOfScanPassUpdates as jest.Mock
+      ).mockResolvedValue(3);
+
+      await act(async () => {
+        await expect(ref.current?.getNumberOfScanPassUpdates()).resolves.toBe(
+          3
+        );
+      });
     });
 
-    it('fails to call startDetection on native module', async () => {
-      await expect(ref.current?.startDetection()).rejects.toThrow(
-        'View or native module not found'
-      );
+    it('returns the user completed scan state', async () => {
+      (
+        NativeModules.RNObjectCaptureSession
+          .getUserCompletedScanState as jest.Mock
+      ).mockResolvedValue(true);
+
+      await act(async () => {
+        await expect(ref.current?.getUserCompletedScanState()).resolves.toBe(
+          true
+        );
+      });
     });
 
-    it('fails to call resetDetection on native module', async () => {
-      await expect(ref.current?.resetDetection()).rejects.toThrow(
-        'View or native module not found'
-      );
+    it('reports whether the device is supported', async () => {
+      (
+        NativeModules.RNObjectCaptureSession.isDeviceSupported as jest.Mock
+      ).mockResolvedValue(true);
+
+      await act(async () => {
+        await expect(ref.current?.isDeviceSupported()).resolves.toBe(true);
+      });
     });
 
-    it('fails to call startCapturing on native module', async () => {
-      await expect(ref.current?.startCapturing()).rejects.toThrow(
-        'View or native module not found'
-      );
-    });
+    it('propagates native errors', async () => {
+      (
+        NativeModules.RNObjectCaptureSession.startDetection as jest.Mock
+      ).mockRejectedValue(new Error('Session is not ready'));
 
-    it('fails to call beginNewScanAfterFlip on native module', async () => {
-      await expect(ref.current?.beginNewScanAfterFlip()).rejects.toThrow(
-        'View or native module not found'
-      );
-    });
-
-    it('fails to call beginNewScan on native module', async () => {
-      await expect(ref.current?.beginNewScan()).rejects.toThrow(
-        'View or native module not found'
-      );
-    });
-
-    it('fails to call finishSession on native module', async () => {
-      await expect(ref.current?.finishSession()).rejects.toThrow(
-        'View or native module not found'
-      );
-    });
-
-    it('fails to call cancelSession on native module', async () => {
-      await expect(ref.current?.cancelSession()).rejects.toThrow(
-        'View or native module not found'
-      );
-    });
-
-    it('fails to call getTrackingState on native module', async () => {
-      await expect(ref.current?.getTrackingState()).rejects.toThrow(
-        'View or native module not found'
-      );
-    });
-
-    it('fails to call getFeedbackState on native module', async () => {
-      await expect(ref.current?.getFeedbackState()).rejects.toThrow(
-        'View or native module not found'
-      );
-    });
-
-    it('fails to call getNumberOfShotsTaken on native module', async () => {
-      await expect(ref.current?.getNumberOfShotsTaken()).rejects.toThrow(
-        'View or native module not found'
-      );
-    });
-
-    it('fails to call getNumberOfScanPassUpdates on native module', async () => {
-      await expect(ref.current?.getNumberOfScanPassUpdates()).rejects.toThrow(
-        'View or native module not found'
-      );
-    });
-
-    it('fails to call getUserCompletedScanState on native module', async () => {
-      await expect(ref.current?.getUserCompletedScanState()).rejects.toThrow(
-        'View or native module not found'
-      );
-    });
-
-    it('fails to call isDeviceSupported on native module', async () => {
-      await expect(ref.current?.isDeviceSupported()).rejects.toThrow(
-        'View or native module not found'
-      );
-    });
-
-    it('fails to call getSessionState on native module', async () => {
-      await expect(ref.current?.getSessionState()).rejects.toThrow(
-        'View or native module not found'
-      );
+      await act(async () => {
+        await expect(ref.current?.startDetection()).rejects.toThrow(
+          'Session is not ready'
+        );
+      });
     });
   });
 
-  describe('error handling invalid node handle', () => {
-    let ref: React.RefObject<ObjectCaptureViewRef | null>;
-
-    beforeEach(() => {
-      jest.clearAllMocks();
+  describe('on non-iOS platforms', () => {
+    afterEach(() => {
       Platform.OS = 'ios';
-      jest.spyOn(Handle, 'findNodeHandle').mockReturnValue(null);
-      ref = React.createRef();
-      render(
-        <ObjectCaptureView
-          ref={ref}
-          checkpointDirectory="test"
-          imagesDirectory="test"
-        />
-      );
     });
 
-    it('fails to call pauseSession on native module', async () => {
-      await expect(ref.current?.pauseSession()).rejects.toThrow(
-        'View node not found'
+    it('renders nothing', () => {
+      Platform.OS = 'android';
+      const { queryByTestId } = render(
+        <ObjectCaptureView checkpointDirectory="test" imagesDirectory="test" />
       );
-    });
-
-    it('fails to call resumeSession on native module', async () => {
-      await expect(ref.current?.resumeSession()).rejects.toThrow(
-        'View node not found'
-      );
-    });
-
-    it('fails to call startDetection on native module', async () => {
-      await expect(ref.current?.startDetection()).rejects.toThrow(
-        'View node not found'
-      );
-    });
-
-    it('fails to call resetDetection on native module', async () => {
-      await expect(ref.current?.resetDetection()).rejects.toThrow(
-        'View node not found'
-      );
-    });
-
-    it('fails to call startCapturing on native module', async () => {
-      await expect(ref.current?.startCapturing()).rejects.toThrow(
-        'View node not found'
-      );
-    });
-
-    it('fails to call beginNewScanAfterFlip on native module', async () => {
-      await expect(ref.current?.beginNewScanAfterFlip()).rejects.toThrow(
-        'View node not found'
-      );
-    });
-
-    it('fails to call beginNewScan on native module', async () => {
-      await expect(ref.current?.beginNewScan()).rejects.toThrow(
-        'View node not found'
-      );
-    });
-
-    it('fails to call finishSession on native module', async () => {
-      await expect(ref.current?.finishSession()).rejects.toThrow(
-        'View node not found'
-      );
-    });
-
-    it('fails to call cancelSession on native module', async () => {
-      await expect(ref.current?.cancelSession()).rejects.toThrow(
-        'View node not found'
-      );
-    });
-
-    it('fails to call getTrackingState on native module', async () => {
-      await expect(ref.current?.getTrackingState()).rejects.toThrow(
-        'View node not found'
-      );
-    });
-
-    it('fails to call getFeedbackState on native module', async () => {
-      await expect(ref.current?.getFeedbackState()).rejects.toThrow(
-        'View node not found'
-      );
-    });
-
-    it('fails to call getNumberOfShotsTaken on native module', async () => {
-      await expect(ref.current?.getNumberOfShotsTaken()).rejects.toThrow(
-        'View node not found'
-      );
-    });
-
-    it('fails to call getNumberOfScanPassUpdates on native module', async () => {
-      await expect(ref.current?.getNumberOfScanPassUpdates()).rejects.toThrow(
-        'View node not found'
-      );
-    });
-
-    it('fails to call getUserCompletedScanState on native module', async () => {
-      await expect(ref.current?.getUserCompletedScanState()).rejects.toThrow(
-        'View node not found'
-      );
-    });
-
-    it('fails to call isDeviceSupported on native module', async () => {
-      await expect(ref.current?.isDeviceSupported()).rejects.toThrow(
-        'View node not found'
-      );
-    });
-
-    it('fails to call getSessionState on native module', async () => {
-      await expect(ref.current?.getSessionState()).rejects.toThrow(
-        'View node not found'
-      );
+      expect(queryByTestId('RNObjectCaptureView')).toBeNull();
     });
   });
 
-  //   it('handles native module errors', async () => {
-  //     const mockError = new Error('Native module error');
-  //     (
-  //       NativeModules.RNObjectCaptureView.resumeSession as jest.Mock
-  //     ).mockRejectedValue(mockError);
+  describe('when the native module is unavailable', () => {
+    it('rejects with an actionable message', async () => {
+      jest.resetModules();
+      // TurboModuleRegistry.get returns null when the module is not registered,
+      // which is what happens on any non-iOS platform.
+      jest.doMock('../specs/NativeObjectCaptureSession', () => ({
+        __esModule: true,
+        default: null,
+      }));
 
-  //     await expect(ref.current?.resumeSession()).rejects.toThrow(
-  //       'Native module error'
-  //     );
-  //   });
+      const { default: Session } = require('../modules/ObjectCaptureSession');
 
-  //   it('handles missing view node', async () => {
-  //     jest.clearAllMocks();
-  //     jest.mock('react-native', () => ({
-  //       ...jest.requireActual('react-native'),
-  //       NativeModules: {
-  //         RNObjectCaptureView: {
-  //           resumeSession: jest.fn(),
-  //         },
-  //       },
-  //       findNodeHandle: jest.fn().mockReturnValue(null),
-  //     }));
+      await expect(Session.startDetection()).rejects.toThrow(
+        'RNObjectCaptureSession native module is not available'
+      );
 
-  //     await expect(ref.current?.resumeSession()).rejects.toThrow(
-  //       'View node not found'
-  //     );
-  //   });
-  // });
+      jest.dontMock('../specs/NativeObjectCaptureSession');
+    });
+  });
 });

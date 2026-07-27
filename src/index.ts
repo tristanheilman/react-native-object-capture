@@ -20,6 +20,8 @@ import PhotogrammetrySession, {
   type PhotogrammetrySessionState,
   type PhotogrammetrySessionOptions,
   type PhotogrammetryDirectoryContents,
+  type PhotogrammetryDetail,
+  type PhotogrammetryDimensions,
 } from './modules/PhotogrammetrySession';
 
 // Export the view component
@@ -51,6 +53,8 @@ export type {
   PhotogrammetrySessionState,
   PhotogrammetrySessionOptions,
   PhotogrammetryDirectoryContents,
+  PhotogrammetryDetail,
+  PhotogrammetryDimensions,
 };
 
 // Export hooks and utilities

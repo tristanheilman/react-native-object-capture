@@ -18,6 +18,7 @@ class RNPhotogrammetrySession: RCTEventEmitter {
         return [
             "onProgress",
             "onComplete",
+            "onDimensions",
             "onError",
             "onCancelled",
             "onRequestComplete",
@@ -34,10 +35,36 @@ class RNPhotogrammetrySession: RCTEventEmitter {
         return true
     }
     
+    /// Maps the JS-facing detail name onto `PhotogrammetrySession.Request.Detail`.
+    ///
+    /// Returns `nil` for an unrecognised name so the caller can reject with a useful
+    /// message. An empty string means "unspecified", which is signalled by returning
+    /// `.some(nil)` from `resolveDetail(_:)` below.
+    private static func detailLevel(named name: String) -> PhotogrammetrySession.Request.Detail? {
+        switch name.lowercased() {
+        case "preview": return .preview
+        case "reduced": return .reduced
+        case "medium": return .medium
+        case "full": return .full
+        case "raw": return .raw
+        default: return nil
+        }
+    }
+
+    /// Distinguishes "not specified" (outer `.some`, inner `nil`) from "specified but
+    /// invalid" (outer `nil`).
+    private static func resolveDetail(_ name: String) -> PhotogrammetrySession.Request.Detail?? {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return .some(nil) }
+        guard let level = detailLevel(named: trimmed) else { return nil }
+        return .some(level)
+    }
+
     @objc
-    func startReconstruction(_ inputDirectory: String, 
+    func startReconstruction(_ inputDirectory: String,
             checkpointDirectory: String,
             outputPath: String,
+            detail: String,
             resolver resolve: @escaping RCTPromiseResolveBlock,
             rejecter reject: @escaping RCTPromiseRejectBlock) {
         
@@ -120,23 +147,47 @@ class RNPhotogrammetrySession: RCTEventEmitter {
                     return
                 }
 
-                // Create and configure the session
-                let configuration = PhotogrammetrySession.Configuration()
-                
+                // Resolve the requested detail level before doing any more work, so an
+                // invalid value fails fast with an actionable message.
+                guard let requestedDetail = Self.resolveDetail(detail) else {
+                    reject(
+                        "DETAIL_ERROR",
+                        "Unknown detail level \"\(detail)\". Expected one of: preview, reduced, medium, full, raw.",
+                        nil
+                    )
+                    return
+                }
+
+                // Create and configure the session. The checkpoint directory has to be set
+                // on the configuration - creating the directory alone does nothing.
+                var configuration = PhotogrammetrySession.Configuration()
+                configuration.checkpointDirectory = checkpointURL
+
                 print("Creating session with output URL: \(outputURL.path)")
                 let session = try PhotogrammetrySession(
                     input: inputURL,
                     configuration: configuration
                 )
-                
+
                 // Store the session
                 self.session = session
 
                 self.setupOutputListener()
-                
+
+                // Always request bounds alongside the model. Object Capture already knows
+                // the real-world extent of the subject; requesting it is what makes the
+                // measurement available to JS.
+                let modelRequest: PhotogrammetrySession.Request
+                if let requestedDetail {
+                    modelRequest = .modelFile(url: outputURL, detail: requestedDetail)
+                } else {
+                    modelRequest = .modelFile(url: outputURL)
+                }
+
                 // Start the session
                 try session.process(requests: [
-                    .modelFile(url: outputURL)
+                    modelRequest,
+                    .bounds
                 ])
           
                 resolve(true)
@@ -239,6 +290,22 @@ class RNPhotogrammetrySession: RCTEventEmitter {
                             sendEvent(withName: "onError", body: ["error": errorMessage, "code": errorCode, "request": String(describing: request)])
                         case .requestComplete(let request, let result):
                             print("Request complete")
+                            if case .bounds(let boundingBox) = result {
+                                // extents are in metres, in the captured object's own frame.
+                                let extents = boundingBox.extents
+                                let center = boundingBox.center
+                                print("Bounds: \(extents)")
+                                sendEvent(withName: "onDimensions", body: [
+                                    "width": Double(extents.x),
+                                    "height": Double(extents.y),
+                                    "depth": Double(extents.z),
+                                    "center": [
+                                        "x": Double(center.x),
+                                        "y": Double(center.y),
+                                        "z": Double(center.z)
+                                    ]
+                                ])
+                            }
                             sendEvent(withName: "onRequestComplete", body: [:])
                         case .requestProgress(let request, let fractionComplete):
                             print("Progress: \(fractionComplete)")

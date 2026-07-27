@@ -6,6 +6,7 @@
 RCT_EXTERN_METHOD(startReconstruction:(NSString *)imagesDirectory
                   checkpointDirectory:(NSString *)checkpointDirectory
                   outputPath:(NSString *)outputPath
+                  detail:(NSString *)detail
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 

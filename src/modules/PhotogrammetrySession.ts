@@ -43,6 +43,7 @@ export type PhotogrammetrySessionState = {
 export interface PhotogrammetryEvents {
   onProgress: (event: PhotogrammetryProgress) => void;
   onComplete: () => void;
+  onDimensions: (event: PhotogrammetryDimensions) => void;
   onError: (event: PhotogrammetryError) => void;
   onCancelled: () => void;
   onRequestComplete: () => void;
@@ -58,10 +59,39 @@ export interface PhotogrammetryEvents {
   onUnknownOutput: () => void;
 }
 
+/**
+ * Reconstruction quality. Higher levels take substantially longer and produce
+ * larger files. `reduced` is usually the right choice when the model is being
+ * used for measurement or preview rather than presentation.
+ *
+ * Not every level is available on every device; an unsupported level surfaces
+ * as an `onError` event rather than a rejected promise.
+ */
+export type PhotogrammetryDetail =
+  | 'preview'
+  | 'reduced'
+  | 'medium'
+  | 'full'
+  | 'raw';
+
+/** Real-world size of the captured object, in metres. */
+export type PhotogrammetryDimensions = {
+  width: number;
+  height: number;
+  depth: number;
+  center: {
+    x: number;
+    y: number;
+    z: number;
+  };
+};
+
 export type PhotogrammetrySessionOptions = {
   imagesDirectory: string;
   checkpointDirectory: string;
   outputPath: string;
+  /** Defaults to the framework's own default when omitted. */
+  detail?: PhotogrammetryDetail;
 };
 
 // Define the interface for the native module
@@ -69,7 +99,8 @@ interface RNPhotogrammetrySessionInterface extends NativeModule {
   startReconstruction(
     imagesDirectory: string,
     checkpointDirectory: string,
-    outputPath: string
+    outputPath: string,
+    detail: string
   ): Promise<boolean>;
   cancelReconstruction(): Promise<boolean>;
   listDirectoryContents(
@@ -98,11 +129,13 @@ class PhotogrammetrySession {
     imagesDirectory,
     checkpointDirectory,
     outputPath,
+    detail,
   }: PhotogrammetrySessionOptions) {
     return RNPhotogrammetrySession.startReconstruction(
       imagesDirectory,
       checkpointDirectory,
-      outputPath
+      outputPath,
+      detail ?? ''
     );
   }
 
@@ -128,6 +161,20 @@ class PhotogrammetrySession {
     this.listeners.complete = this.eventEmitter.addListener(
       'onComplete',
       callback
+    );
+  }
+
+  /**
+   * Fires once per reconstruction with the object's real-world size in metres.
+   * Emitted when the bounds request completes, which is typically before
+   * `onComplete`.
+   */
+  addDimensionsListener(callback: (event: PhotogrammetryDimensions) => void) {
+    this.listeners.dimensions = this.eventEmitter.addListener(
+      'onDimensions',
+      (event: PhotogrammetryDimensions) => {
+        callback(event);
+      }
     );
   }
 

@@ -29,7 +29,32 @@ describe('RNPhotogrammetrySession', () => {
       ).toHaveBeenCalledWith(
         mockOptions.imagesDirectory,
         mockOptions.checkpointDirectory,
-        mockOptions.outputPath
+        mockOptions.outputPath,
+        ''
+      );
+    });
+
+    it('should pass the detail level through to the native module', async () => {
+      const mockOptions = {
+        imagesDirectory: '/path/to/input',
+        checkpointDirectory: '/path/to/checkpoints',
+        outputPath: 'Outputs/model.usdz',
+        detail: 'reduced' as const,
+      };
+
+      (
+        NativeModules.RNPhotogrammetrySession.startReconstruction as jest.Mock
+      ).mockResolvedValue(true);
+
+      await PhotogrammetrySession.startReconstruction(mockOptions);
+
+      expect(
+        NativeModules.RNPhotogrammetrySession.startReconstruction
+      ).toHaveBeenCalledWith(
+        mockOptions.imagesDirectory,
+        mockOptions.checkpointDirectory,
+        mockOptions.outputPath,
+        'reduced'
       );
     });
 
@@ -112,6 +137,43 @@ describe('RNPhotogrammetrySession', () => {
       photogrammetryEmitter.emit('onComplete');
 
       expect(mockCallback).toHaveBeenCalled();
+    });
+
+    it('should add and remove dimensions listener', () => {
+      const mockCallback = jest.fn();
+      const addListenerSpy = jest.spyOn(photogrammetryEmitter, 'addListener');
+      const removeListenerSpy = jest.spyOn(
+        PhotogrammetrySession,
+        'removeAllListeners'
+      );
+
+      PhotogrammetrySession.addDimensionsListener(mockCallback);
+
+      expect(addListenerSpy).toHaveBeenCalledWith(
+        'onDimensions',
+        expect.any(Function)
+      );
+
+      PhotogrammetrySession.removeAllListeners();
+
+      expect(mockCallback).not.toHaveBeenCalled();
+      expect(addListenerSpy).toHaveBeenCalledTimes(1);
+      expect(removeListenerSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('should call the callback with metric dimensions when emitted', () => {
+      const mockCallback = jest.fn();
+      const dimensions = {
+        width: 0.82,
+        height: 1.04,
+        depth: 0.45,
+        center: { x: 0, y: 0.52, z: 0 },
+      };
+
+      PhotogrammetrySession.addDimensionsListener(mockCallback);
+      photogrammetryEmitter.emit('onDimensions', dimensions);
+
+      expect(mockCallback).toHaveBeenCalledWith(dimensions);
     });
 
     it('should add and remove error listener', () => {

@@ -6,7 +6,7 @@
   "types": "./lib/typescript/src/index.d.ts",
   "exports": {
     ".": {
-      "source": "./src/index.tsx",
+      "source": "./src/index.ts",
       "types": "./lib/typescript/src/index.d.ts",
       "default": "./lib/module/index.js"
     },
@@ -163,6 +163,13 @@
     "jsSrcsDir": "src/specs",
     "android": {
       "javaPackageName": "com.objectcapture"
+    },
+    "ios": {
+      "componentProvider": {
+        "RNObjectCaptureView": "RNObjectCaptureViewComponentView",
+        "RNObjectCapturePointCloudView": "RNObjectCapturePointCloudViewComponentView",
+        "RNQuickLookView": "RNQuickLookViewComponentView"
+      }
     }
   },
   "create-react-native-library": {

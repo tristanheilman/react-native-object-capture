@@ -37,16 +37,14 @@ class RNPhotogrammetrySession: RCTEventEmitter {
     
     /// Maps the JS-facing detail name onto `PhotogrammetrySession.Request.Detail`.
     ///
-    /// Returns `nil` for an unrecognised name so the caller can reject with a useful
-    /// message. An empty string means "unspecified", which is signalled by returning
-    /// `.some(nil)` from `resolveDetail(_:)` below.
+    /// On iOS, `PhotogrammetrySession.Request.Detail` only exposes `.reduced` — the
+    /// other cases (.preview, .medium, .full, .raw) are macOS-only. Returns `nil` for
+    /// an unrecognised name so the caller can reject with a useful message. An empty
+    /// string means "unspecified", signalled by returning `.some(nil)` from
+    /// `resolveDetail(_:)` below.
     private static func detailLevel(named name: String) -> PhotogrammetrySession.Request.Detail? {
         switch name.lowercased() {
-        case "preview": return .preview
         case "reduced": return .reduced
-        case "medium": return .medium
-        case "full": return .full
-        case "raw": return .raw
         default: return nil
         }
     }
@@ -152,7 +150,7 @@ class RNPhotogrammetrySession: RCTEventEmitter {
                 guard let requestedDetail = Self.resolveDetail(detail) else {
                     reject(
                         "DETAIL_ERROR",
-                        "Unknown detail level \"\(detail)\". Expected one of: preview, reduced, medium, full, raw.",
+                        "Unknown detail level \"\(detail)\". On iOS the only supported value is \"reduced\".",
                         nil
                     )
                     return

@@ -25,8 +25,8 @@ export type DirectoryContents = {
 
 export interface Spec extends TurboModule {
   /**
-   * `detail` is one of preview/reduced/medium/full/raw, or an empty string to
-   * use the framework default. It is a plain string rather than a union
+   * `detail` is `"reduced"` (the only level available on iOS) or an empty
+   * string to use the framework default. Plain string rather than a union
    * because codegen does not support string unions in module signatures.
    */
   startReconstruction(

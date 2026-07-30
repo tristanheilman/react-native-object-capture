@@ -61,19 +61,11 @@ export interface PhotogrammetryEvents {
 }
 
 /**
- * Reconstruction quality. Higher levels take substantially longer and produce
- * larger files. `reduced` is usually the right choice when the model is being
- * used for measurement or preview rather than presentation.
- *
- * Not every level is available on every device; an unsupported level surfaces
- * as an `onError` event rather than a rejected promise.
+ * Reconstruction quality. On iOS, only `'reduced'` is supported by
+ * `PhotogrammetrySession.Request.Detail` — the other levels exist on macOS only.
+ * Passing an unsupported level rejects the promise with DETAIL_ERROR.
  */
-export type PhotogrammetryDetail =
-  | 'preview'
-  | 'reduced'
-  | 'medium'
-  | 'full'
-  | 'raw';
+export type PhotogrammetryDetail = 'reduced';
 
 /** Real-world size of the captured object, in metres. */
 export type PhotogrammetryDimensions = {

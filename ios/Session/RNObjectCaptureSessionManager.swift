@@ -28,6 +28,16 @@ class RNObjectCaptureSessionManager: NSObject, ObservableObject {
     private var checkpointDirectory: String = "Snapshots/"
     // Images directory file path
     private var imagesDirectory: String = "Images/"
+    // Fabric callbacks for ObjectCaptureView events
+    var fabricCaptureOnSessionStateChange: ((String) -> Void)?
+    var fabricCaptureOnTrackingStateChange: ((String) -> Void)?
+    var fabricCaptureOnFeedbackStateChange: (([String]) -> Void)?
+    var fabricCaptureOnCaptureComplete: ((Bool) -> Void)?
+    var fabricCaptureOnScanPassCompleted: ((Bool) -> Void)?
+    var fabricCaptureOnError: ((String) -> Void)?
+    // Fabric callbacks for PointCloudView events
+    var fabricPointCloudOnAppear: (() -> Void)?
+    var fabricPointCloudOnCloudPointViewAppear: (() -> Void)?
 
     private override init() {
         super.init()
@@ -74,6 +84,7 @@ class RNObjectCaptureSessionManager: NSObject, ObservableObject {
         self.eventEmitter?.sendEvent(withName: "onScanPassCompleted", body: [
             "completed": completed
         ])
+        fabricCaptureOnScanPassCompleted?(completed)
         numberOfScanPassCompleted += 1
     }
 
@@ -83,6 +94,7 @@ class RNObjectCaptureSessionManager: NSObject, ObservableObject {
         self.eventEmitter?.sendEvent(withName: "onCaptureComplete", body: [
             "completed": completed
         ])
+        fabricCaptureOnCaptureComplete?(completed)
     }
 
     @objc
@@ -91,6 +103,7 @@ class RNObjectCaptureSessionManager: NSObject, ObservableObject {
         self.eventEmitter?.sendEvent(withName: "onFeedbackStateChange", body: [
             "feedback": feedback
         ])
+        fabricCaptureOnFeedbackStateChange?(feedback)
     }
 
     @objc
@@ -99,6 +112,7 @@ class RNObjectCaptureSessionManager: NSObject, ObservableObject {
         self.eventEmitter?.sendEvent(withName: "onTrackingStateChange", body: [
             "tracking": tracking
         ])
+        fabricCaptureOnTrackingStateChange?(tracking)
     }
 
     @objc
@@ -107,24 +121,28 @@ class RNObjectCaptureSessionManager: NSObject, ObservableObject {
         self.eventEmitter?.sendEvent(withName: "onSessionStateChange", body: [
             "state": state
         ])
+        fabricCaptureOnSessionStateChange?(state)
     }
 
     @objc
     func onError(_ node: NSNumber, error: String) {
-      self.viewManager?.onError(node, error: error)
-      self.eventEmitter?.sendEvent(withName: "onError", body: [
-        "error": error
-      ])
+        self.viewManager?.onError(node, error: error)
+        self.eventEmitter?.sendEvent(withName: "onError", body: [
+            "error": error
+        ])
+        fabricCaptureOnError?(error)
     }
 
     @objc
     func onCloudPointViewAppear(_ node: NSNumber) {
         self.pointCloudViewManager?.onCloudPointViewAppear(node)
+        fabricPointCloudOnCloudPointViewAppear?()
     }
 
     @objc
     func onAppear(_ node: NSNumber) {
         self.pointCloudViewManager?.onAppear(node)
+        fabricPointCloudOnAppear?()
     }
 
     @MainActor

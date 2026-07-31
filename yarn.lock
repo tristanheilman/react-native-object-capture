@@ -9528,8 +9528,8 @@ __metadata:
     turbo: ^1.10.7
     typescript: ^5.8.3
   peerDependencies:
-    react: "*"
-    react-native: "*"
+    react: ">=18.2.0"
+    react-native: ">=0.79.0"
   languageName: unknown
   linkType: soft
 

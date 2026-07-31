@@ -9436,16 +9436,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-is-edge-to-edge@npm:^1.1.7":
-  version: 1.1.7
-  resolution: "react-native-is-edge-to-edge@npm:1.1.7"
-  peerDependencies:
-    react: "*"
-    react-native: "*"
-  checksum: 4cdf2b2fb5b131f2015c26d2cb7688b4a0c5f3c8474b1bf0ddfa9eabb0263df440c87262ae8f812a6ecab0d5310df0373bddad4b51f53dabb2ffee01e9ef0f44
-  languageName: node
-  linkType: hard
-
 "react-native-monorepo-config@npm:^0.1.8, react-native-monorepo-config@npm:^0.1.9":
   version: 0.1.9
   resolution: "react-native-monorepo-config@npm:0.1.9"
@@ -9478,7 +9468,7 @@ __metadata:
     react-native-monorepo-config: ^0.1.9
     react-native-permissions: ^5.4.1
     react-native-safe-area-context: ^5.5.2
-    react-native-screens: ^4.10.0
+    react-native-screens: ~4.20.0
   languageName: unknown
   linkType: soft
 
@@ -9541,17 +9531,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-screens@npm:^4.10.0":
-  version: 4.11.1
-  resolution: "react-native-screens@npm:4.11.1"
+"react-native-screens@npm:~4.20.0":
+  version: 4.20.0
+  resolution: "react-native-screens@npm:4.20.0"
   dependencies:
     react-freeze: ^1.0.0
-    react-native-is-edge-to-edge: ^1.1.7
     warn-once: ^0.1.0
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 22d3c302ef90a1cb20eed8c130b32e53d49288a19eba844f506a5e38342ef2add0d4f7a2ff5501cc05052aef6bf7f180db26a067b01f70f3cc12d3e1497329d6
+  checksum: 7fcecd7d710708476ecb431b0e33efce7fa950d2731ef8f3fa2cbb6c57cd3adeffe1b1d4b29e9449cb72e4bc8b72e57498c9c6286b49e66665ca11ff853381fd
   languageName: node
   linkType: hard
 

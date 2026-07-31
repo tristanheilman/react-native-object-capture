@@ -16,7 +16,7 @@
     "react-native": "0.83.10",
     "react-native-permissions": "^5.4.1",
     "react-native-safe-area-context": "^5.5.2",
-    "react-native-screens": "^4.10.0"
+    "react-native-screens": "~4.20.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

@@ -17,16 +17,17 @@ Pod::Spec.new do |s|
   s.private_header_files = "ios/**/*.h"
   
   s.swift_version = "5.0"
-  
+
   s.pod_target_xcconfig = {
     'DEFINES_MODULE' => 'YES',
-    'SWIFT_VERSION' => '5.0',
-    'HEADER_SEARCH_PATHS' => '"$(PODS_ROOT)/Headers/Public/React-Core" "$(PODS_ROOT)/Headers/Public/ReactCommon" "$(PODS_ROOT)/Headers/Public/React-RCTFabric" "$(PODS_ROOT)/Headers/Public/React-Codegen"'
+    'SWIFT_VERSION' => '5.0'
   }
 
-  s.dependency "React-Core"
-  s.dependency "React-Codegen"
-  s.dependency "React-RCTFabric"
+  # React-Core, ReactCommon, React-RCTFabric and the generated codegen pod are
+  # all wired up by install_modules_dependencies below. They must not be listed
+  # explicitly: the codegen pod was renamed from "React-Codegen" to
+  # "ReactCodegen" in React Native 0.75, so a hard dependency on the old name
+  # fails to resolve on any current version.
 
   # Add info.plist entries
   s.info_plist = {

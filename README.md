@@ -1,12 +1,16 @@
 # react-native-object-capture
 
 > ⚠️ **WARNING: This library is currently in active development and is NOT ready for production use.**
-> 
+>
+> - **This library still targets the legacy React Native architecture.** React Native 0.82
+>   removed the ability to opt out of the New Architecture and 0.83 removed the legacy code
+>   entirely, so on current React Native this works only through the deprecated interop layer.
+>   A Fabric/TurboModule migration is the next planned change — see [`docs/ROADMAP.md`](docs/ROADMAP.md)
 > - The implementation is incomplete and may contain bugs
 > - API changes are likely to occur
 > - Some features may not work as expected
 > - Testing has been limited to specific devices and scenarios
-> 
+>
 > Use at your own risk and expect breaking changes in future releases.
 
 [![CI](https://github.com/tristanheilman/react-native-object-capture/actions/workflows/ci.yml/badge.svg)](https://github.com/tristanheilman/react-native-object-capture/actions/workflows/ci.yml)
@@ -69,6 +73,7 @@ The main component for capturing 3D objects. It provides a camera interface with
 | `startCapturing` | When called the Object Capture Session will transition from SessionState.detecting to SessionState.capturing |
 | `beginNewScanAfterFlip` | If the object is flippable, then calling this method will begin a new capture session to capture a new orientation of the object |
 | `beginNewScan` | When called this method will begin a new scan for the Object Capture Session |
+| `finishSession` | Ends the capture session and finalises the captured images, so they can be handed to a `PhotogrammetrySession`. Call this once all scan passes are complete |
 | `cancelSession` | Call this method when cleaning up and tearing down the Object Capture Session |
 | `isDeviceSupported` | Resumes boolean value indicating if the device supports AR and LiDAR |
 | `getSessionState` | Returns the current SessionState |
@@ -361,11 +366,12 @@ Handles the processing of captured images into a 3D model. This component manage
 
 | Event Listener | Callback | Description |
 |-------|------|-------------|
-| `addProgressListner` | (progress: number) => void | Fired when reconstruction progress updates |
+| `addProgressListener` | (progress: number) => void | Fired when reconstruction progress updates |
 | `addCompleteListener` | () => void | Fired when reconstruction is successfully completed |
+| `addDimensionsListener` | (dimensions: PhotogrammetryDimensions) => void | Fired once per reconstruction with the object's real-world size in **metres**. See [Dimensions](#dimensions) below |
 | `addErrorListener` | (error: string) => void | Fired when an error occurs during reconstruction |
 | `addCancelledListener` | () => void | Fired when reconstruction is cancelled |
-| `addRequestCompletListener` | () => void | Fired when request is completed |
+| `addRequestCompleteListener` | () => void | Fired when request is completed |
 | `addInputCompleteListener` | () => void | Fired when input processing is completed |
 | `addInvalidSampleListener` | ({ id: string, reason: string }) | Fired when a sample is invalid |
 | `addSkippedSampleListener` | ({ id: string }) => void | Fired when a sample is skipped |
@@ -376,9 +382,44 @@ Handles the processing of captured images into a 3D model. This component manage
 #### Methods
 | Method | Paramaters | Description |
 |--------|------------|-------------|
-| `startReconstruction` | (config: ReconstructionConfig) => void | Starts the 3D model reconstruction process |
-| `cancelReconstruction` | () => void | Cancels an ongoing reconstruction |
+| `startReconstruction` | (options: PhotogrammetrySessionOptions) => Promise&lt;boolean&gt; | Starts the 3D model reconstruction process |
+| `cancelReconstruction` | () => Promise&lt;boolean&gt; | Cancels an ongoing reconstruction |
+| `listDirectoryContents` | (directory: string) => Promise&lt;PhotogrammetryDirectoryContents&gt; | Lists files in a directory relative to the app's documents directory |
 | `removeAllListeners` | () => void | Call this to cleanup any added listeners |
+
+##### `PhotogrammetrySessionOptions`
+
+| Option | Type | Required | Description |
+|--------|------|----------|-------------|
+| `imagesDirectory` | String | Yes | Directory containing the captured images, relative to the documents directory |
+| `checkpointDirectory` | String | Yes | Directory used for reconstruction checkpoints |
+| `outputPath` | String | Yes | Where to write the model, relative to the documents directory. Accepts a bare filename (`'model.usdz'`) or any nesting depth (`'Outputs/chair/model.usdz'`). Must include a file extension |
+| `detail` | `'preview' \| 'reduced' \| 'medium' \| 'full' \| 'raw'` | No | Reconstruction quality. Higher levels take substantially longer and produce larger files. Defaults to the framework's own default. Not every level is available on every device — an unsupported level surfaces via `addErrorListener` |
+
+#### Dimensions
+
+Every reconstruction requests the object's bounding box alongside the model, so you get the
+subject's real-world size without any extra work. All values are in **metres**.
+
+```ts
+type PhotogrammetryDimensions = {
+  width: number;   // extent along X
+  height: number;  // extent along Y
+  depth: number;   // extent along Z
+  center: { x: number; y: number; z: number };
+};
+```
+
+```jsx
+PhotogrammetrySession.addDimensionsListener(({ width, height, depth }) => {
+  console.log(
+    `${(width * 100).toFixed(1)} x ${(depth * 100).toFixed(1)} x ${(height * 100).toFixed(1)} cm`
+  );
+});
+```
+
+`onDimensions` fires when the bounds request completes, which is typically *before*
+`onComplete`.
 
 ```jsx
 import { useEffect, useState } from 'react';
@@ -386,12 +427,15 @@ import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import {
   PhotogrammetrySession,
   type PhotogrammetrySessionOptions,
+  type PhotogrammetryDimensions,
 } from 'react-native-object-capture';
 
 export default function PhotogrammetryScreen() {
   const [error, setError] = useState<Error | null>(null);
   const [progress, setProgress] = useState<number>(0);
   const [result, setResult] = useState<string | null>(null);
+  const [dimensions, setDimensions] =
+    useState<PhotogrammetryDimensions | null>(null);
 
   const handleStartReconstruction = async () => {
     try {
@@ -399,6 +443,9 @@ export default function PhotogrammetryScreen() {
         imagesDirectory: 'Images/',
         checkpointDirectory: 'Snapshots/',
         outputPath: 'Reconstruction/model.usdz',
+        // 'reduced' is a good default when the model is used for measurement
+        // or preview rather than presentation.
+        detail: 'reduced',
       });
     } catch (error) {
       console.error('Reconstruction failed:', error);
@@ -416,6 +463,10 @@ export default function PhotogrammetryScreen() {
     PhotogrammetrySession.addErrorListener((err) => {
       console.log('error', err);
       setError(new Error(err));
+    });
+    PhotogrammetrySession.addDimensionsListener((dimensions) => {
+      // Real-world size in metres.
+      setDimensions(dimensions);
     });
     PhotogrammetrySession.addCompleteListener(() => {
       setResult('completed');

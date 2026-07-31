@@ -4,6 +4,7 @@ import {
   type NativeModule,
   type NativeSyntheticEvent,
 } from 'react-native';
+import NativePhotogrammetrySession from '../specs/NativePhotogrammetrySession';
 
 export type PhotogrammetryProgress = {
   progress: number;
@@ -43,6 +44,7 @@ export type PhotogrammetrySessionState = {
 export interface PhotogrammetryEvents {
   onProgress: (event: PhotogrammetryProgress) => void;
   onComplete: () => void;
+  onDimensions: (event: PhotogrammetryDimensions) => void;
   onError: (event: PhotogrammetryError) => void;
   onCancelled: () => void;
   onRequestComplete: () => void;
@@ -58,10 +60,31 @@ export interface PhotogrammetryEvents {
   onUnknownOutput: () => void;
 }
 
+/**
+ * Reconstruction quality. On iOS, only `'reduced'` is supported by
+ * `PhotogrammetrySession.Request.Detail` — the other levels exist on macOS only.
+ * Passing an unsupported level rejects the promise with DETAIL_ERROR.
+ */
+export type PhotogrammetryDetail = 'reduced';
+
+/** Real-world size of the captured object, in metres. */
+export type PhotogrammetryDimensions = {
+  width: number;
+  height: number;
+  depth: number;
+  center: {
+    x: number;
+    y: number;
+    z: number;
+  };
+};
+
 export type PhotogrammetrySessionOptions = {
   imagesDirectory: string;
   checkpointDirectory: string;
   outputPath: string;
+  /** Defaults to the framework's own default when omitted. */
+  detail?: PhotogrammetryDetail;
 };
 
 // Define the interface for the native module
@@ -69,7 +92,8 @@ interface RNPhotogrammetrySessionInterface extends NativeModule {
   startReconstruction(
     imagesDirectory: string,
     checkpointDirectory: string,
-    outputPath: string
+    outputPath: string,
+    detail: string
   ): Promise<boolean>;
   cancelReconstruction(): Promise<boolean>;
   listDirectoryContents(
@@ -77,9 +101,10 @@ interface RNPhotogrammetrySessionInterface extends NativeModule {
   ): Promise<PhotogrammetryDirectoryContents>;
 }
 
-// Export the native module with proper typing
-export const RNPhotogrammetrySession =
-  NativeModules.RNPhotogrammetrySession as RNPhotogrammetrySessionInterface;
+// Resolved through TurboModuleRegistry, which falls back to NativeModules when
+// the New Architecture is not enabled, so this works under both.
+export const RNPhotogrammetrySession = (NativePhotogrammetrySession ??
+  NativeModules.RNPhotogrammetrySession) as RNPhotogrammetrySessionInterface;
 
 // Export the event emitter
 export const photogrammetryEmitter = new NativeEventEmitter(
@@ -98,11 +123,13 @@ class PhotogrammetrySession {
     imagesDirectory,
     checkpointDirectory,
     outputPath,
+    detail,
   }: PhotogrammetrySessionOptions) {
     return RNPhotogrammetrySession.startReconstruction(
       imagesDirectory,
       checkpointDirectory,
-      outputPath
+      outputPath,
+      detail ?? ''
     );
   }
 
@@ -128,6 +155,20 @@ class PhotogrammetrySession {
     this.listeners.complete = this.eventEmitter.addListener(
       'onComplete',
       callback
+    );
+  }
+
+  /**
+   * Fires once per reconstruction with the object's real-world size in metres.
+   * Emitted when the bounds request completes, which is typically before
+   * `onComplete`.
+   */
+  addDimensionsListener(callback: (event: PhotogrammetryDimensions) => void) {
+    this.listeners.dimensions = this.eventEmitter.addListener(
+      'onDimensions',
+      (event: PhotogrammetryDimensions) => {
+        callback(event);
+      }
     );
   }
 

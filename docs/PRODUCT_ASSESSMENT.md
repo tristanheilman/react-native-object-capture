@@ -4,6 +4,12 @@ An honest read on what `react-native-object-capture` currently is, what the orig
 "will my furniture fit in this apartment" idea would actually require, what the market
 looks like now that generative 3D has landed, and where (if anywhere) the money is.
 
+> **Update (post-assessment):** the top engineering recommendation below — migrating to the New
+> Architecture (§2.1, §5) — has since shipped. The library now uses Fabric component views and
+> TurboModules, and the example builds green on iOS and Android in CI (device verification still
+> pending). See [`ROADMAP.md`](ROADMAP.md) for current status. The market analysis is unchanged
+> and preserved as written.
+
 ---
 
 ## 1. What we actually have today

@@ -28,6 +28,16 @@ class RNObjectCaptureSessionManager: NSObject, ObservableObject {
     private var checkpointDirectory: String = "Snapshots/"
     // Images directory file path
     private var imagesDirectory: String = "Images/"
+    // Fabric callbacks for ObjectCaptureView events
+    var fabricCaptureOnSessionStateChange: ((String) -> Void)?
+    var fabricCaptureOnTrackingStateChange: ((String) -> Void)?
+    var fabricCaptureOnFeedbackStateChange: (([String]) -> Void)?
+    var fabricCaptureOnCaptureComplete: ((Bool) -> Void)?
+    var fabricCaptureOnScanPassCompleted: ((Bool) -> Void)?
+    var fabricCaptureOnError: ((String) -> Void)?
+    // Fabric callbacks for PointCloudView events
+    var fabricPointCloudOnAppear: (() -> Void)?
+    var fabricPointCloudOnCloudPointViewAppear: (() -> Void)?
 
     private override init() {
         super.init()
@@ -74,6 +84,7 @@ class RNObjectCaptureSessionManager: NSObject, ObservableObject {
         self.eventEmitter?.sendEvent(withName: "onScanPassCompleted", body: [
             "completed": completed
         ])
+        fabricCaptureOnScanPassCompleted?(completed)
         numberOfScanPassCompleted += 1
     }
 
@@ -83,6 +94,7 @@ class RNObjectCaptureSessionManager: NSObject, ObservableObject {
         self.eventEmitter?.sendEvent(withName: "onCaptureComplete", body: [
             "completed": completed
         ])
+        fabricCaptureOnCaptureComplete?(completed)
     }
 
     @objc
@@ -91,6 +103,7 @@ class RNObjectCaptureSessionManager: NSObject, ObservableObject {
         self.eventEmitter?.sendEvent(withName: "onFeedbackStateChange", body: [
             "feedback": feedback
         ])
+        fabricCaptureOnFeedbackStateChange?(feedback)
     }
 
     @objc
@@ -99,6 +112,7 @@ class RNObjectCaptureSessionManager: NSObject, ObservableObject {
         self.eventEmitter?.sendEvent(withName: "onTrackingStateChange", body: [
             "tracking": tracking
         ])
+        fabricCaptureOnTrackingStateChange?(tracking)
     }
 
     @objc
@@ -107,91 +121,67 @@ class RNObjectCaptureSessionManager: NSObject, ObservableObject {
         self.eventEmitter?.sendEvent(withName: "onSessionStateChange", body: [
             "state": state
         ])
+        fabricCaptureOnSessionStateChange?(state)
     }
 
     @objc
     func onError(_ node: NSNumber, error: String) {
-      self.viewManager?.onError(node, error: error)
-      self.eventEmitter?.sendEvent(withName: "onError", body: [
-        "error": error
-      ])
+        self.viewManager?.onError(node, error: error)
+        self.eventEmitter?.sendEvent(withName: "onError", body: [
+            "error": error
+        ])
+        fabricCaptureOnError?(error)
     }
 
     @objc
     func onCloudPointViewAppear(_ node: NSNumber) {
         self.pointCloudViewManager?.onCloudPointViewAppear(node)
+        fabricPointCloudOnCloudPointViewAppear?()
     }
 
     @objc
     func onAppear(_ node: NSNumber) {
         self.pointCloudViewManager?.onAppear(node)
+        fabricPointCloudOnAppear?()
     }
 
     @MainActor
     func setupSession(completion: @escaping (Bool, String?) -> Void) {
-        print("Setting up session") // Debug log
-        
-        // Clean up any existing session
+        print("Setting up session")
+
         cleanupSession { [weak self] success, error in
             guard let self = self else { return }
-            
-            // Check if device supports Object Capture
+
             if !ObjectCaptureSession.isSupported {
                 print("Object Capture is not supported on this device")
-                self.eventEmitter?.sendEvent(withName: "onError", body: [
-                    "message": "Object Capture is not supported on this device"
-                ])
                 completion(false, "Object Capture is not supported on this device")
                 return
             }
-            
-            // Check if Metal is available and properly configured
+
             guard let metalDevice = MTLCreateSystemDefaultDevice() else {
                 print("Failed to create Metal device")
-                self.eventEmitter?.sendEvent(withName: "onError", body: [
-                    "message": "Failed to create Metal device"
-                ])
                 completion(false, "Failed to create Metal device")
                 return
             }
-            
-            print("Metal device: \(metalDevice.name)")
-            
+
             guard (metalDevice.makeCommandQueue()) != nil else {
                 print("Failed to create Metal command queue")
-                self.eventEmitter?.sendEvent(withName: "onError", body: [
-                    "message": "Failed to create Metal command queue"
-                ])
                 completion(false, "Failed to create Metal command queue")
                 return
             }
-            print("Metal command queue created successfully")
 
-            // Check for required Metal GPU families
-            let requiredFamilies: [MTLGPUFamily] = [
-                .apple4,  // iOS GPU Family 4
-                .apple5   // iOS GPU Family 5
-            ]
-            
+            let requiredFamilies: [MTLGPUFamily] = [.apple4, .apple5]
             for family in requiredFamilies {
                 if !metalDevice.supportsFamily(family) {
-                    print("Device does not support required Metal GPU family: \(family)")
-                    self.eventEmitter?.sendEvent(withName: "onError", body: [
-                        "message": "Device does not support required Metal GPU family: \(family)"
-                    ])
                     completion(false, "Device does not support required Metal GPU family: \(family)")
                     return
                 }
             }
-            
-            // Check camera permissions
+
             let cameraAuthStatus = AVCaptureDevice.authorizationStatus(for: .video)
             if cameraAuthStatus != .authorized {
                 AVCaptureDevice.requestAccess(for: .video) { granted in
                     if !granted {
-                        self.eventEmitter?.sendEvent(withName: "onError", body: [
-                            "message": "Camera permission not granted"
-                        ])
                         completion(false, "Camera permission not granted")
                         return
                     }
@@ -205,7 +195,6 @@ class RNObjectCaptureSessionManager: NSObject, ObservableObject {
     
     @MainActor
     private func finishSetup(completion: @escaping (Bool, String?) -> Void) {
-        // Create new configuration
         let appendedCheckpointDir = self.getCheckpointDirectory()
         
         // Create checkpoint directory if it doesn't exist
@@ -256,15 +245,11 @@ class RNObjectCaptureSessionManager: NSObject, ObservableObject {
             }
         }
 
-        // Create and configure new session
         let newSession = ObjectCaptureSession()
-        
-        // Start the session
         newSession.start(imagesDirectory: self.getImagesDirectory(), configuration: config)
         self.session = newSession
         self.configuration = config
-        
-        print("Session started successfully") // Debug log
+        print("Session started successfully")
         completion(true, nil)
     }
     

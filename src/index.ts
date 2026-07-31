@@ -20,6 +20,8 @@ import PhotogrammetrySession, {
   type PhotogrammetrySessionState,
   type PhotogrammetrySessionOptions,
   type PhotogrammetryDirectoryContents,
+  type PhotogrammetryDetail,
+  type PhotogrammetryDimensions,
 } from './modules/PhotogrammetrySession';
 
 // Export the view component
@@ -51,10 +53,19 @@ export type {
   PhotogrammetrySessionState,
   PhotogrammetrySessionOptions,
   PhotogrammetryDirectoryContents,
+  PhotogrammetryDetail,
+  PhotogrammetryDimensions,
 };
 
 // Export hooks and utilities
 export { PhotogrammetrySession };
+
+/**
+ * Imperative control over the shared Object Capture session. Prefer this over
+ * the `ObjectCaptureView` ref - the session is a singleton natively, so these
+ * calls were never scoped to a view instance.
+ */
+export { default as ObjectCaptureSession } from './modules/ObjectCaptureSession';
 
 // Export constants
 export const ObjectCaptureConstants = ObjectCapture.constants;

@@ -5,13 +5,6 @@ import {
   ObjectCapturePointCloudView,
   type ObjectCapturePointCloudViewRef,
 } from '../index';
-import * as Handle from 'react-native/Libraries/ReactNative/RendererProxy';
-import type { QueryByQuery } from '@testing-library/react-native/build/queries/make-queries';
-import type {
-  TextMatch,
-  TextMatchOptions,
-} from '@testing-library/react-native/build/matches';
-import type { CommonQueryOptions } from '@testing-library/react-native/build/queries/options';
 
 describe('RNObjectCapturePointCloudView', () => {
   beforeEach(() => {
@@ -78,10 +71,12 @@ describe('RNObjectCapturePointCloudView', () => {
   describe('imperative methods', () => {
     let ref: React.RefObject<ObjectCapturePointCloudViewRef | null>;
 
+    // Both ref methods read from the shared session rather than from this view,
+    // so they delegate to the session module. No react tag is involved.
     beforeEach(() => {
       jest.clearAllMocks();
+      Platform.OS = 'ios';
       ref = React.createRef();
-
       render(
         <ObjectCapturePointCloudView
           ref={ref}
@@ -91,134 +86,64 @@ describe('RNObjectCapturePointCloudView', () => {
       );
     });
 
-    afterEach(() => {
-      if (ref.current) {
-        ref.current = null;
-      }
-    });
-
-    it('calls getUserCompletedScanPass on native module', async () => {
-      await act(async () => {
-        await ref.current?.getUserCompletedScanPass();
-      });
-
-      expect(
-        NativeModules.RNObjectCapturePointCloudView.getUserCompletedScanPass
-      ).toHaveBeenCalledTimes(1);
-    });
-
-    it('calls getSessionState on native module', async () => {
-      await act(async () => {
-        await ref.current?.getSessionState();
-      });
-
-      expect(
-        NativeModules.RNObjectCapturePointCloudView.getSessionState
-      ).toHaveBeenCalledTimes(1);
-    });
-
-    it('gets session state from native module', async () => {
-      const mockState = 'ready';
+    it('calls getSessionState on the session module', async () => {
       (
-        NativeModules.RNObjectCapturePointCloudView.getSessionState as jest.Mock
-      ).mockResolvedValue(mockState);
+        NativeModules.RNObjectCaptureSession.getSessionState as jest.Mock
+      ).mockResolvedValue('capturing');
 
-      const state = await act(async () => {
-        return await ref.current?.getSessionState();
+      await act(async () => {
+        await expect(ref.current?.getSessionState()).resolves.toBe('capturing');
       });
 
-      expect(state).toBe(mockState);
       expect(
-        NativeModules.RNObjectCapturePointCloudView.getSessionState
-      ).toHaveBeenCalledTimes(1);
+        NativeModules.RNObjectCaptureSession.getSessionState
+      ).toHaveBeenCalledWith();
+    });
+
+    it('calls getUserCompletedScanPass on the session module', async () => {
+      (
+        NativeModules.RNObjectCaptureSession
+          .getUserCompletedScanState as jest.Mock
+      ).mockResolvedValue(true);
+
+      await act(async () => {
+        await expect(ref.current?.getUserCompletedScanPass()).resolves.toBe(
+          true
+        );
+      });
+
+      expect(
+        NativeModules.RNObjectCaptureSession.getUserCompletedScanState
+      ).toHaveBeenCalledWith();
+    });
+
+    it('propagates native errors', async () => {
+      (
+        NativeModules.RNObjectCaptureSession.getSessionState as jest.Mock
+      ).mockRejectedValue(new Error('No active session'));
+
+      await act(async () => {
+        await expect(ref.current?.getSessionState()).rejects.toThrow(
+          'No active session'
+        );
+      });
     });
   });
 
-  describe('error handling for android', () => {
-    let query: QueryByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>;
-
-    beforeEach(() => {
-      jest.clearAllMocks();
-      Platform.OS = 'android';
-
-      const { queryByTestId } = render(
-        <ObjectCapturePointCloudView
-          checkpointDirectory="test"
-          imagesDirectory="test"
-        />
-      );
-
-      query = queryByTestId;
-    });
-
-    it('returns null when platform is not iOS', () => {
-      expect(query('RNObjectCapturePointCloudView')).toBeNull();
-    });
-  });
-
-  describe('error handling invalid node handle', () => {
-    let ref: React.RefObject<ObjectCapturePointCloudViewRef | null>;
-    let query: QueryByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>;
-
-    beforeEach(() => {
-      jest.clearAllMocks();
+  describe('on non-iOS platforms', () => {
+    afterEach(() => {
       Platform.OS = 'ios';
-      jest.spyOn(Handle, 'findNodeHandle').mockReturnValue(null);
-      ref = React.createRef();
+    });
+
+    it('renders nothing', () => {
+      Platform.OS = 'android';
       const { queryByTestId } = render(
         <ObjectCapturePointCloudView
-          ref={ref}
           checkpointDirectory="test"
           imagesDirectory="test"
         />
       );
-
-      query = queryByTestId;
-    });
-
-    it('fails to call getUserCompletedScanPass on native module', async () => {
-      await expect(ref.current?.getUserCompletedScanPass()).rejects.toThrow(
-        'View node not found'
-      );
-    });
-
-    it('fails to call getSessionState on native module', async () => {
-      await expect(ref.current?.getSessionState()).rejects.toThrow(
-        'View node not found'
-      );
-    });
-
-    it('fails to call checkScanPass on native module', async () => {
-      const event = {
-        nativeEvent: {
-          target: 1,
-        },
-      };
-
-      await expect(
-        query('RNObjectCapturePointCloudView').props.onAppear(event)
-      ).rejects.toThrow('View node not found');
+      expect(queryByTestId('RNObjectCapturePointCloudView')).toBeNull();
     });
   });
-
-  // describe('error handling', () => {
-  //   it('returns null when requirenativeComponent throws error', () => {
-  //     const mockRequireNativeComponent = jest.fn().mockImplementation(() => {
-  //       throw new Error('test error');
-  //     });
-  //     Object.defineProperty(RN, 'requireNativeComponent', {
-  //       get: () => mockRequireNativeComponent,
-  //       configurable: true,
-  //     });
-
-  //     const { queryByTestId } = render(
-  //       <ObjectCapturePointCloudView
-  //         checkpointDirectory="test"
-  //         imagesDirectory="test"
-  //       />
-  //     );
-
-  //     expect(queryByTestId('RNObjectCapturePointCloudView')).toBeNull();
-  //   });
-  // });
 });

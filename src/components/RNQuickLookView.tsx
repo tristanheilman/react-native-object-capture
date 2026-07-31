@@ -1,9 +1,5 @@
-import {
-  View,
-  requireNativeComponent,
-  type ViewStyle,
-  Platform,
-} from 'react-native';
+import { View, type ViewStyle, Platform } from 'react-native';
+import RNQuickLookView from '../specs/RNQuickLookViewNativeComponent';
 
 export interface QuickLookViewProps {
   testID?: string;
@@ -11,26 +7,13 @@ export interface QuickLookViewProps {
   path: string;
 }
 
-// Only require the native component on iOS
-const RNQuickLookView = Platform.select({
-  ios: () => {
-    try {
-      return requireNativeComponent<QuickLookViewProps>('RNQuickLookView');
-    } catch (e) {
-      console.error('Failed to load RNObjectCapturePointCloudView:', e);
-      return null;
-    }
-  },
-  default: () => null,
-})();
-
 const QuickLookView = ({
   style,
   testID = 'RNQuickLookView',
   path,
 }: QuickLookViewProps) => {
-  if (!RNQuickLookView || Platform.OS !== 'ios') {
-    console.warn('RNQuickLookView is not available');
+  if (Platform.OS !== 'ios') {
+    console.warn('RNQuickLookView is only available on iOS');
     return null;
   }
 

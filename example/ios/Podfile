@@ -45,5 +45,18 @@ target 'ObjectCaptureExample' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
+
+    # fmt 11.0.2 (pulled in by fmt/glog and other RN pods) enables a `consteval`
+    # compile-time format-string check that Xcode 16.3+/26's stricter Clang
+    # rejects ("call to consteval function ... is not a constant expression").
+    # This version defines FMT_CONSTEVAL unconditionally (no external toggle),
+    # so neutralize it directly in the vendored header — the check then runs at
+    # runtime instead. Remove once React Native ships fmt >= 11.1, which fixes
+    # the consteval path on this toolchain.
+    Dir.glob(File.join(installer.sandbox.root.to_s, 'fmt', '**', 'base.h')).each do |header|
+      contents = File.read(header)
+      patched = contents.gsub("#  define FMT_CONSTEVAL consteval", "#  define FMT_CONSTEVAL")
+      File.write(header, patched) if patched != contents
+    end
   end
 end

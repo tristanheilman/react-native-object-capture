@@ -15,6 +15,19 @@ describe('RNObjectCaptureView', () => {
     expect(getByTestId('RNObjectCaptureView')).toBeTruthy();
   });
 
+  it('forwards overCaptureEnabled to the native component', () => {
+    const { getByTestId } = render(
+      <ObjectCaptureView
+        checkpointDirectory="test"
+        imagesDirectory="test"
+        overCaptureEnabled
+      />
+    );
+    expect(getByTestId('RNObjectCaptureView').props.overCaptureEnabled).toBe(
+      true
+    );
+  });
+
   describe('event handlers', () => {
     it('calls onSessionStateChange when session state changes', () => {
       const onSessionStateChange = jest.fn();

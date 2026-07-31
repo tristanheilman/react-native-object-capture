@@ -101,6 +101,9 @@ import UIKit
     @objc func setImagesDirectory(_ directory: String) {
         sessionManager.setImagesDirectory(directory)
     }
+    @objc func setOverCaptureEnabled(_ enabled: Bool) {
+        sessionManager.setOverCaptureEnabled(enabled)
+    }
 
     deinit {
         sessionManager.fabricCaptureOnSessionStateChange = nil

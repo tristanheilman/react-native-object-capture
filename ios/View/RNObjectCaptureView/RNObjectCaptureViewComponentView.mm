@@ -91,6 +91,7 @@ using namespace facebook::react;
     const auto &newProps = *std::static_pointer_cast<const RNObjectCaptureViewProps>(props);
     [_fabricContainer setCheckpointDirectory:[NSString stringWithUTF8String:newProps.checkpointDirectory.c_str()]];
     [_fabricContainer setImagesDirectory:[NSString stringWithUTF8String:newProps.imagesDirectory.c_str()]];
+    [_fabricContainer setOverCaptureEnabled:newProps.overCaptureEnabled];
     [super updateProps:props oldProps:oldProps];
 }
 

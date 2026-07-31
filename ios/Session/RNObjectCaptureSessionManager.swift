@@ -28,6 +28,8 @@ class RNObjectCaptureSessionManager: NSObject, ObservableObject {
     private var checkpointDirectory: String = "Snapshots/"
     // Images directory file path
     private var imagesDirectory: String = "Images/"
+    // Whether to capture extra images for higher-detail reprocessing on macOS
+    private var overCaptureEnabled: Bool = false
     // Fabric callbacks for ObjectCaptureView events
     var fabricCaptureOnSessionStateChange: ((String) -> Void)?
     var fabricCaptureOnTrackingStateChange: ((String) -> Void)?
@@ -67,6 +69,10 @@ class RNObjectCaptureSessionManager: NSObject, ObservableObject {
 
     func setImagesDirectory(_ directory: String) {
         self.imagesDirectory = directory
+    }
+
+    func setOverCaptureEnabled(_ enabled: Bool) {
+        self.overCaptureEnabled = enabled
     }
 
     func sendEvent(name: String, body: [String: Any]) {
@@ -220,6 +226,7 @@ class RNObjectCaptureSessionManager: NSObject, ObservableObject {
         
         var config = ObjectCaptureSession.Configuration()
         config.checkpointDirectory = self.getCheckpointDirectory()
+        config.isOverCaptureEnabled = self.overCaptureEnabled
 
         // Create directories if they don't exist
         let appendedImagesDirectory = self.getImagesDirectory()

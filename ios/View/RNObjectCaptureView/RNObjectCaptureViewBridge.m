@@ -75,5 +75,6 @@ RCT_EXPORT_VIEW_PROPERTY(onSessionStateChange, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onError, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(checkpointDirectory, NSString)
 RCT_EXPORT_VIEW_PROPERTY(imagesDirectory, NSString)
+RCT_EXPORT_VIEW_PROPERTY(overCaptureEnabled, BOOL)
 
 @end

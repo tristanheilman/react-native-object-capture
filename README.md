@@ -1,10 +1,16 @@
 # react-native-object-capture
 
+[![npm version](https://img.shields.io/npm/v/react-native-object-capture)](https://www.npmjs.com/package/react-native-object-capture)
+[![npm downloads](https://img.shields.io/npm/dm/react-native-object-capture)](https://www.npmjs.com/package/react-native-object-capture)
+[![license](https://img.shields.io/npm/l/react-native-object-capture)](./LICENSE)
+[![platform - iOS](https://img.shields.io/badge/platform-iOS-lightgrey)](https://developer.apple.com/documentation/realitykit/objectcapturesession)
+
 > ⚠️ **WARNING: This library is currently in active development and is NOT ready for production use.**
 >
 > - **The New Architecture (Fabric / TurboModules) migration has landed.** The library now ships
->   codegen specs, Fabric component views, and TurboModules, and the example app builds green on
->   iOS and Android in CI. It has **not yet been verified on a physical device** — see
+>   codegen specs, Fabric component views, and TurboModules; the example app builds green on
+>   iOS and Android in CI; and the core capture → reconstruction → dimensioned-model flow has
+>   been verified on a physical device (iPhone 16 Pro Max, iOS 26) — see
 >   [`docs/ROADMAP.md`](docs/ROADMAP.md)
 > - The implementation is incomplete and may contain bugs
 > - API changes are likely to occur

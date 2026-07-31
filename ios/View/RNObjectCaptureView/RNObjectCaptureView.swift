@@ -121,7 +121,13 @@ class RNObjectCaptureView: RCTViewManager {
     func setImagesDirectory(_ imagesDirectory: String) {
         _sharedSessionManager.setImagesDirectory(imagesDirectory)
     }
-    
+
+    // Setter method for over-capture (extra images for higher-detail reprocessing)
+    @objc
+    func setOverCaptureEnabled(_ overCaptureEnabled: Bool) {
+        _sharedSessionManager.setOverCaptureEnabled(overCaptureEnabled)
+    }
+
 
     // Will resume the object capture session
     @objc
@@ -445,6 +451,13 @@ class RNObjectCaptureViewContainer: UIView {
     func setImagesDirectory(_ imagesDirectory: String) {
         if let viewManager = self.findViewManager() {
             viewManager.setImagesDirectory(imagesDirectory)
+        }
+    }
+
+    @objc
+    func setOverCaptureEnabled(_ overCaptureEnabled: Bool) {
+        if let viewManager = self.findViewManager() {
+            viewManager.setOverCaptureEnabled(overCaptureEnabled)
         }
     }
 

@@ -17,6 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)registerOnError:(void (^)(NSString *error))block;
 - (void)setCheckpointDirectory:(NSString *)directory;
 - (void)setImagesDirectory:(NSString *)directory;
+- (void)setOverCaptureEnabled:(BOOL)enabled;
 @end
 
 @interface RNObjectCapturePointCloudViewFabricContainer : UIView

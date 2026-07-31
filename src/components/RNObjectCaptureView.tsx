@@ -36,6 +36,12 @@ export interface ObjectCaptureViewProps {
   testID?: string;
   checkpointDirectory: string;
   imagesDirectory: string;
+  /**
+   * When true, the session captures extra images beyond the guided passes so
+   * the same folder can later be reprocessed at higher detail on macOS. Maps to
+   * `ObjectCaptureSession.Configuration.isOverCaptureEnabled`. Defaults to false.
+   */
+  overCaptureEnabled?: boolean;
   onSessionStateChange?: (
     event: NativeSyntheticEvent<SessionStateChange>
   ) => void;
@@ -88,6 +94,7 @@ const ObjectCaptureView = forwardRef<
       testID = 'RNObjectCaptureView',
       checkpointDirectory,
       imagesDirectory,
+      overCaptureEnabled,
       onSessionStateChange,
       onTrackingStateChange,
       onFeedbackStateChange,
@@ -110,6 +117,7 @@ const ObjectCaptureView = forwardRef<
         testID={testID}
         checkpointDirectory={checkpointDirectory}
         imagesDirectory={imagesDirectory}
+        overCaptureEnabled={overCaptureEnabled}
         onCaptureComplete={asNativeHandler(onCaptureComplete)}
         onFeedbackStateChange={asNativeHandler(onFeedbackStateChange)}
         onTrackingStateChange={asNativeHandler(onTrackingStateChange)}

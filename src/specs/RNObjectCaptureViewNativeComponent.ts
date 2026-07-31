@@ -43,6 +43,7 @@ export type SessionErrorEvent = {
 export interface NativeProps extends ViewProps {
   checkpointDirectory?: string;
   imagesDirectory?: string;
+  overCaptureEnabled?: boolean;
   onSessionStateChange?: DirectEventHandler<SessionStateChangeEvent>;
   onTrackingStateChange?: DirectEventHandler<TrackingStateChangeEvent>;
   onFeedbackStateChange?: DirectEventHandler<FeedbackStateChangeEvent>;

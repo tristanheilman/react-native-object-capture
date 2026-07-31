@@ -55,6 +55,7 @@ The main component for capturing 3D objects. It provides a camera interface with
 | `style` | ViewStyle | Yes | Style object for the cloud point view container |
 | `checkpointDirectory` | String | Yes | Directory to use for the object capture session |
 | `imagesDirectory` | String | Yes | Directory to use to save image captures during object capture session |
+| `overCaptureEnabled` | Boolean | No | When `true`, captures extra images beyond the guided passes so the same folder can later be reprocessed at higher detail on macOS (maps to `ObjectCaptureSession.Configuration.isOverCaptureEnabled`). Defaults to `false`. |
 | `onCaptureComplete` | (evt: `NativeSyntheticEvent<CaptureComplete>`) => void | No | Callback fired when object capture is complete |
 | `onScanPassCompleted` | (evt: `NativeSyntheticEvent<ScanPassCompleted>`) => void | No | Callback fired when a scan pass is completed. It is recommended to complete 3 scan pass' before finishing the object capture session |
 | `onSessionStateChange` | (evt: `NativeSyntheticEvent<SessionStateChange>`) => void | No | Callback fired when the capture session state changes |

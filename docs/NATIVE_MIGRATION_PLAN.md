@@ -1,11 +1,19 @@
 # Native New Architecture Migration — Step-by-Step
 
-The JS and codegen layer is done (see the Phase 1 section of `ROADMAP.md`). This is the
-remaining native work: turning three `RCTViewManager` classes into Fabric component views, and
+> **Status: implemented.** This migration has landed on `main` (merged in
+> [#10](https://github.com/tristanheilman/react-native-object-capture/pull/10)). The three views
+> are now Fabric component views (`*ComponentView.mm` + `*FabricContainer.swift`) and the modules
+> are TurboModules; the example app compiles green on iOS and Android in CI. This document is kept
+> as the design record and a guide for the still-pending pieces (the RN version bump and on-device
+> verification). **The code in the repo is the source of truth** — the snippets below are the
+> shape it was built to, not necessarily line-for-line what shipped.
+
+The JS and codegen layer was done first (see the Phase 1 section of `ROADMAP.md`). This document
+covers the native work: turning three `RCTViewManager` classes into Fabric component views, and
 deciding what to do about the modules.
 
-Written against the codegen contracts as of RN 0.82/0.83. **None of the Swift or ObjC++ in this
-repo has been compiled** — treat every snippet here as a shape to follow, not code to paste.
+Originally written against the codegen contracts as of RN 0.82/0.83, then implemented against
+RN 0.79.2 (the example's current version).
 
 ---
 

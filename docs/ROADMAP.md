@@ -3,7 +3,10 @@
 Consolidates `PRODUCT_ASSESSMENT.md` (what we have, what the market looks like) and
 `ALTERNATIVE_DIRECTIONS.md` (where else this could go) into decisions and an ordered plan.
 
-**Status:** July 2026. Library dormant since June 2025, resuming work.
+**Status:** July 2026. Library dormant since June 2025, resumed work. Phase 0 (correctness and
+capability) and Phase 1 (New Architecture migration) have landed on `main` — the example app now
+builds green on iOS and Android in CI. Still outstanding before Phase 1 is truly done: bumping the
+example off `react-native@0.79.2` and verifying on a physical LiDAR device.
 
 ---
 
@@ -102,22 +105,20 @@ If this ships, it ships gated to the categories that work, with the others expli
 
 ## Ordered plan
 
-### Phase 0 — Correctness and capability *(current)*
+### Phase 0 — Correctness and capability *(complete)*
 
 Contained changes, verifiable with typecheck/lint/tests, no architecture churn.
 
-- [ ] Fix `outputPath` parsing bug — `RNPhotogrammetrySession.swift:54-57` splits on `/` and
-      hard-indexes `[0]`/`[1]`; flat paths crash on out-of-range, nested paths write elsewhere
-- [ ] Expose `PhotogrammetrySession.Configuration.detail` (`reduced`/`medium`/`full`/`raw`) —
-      currently every caller pays for maximum quality
-- [ ] **Surface real-world dimensions** — add `.bounds` to the request list and bridge the
-      `ObjectCaptureSession` bounding box so JS gets `{width, height, depth}` in metres.
-      *This is the single highest-value change in the repo.* Object Capture already knows the
-      extent; we throw it away. Without it, D4 is not true of our own library.
-- [ ] Document `finishSession` — implemented end-to-end, used by the example, missing from the
-      README methods table
+- [x] Fix `outputPath` parsing bug — resolved `outputPath` at any nesting depth (flat filenames
+      and nested paths both write to the right place)
+- [x] Expose `PhotogrammetrySession.Request.detail` — note only `reduced` is available on iOS;
+      `preview`/`medium`/`full`/`raw` are macOS only, so the JS type is `'reduced'`
+- [x] **Surface real-world dimensions** — added `.bounds` to the request list and bridged the
+      bounding box, so JS gets `{width, height, depth, center}` in metres via `onDimensions`.
+      *The single highest-value change in the repo.*
+- [x] Document `finishSession` — now in the README methods table
 
-### Phase 1 — New Architecture migration *(in progress)*
+### Phase 1 — New Architecture migration *(complete — merged in [#10](https://github.com/tristanheilman/react-native-object-capture/pull/10))*
 
 Required before anyone can use this on a current React Native. RN 0.82 removed the legacy
 opt-out; 0.83 removed the legacy code. The interop layer is not a way out: view commands and
@@ -140,15 +141,17 @@ and this library depends on both.
 - [x] Podspec: removed the hard dependency on `React-Codegen`, renamed to `ReactCodegen` in
       RN 0.75, which would fail to resolve on any current version.
 
-**Remaining — native layer.** Step-by-step guide in [`NATIVE_MIGRATION_PLAN.md`](NATIVE_MIGRATION_PLAN.md):
+**Native layer.** Step-by-step guide in [`NATIVE_MIGRATION_PLAN.md`](NATIVE_MIGRATION_PLAN.md):
 
-- [ ] `RCTViewComponentView` subclasses for the three views, replacing the `RCTViewManager`
-      classes, with the SwiftUI hosting controllers reparented onto them
-- [ ] Component descriptors + `RCT_EXPORT_VIEW_COMPONENT` registration
-- [ ] TurboModule conformance for `RNObjectCaptureSession`, `RNPhotogrammetrySession` and
-      `RNObjectCapture` (Swift needs an ObjC++ shim to vend `getTurboModule:`)
+- [x] `RCTViewComponentView` subclasses for the three views, replacing the `RCTViewManager`
+      classes, with the SwiftUI hosting controllers reparented onto them (the
+      `*ComponentView.mm` + `*FabricContainer.swift` pairs)
+- [x] Component descriptors + component registration via `codegenConfig.ios.componentProvider`
+- [x] TurboModule conformance for `RNObjectCaptureSession`, `RNPhotogrammetrySession` and
+      `RNObjectCapture`
 - [ ] Bump the example app off `react-native@0.79.2`
-- [ ] **Verify on device.** Everything in Phase 0 and 1 has been written without a compiler.
+- [ ] **Verify on device.** The native code now compiles green in CI (iOS + Android), but has
+      not been run on a physical LiDAR device.
 
 ### Phase 2 — Product surface
 
@@ -170,7 +173,8 @@ and this library depends on both.
 
 ## Known constraint on this work
 
-Phases 0 and 1 touch Swift that **cannot be compiled or run in the current environment** — no
-Xcode, no device. TypeScript, lint, and Jest are verifiable here; the native side is written
-against the Apple API surface and must be built and tested on a LiDAR device before release.
-Nothing in Phase 0 or 1 should be considered done until that happens.
+The native side of Phases 0 and 1 now **compiles in CI** (iOS via Xcode on `macos-latest`,
+Android via Gradle), so the code is no longer written blind against the Apple API surface. What
+remains unverified is **runtime behaviour on a physical LiDAR device** — a green build is not a
+working capture session. Phase 0 and 1 are not fully done until an on-device pass confirms the
+capture → photogrammetry → QuickLook flow end to end.

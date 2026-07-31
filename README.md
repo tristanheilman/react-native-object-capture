@@ -2,10 +2,10 @@
 
 > ⚠️ **WARNING: This library is currently in active development and is NOT ready for production use.**
 >
-> - **This library still targets the legacy React Native architecture.** React Native 0.82
->   removed the ability to opt out of the New Architecture and 0.83 removed the legacy code
->   entirely, so on current React Native this works only through the deprecated interop layer.
->   A Fabric/TurboModule migration is the next planned change — see [`docs/ROADMAP.md`](docs/ROADMAP.md)
+> - **The New Architecture (Fabric / TurboModules) migration has landed.** The library now ships
+>   codegen specs, Fabric component views, and TurboModules, and the example app builds green on
+>   iOS and Android in CI. It has **not yet been verified on a physical device** — see
+>   [`docs/ROADMAP.md`](docs/ROADMAP.md)
 > - The implementation is incomplete and may contain bugs
 > - API changes are likely to occur
 > - Some features may not work as expected
@@ -21,7 +21,7 @@ AR object capture session for React Native using Apple's Object Capture API. Thi
 
 - iOS 17.0 or later
 - iPhone 12 Pro or newer (devices with LiDAR sensor)
-- React Native 0.76.0 or later
+- React Native 0.76.0 or later with the New Architecture (Fabric / TurboModules) enabled
 
 ## Installation
 1. Install library
@@ -59,7 +59,7 @@ The main component for capturing 3D objects. It provides a camera interface with
 | `onScanPassCompleted` | (evt: `NativeSyntheticEvent<ScanPassCompleted>`) => void | No | Callback fired when a scan pass is completed. It is recommended to complete 3 scan pass' before finishing the object capture session |
 | `onSessionStateChange` | (evt: `NativeSyntheticEvent<SessionStateChange>`) => void | No | Callback fired when the capture session state changes |
 | `onTrackingStateChange` | (evt: `NativeSyntheticEvent<TrackingStateChange>`) => void | No | Callback fired when the tracking state changes |
-| `onFeedbackStateChange` | (evt: `NativeSyntheticEvent<TrackingStateChange>`) => void | No | Callback fired when the feedback state changes |
+| `onFeedbackStateChange` | (evt: `NativeSyntheticEvent<FeedbackStateChange>`) => void | No | Callback fired when the feedback state changes |
 | `onError` | (evt: `NativeSyntheticEvent<SessionError>`) => void | No | Callback fired when an error occurs during capture |
 
 #### Methods
@@ -75,13 +75,29 @@ The main component for capturing 3D objects. It provides a camera interface with
 | `beginNewScan` | When called this method will begin a new scan for the Object Capture Session |
 | `finishSession` | Ends the capture session and finalises the captured images, so they can be handed to a `PhotogrammetrySession`. Call this once all scan passes are complete |
 | `cancelSession` | Call this method when cleaning up and tearing down the Object Capture Session |
-| `isDeviceSupported` | Resumes boolean value indicating if the device supports AR and LiDAR |
+| `isDeviceSupported` | Returns a boolean value indicating if the device supports AR and LiDAR |
 | `getSessionState` | Returns the current SessionState |
 | `getTrackingState` | Returns the current TrackingState |
 | `getFeedbackState` | Returns the current FeedbackState |
 | `getNumberOfShotsTaken` | Returns integer count of images taken for current Object Capture Session |
 | `getUserCompletedScanState` | Returns boolean if the current scan pass is completed |
 | `getNumberOfScanPassUpdates` | Returns the number of scan pass' completed |
+
+> **Prefer the `ObjectCaptureSession` module over the ref.** The native session is a singleton,
+> so these calls were never scoped to a view instance. The same methods are exported as a
+> standalone module you can call from anywhere, without holding a ref:
+>
+> ```jsx
+> import { ObjectCaptureSession } from 'react-native-object-capture';
+>
+> await ObjectCaptureSession.startDetection();
+> await ObjectCaptureSession.startCapturing();
+> const state = await ObjectCaptureSession.getSessionState();
+> ```
+>
+> The `ObjectCaptureView` ref is retained as a thin delegate for backwards compatibility and may
+> be deprecated. The package also exports `ObjectCaptureConstants` (native enum/string constants)
+> and every type referenced above.
 
 #### Example
 
@@ -394,7 +410,7 @@ Handles the processing of captured images into a 3D model. This component manage
 | `imagesDirectory` | String | Yes | Directory containing the captured images, relative to the documents directory |
 | `checkpointDirectory` | String | Yes | Directory used for reconstruction checkpoints |
 | `outputPath` | String | Yes | Where to write the model, relative to the documents directory. Accepts a bare filename (`'model.usdz'`) or any nesting depth (`'Outputs/chair/model.usdz'`). Must include a file extension |
-| `detail` | `'preview' \| 'reduced' \| 'medium' \| 'full' \| 'raw'` | No | Reconstruction quality. Higher levels take substantially longer and produce larger files. Defaults to the framework's own default. Not every level is available on every device — an unsupported level surfaces via `addErrorListener` |
+| `detail` | `'reduced'` | No | Reconstruction quality. On iOS, `'reduced'` is the only level `PhotogrammetrySession.Request.Detail` exposes (the other levels — `preview`/`medium`/`full`/`raw` — are macOS only). Omit to use the framework's own default; passing an unsupported level rejects the promise with `DETAIL_ERROR` |
 
 #### Dimensions
 

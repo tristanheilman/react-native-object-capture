@@ -46,19 +46,17 @@ target 'ObjectCaptureExample' do
       # :ccache_enabled => true
     )
 
-    # fmt 11 (used by fmt/glog and other RN pods) enables a `consteval`
+    # fmt 11.0.2 (pulled in by fmt/glog and other RN pods) enables a `consteval`
     # compile-time format-string check that Xcode 16.3+/26's stricter Clang
     # rejects ("call to consteval function ... is not a constant expression").
-    # Disable it via fmt's supported FMT_USE_CONSTEVAL toggle so the check runs
-    # at runtime instead. Remove once React Native ships an fmt that compiles
-    # cleanly on this toolchain.
-    installer.pods_project.targets.each do |target|
-      target.build_configurations.each do |bc|
-        defs = bc.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] || ['$(inherited)']
-        defs = [defs] unless defs.is_a?(Array)
-        defs << 'FMT_USE_CONSTEVAL=0' unless defs.include?('FMT_USE_CONSTEVAL=0')
-        bc.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] = defs
-      end
+    # This version defines FMT_CONSTEVAL unconditionally (no external toggle),
+    # so neutralize it directly in the vendored header — the check then runs at
+    # runtime instead. Remove once React Native ships fmt >= 11.1, which fixes
+    # the consteval path on this toolchain.
+    Dir.glob(File.join(installer.sandbox.root.to_s, 'fmt', '**', 'base.h')).each do |header|
+      contents = File.read(header)
+      patched = contents.gsub("#  define FMT_CONSTEVAL consteval", "#  define FMT_CONSTEVAL")
+      File.write(header, patched) if patched != contents
     end
   end
 end

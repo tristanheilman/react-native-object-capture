@@ -89,15 +89,8 @@ using namespace facebook::react;
 - (void)updateProps:(Props::Shared const &)props oldProps:(Props::Shared const &)oldProps
 {
     const auto &newProps = *std::static_pointer_cast<const RNObjectCaptureViewProps>(props);
-    const auto &prevProps = *std::static_pointer_cast<const RNObjectCaptureViewProps>(oldProps);
-
-    if (newProps.checkpointDirectory != prevProps.checkpointDirectory) {
-        [_fabricContainer setCheckpointDirectory:[NSString stringWithUTF8String:newProps.checkpointDirectory.c_str()]];
-    }
-    if (newProps.imagesDirectory != prevProps.imagesDirectory) {
-        [_fabricContainer setImagesDirectory:[NSString stringWithUTF8String:newProps.imagesDirectory.c_str()]];
-    }
-
+    [_fabricContainer setCheckpointDirectory:[NSString stringWithUTF8String:newProps.checkpointDirectory.c_str()]];
+    [_fabricContainer setImagesDirectory:[NSString stringWithUTF8String:newProps.imagesDirectory.c_str()]];
     [super updateProps:props oldProps:oldProps];
 }
 

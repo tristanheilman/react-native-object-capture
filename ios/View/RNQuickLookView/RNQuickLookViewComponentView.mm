@@ -33,12 +33,7 @@ using namespace facebook::react;
 - (void)updateProps:(Props::Shared const &)props oldProps:(Props::Shared const &)oldProps
 {
     const auto &newProps = *std::static_pointer_cast<const RNQuickLookViewProps>(props);
-    const auto &prevProps = *std::static_pointer_cast<const RNQuickLookViewProps>(oldProps);
-
-    if (newProps.path != prevProps.path) {
-        [_fabricContainer setPath:[NSString stringWithUTF8String:newProps.path.c_str()]];
-    }
-
+    [_fabricContainer setPath:[NSString stringWithUTF8String:newProps.path.c_str()]];
     [super updateProps:props oldProps:oldProps];
 }
 

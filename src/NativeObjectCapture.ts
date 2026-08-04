@@ -1,6 +1,5 @@
 // src/NativeObjectCapture.ts
 import {
-  NativeEventEmitter,
   NativeModules,
   type NativeModule,
   type NativeSyntheticEvent,
@@ -83,11 +82,10 @@ interface RNObjectCaptureInterface extends NativeModule {
   };
 }
 
-// Export the native module with proper typing
+// Export the native module with proper typing. This module exists only to carry
+// the enum constants - session events reach JS through the view's own event
+// emitter (the `on*` props on ObjectCaptureView), not through a module emitter.
 export const RNObjectCapture =
   NativeModules.RNObjectCapture as RNObjectCaptureInterface;
-
-// Export the event emitter
-export const objectCaptureEmitter = new NativeEventEmitter(RNObjectCapture);
 
 export default RNObjectCapture;

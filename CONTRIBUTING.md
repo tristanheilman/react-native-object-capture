@@ -1,8 +1,14 @@
 # Contributing
 
-Contributions are always welcome, no matter how large or small!
+Contributions are always welcome, no matter how large or small.
 
 We want this community to be friendly and respectful to each other. Please follow it in all your interactions with the project. Before contributing, please read the [code of conduct](./CODE_OF_CONDUCT.md).
+
+Useful background:
+
+- [`docs/ROADMAP.md`](./docs/ROADMAP.md) — what's shipped and what's planned
+- [`docs/IOS_ARCHITECTURE.md`](./docs/IOS_ARCHITECTURE.md) — how the native layer fits together, worth reading before touching iOS code
+- [`.github/COMMIT_CONVENTION.md`](./.github/COMMIT_CONVENTION.md) — the commit format in detail
 
 ## Development workflow
 
@@ -23,9 +29,16 @@ The [example app](/example/) demonstrates usage of the library. You need to run 
 
 It is configured to use the local version of the library, so any changes you make to the library's source code will be reflected in the example app. Changes to the library's JavaScript code will be reflected in the example app without a rebuild, but native code changes will require a rebuild of the example app.
 
-If you want to use Android Studio or XCode to edit the native code, you can open the `example/android` or `example/ios` directories respectively in those editors. To edit the Objective-C or Swift files, open `example/ios/ObjectCaptureExample.xcworkspace` in XCode and find the source files at `Pods > Development Pods > react-native-object-capture`.
+Most of the work happens on iOS. To edit the Objective-C++ or Swift files, open
+`example/ios/ObjectCaptureExample.xcworkspace` in Xcode and find the source files at
+`Pods > Development Pods > react-native-object-capture`.
 
-To edit the Java or Kotlin files, open `example/android` in Android studio and find the source files at `react-native-object-capture` under `Android`.
+The Android side is a stub — there's no Android equivalent to Object Capture — but it still has to
+compile. To edit it, open `example/android` in Android Studio and find the source files at
+`react-native-object-capture` under `Android`.
+
+**Testing capture changes requires a physical device** with LiDAR (iPhone 12 Pro or newer, iOS 17+).
+The simulator can run the app, but not a capture session.
 
 You can use various commands from the root directory to work with the project.
 
@@ -95,15 +108,12 @@ We use [TypeScript](https://www.typescriptlang.org/) for type checking, [ESLint]
 
 Our pre-commit hooks verify that the linter and tests pass when committing.
 
-### Publishing to npm
+### Releases
 
-We use [release-it](https://github.com/release-it/release-it) to make it easier to publish new versions. It handles common tasks like bumping version based on semver, creating tags and releases etc.
-
-To publish new versions, run the following:
-
-```sh
-yarn release
-```
+Releases are automated with [release-please](https://github.com/googleapis/release-please). Merging
+conventional commits to `main` opens (or updates) a release PR with the version bump and changelog
+entry; merging that PR tags the release and publishes to npm. Contributors don't need to do
+anything beyond writing well-formed commit messages.
 
 ### Scripts
 

@@ -1,40 +1,20 @@
 # Security Policy
 
-## Supported Versions
+## Supported versions
 
-This library is still in active beta development. As the project progresses, old versions will be deprecated quickly. Please be aware until a stable release is finalized.
+This library is pre-1.0. Only the latest published version receives fixes — if you're reporting
+something, please check against the current release first.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| >= 0.2.2 | :white_check_mark: |
-| < 0.2.2 | :x:                |
+## Reporting a vulnerability
 
-## Reporting a Vulnerability
+Please **do not open a public issue** for a security vulnerability.
 
-To report a security vulnerability, please follow these steps:
+Report it privately through GitHub:
+[Security → Report a vulnerability](https://github.com/tristanheilman/react-native-object-capture/security/advisories/new).
 
-1. **Do not create a public GitHub issue** for security vulnerabilities, as this could expose users to risk.
+Include what you have — a description of the issue, steps to reproduce, the impact you think it
+has, and a suggested fix if you have one.
 
-2. Instead, please email security concerns privately to:
-   - Primary: wolfscriptsolutions@gmail.com 
-   - Secondary: tristanheilman@outlook.com
-
-3. Include in your report:
-   - A description of the vulnerability
-   - Steps to reproduce the issue
-   - Potential impact of the vulnerability
-   - Any suggested fixes (if known)
-
-4. You should receive an initial response within 48 hours acknowledging receipt of your report.
-
-5. We will work with you to understand and address the issue. We aim to:
-   - Confirm the vulnerability within 1 week
-   - Release a fix within 2 weeks for critical issues
-   - Keep you updated on our progress
-
-6. Once an issue is fixed, we will:
-   - Credit you (if desired) when we publish the fix
-   - Add the fix details to our security advisory
-   - Notify affected users as appropriate
-
-We appreciate your help in keeping this project secure!
+This is a small project maintained in spare time, so response times are best-effort rather than
+guaranteed. You can expect an acknowledgement within a week, and credit in the advisory when a
+fix ships unless you'd rather stay anonymous.

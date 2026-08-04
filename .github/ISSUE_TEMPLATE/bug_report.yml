@@ -1,41 +1,42 @@
 name: 🐛 Bug report
-description: Report a reproducible bug or regression in this library.
+description: Report a bug or regression in this library.
 labels: [bug]
 body:
   - type: markdown
     attributes:
       value: |
-        # Bug report
-
-        👋 Hi!
-
-        **Please fill the following carefully before opening a new issue ❗**
-        *(Your issue may be closed if it doesn't provide the required pieces of information)*
+        Thanks for taking the time to file this. The more of the below you can fill in, the
+        faster it can be reproduced — capture bugs are device-specific, so the device and iOS
+        version matter more here than in most libraries.
   - type: checkboxes
     attributes:
-      label: Before submitting a new issue
-      description: Please perform simple checks first.
+      label: Before submitting
       options:
-        - label: I tested using the latest version of the library, as the bug might be already fixed.
+        - label: I tested with the latest version of the library.
           required: true
-        - label: I tested using a [supported version](https://github.com/reactwg/react-native-releases/blob/main/docs/support.md) of react native.
-          required: true
-        - label: I checked for possible duplicate issues, with possible answers.
+        - label: I checked for existing issues covering this.
           required: true
   - type: textarea
     id: summary
     attributes:
-      label: Bug summary
+      label: What happened
       description: |
-        Provide a clear and concise description of what the bug is.
-        If needed, you can also provide other samples: error messages / stack traces, screenshots, gifs, etc.
+        What you expected, and what happened instead. Error messages, stack traces, screenshots
+        or a screen recording all help.
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device and iOS version
+      description: Capture behaviour varies by device. Simulator-only reports are fine — say so.
+      placeholder: "iPhone 15 Pro, iOS 18.2"
     validations:
       required: true
   - type: input
     id: library-version
     attributes:
       label: Library version
-      description: What version of the library are you using?
       placeholder: "x.x.x"
     validations:
       required: true
@@ -43,7 +44,7 @@ body:
     id: react-native-info
     attributes:
       label: Environment info
-      description: Run `react-native info` in your terminal and paste the results here.
+      description: Output of `npx react-native info`.
       render: shell
     validations:
       required: true
@@ -51,8 +52,6 @@ body:
     id: steps-to-reproduce
     attributes:
       label: Steps to reproduce
-      description: |
-        You must provide a clear list of steps and code to reproduce the problem.
       value: |
         1. …
         2. …
@@ -61,7 +60,9 @@ body:
   - type: input
     id: reproducible-example
     attributes:
-      label: Reproducible example repository 
-      description: Please provide a link to a repository on GitHub with a reproducible example.
+      label: Reproducible example
+      description: |
+        A link to a repository or a Gist with the relevant code, if you have one. Not required,
+        but it makes a fix much more likely.
     validations:
-      required: true
+      required: false

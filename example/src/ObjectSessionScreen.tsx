@@ -7,6 +7,7 @@ import {
   type NativeSyntheticEvent,
 } from 'react-native';
 import {
+  ObjectCaptureSession,
   ObjectCaptureView,
   type SessionState,
   type FeedbackState,
@@ -18,7 +19,7 @@ import {
   type CaptureComplete,
   type ScanPassCompleted,
 } from 'react-native-object-capture';
-import { objectCaptureViewRef } from './utils';
+
 type ObjectSessionScreenProps = {
   navigation: any;
 };
@@ -66,7 +67,7 @@ export default function ObjectSessionScreen({
   ) => {
     console.log('Scan pass completed:', event.nativeEvent);
     setNumberOfScanPassCompleted(numberOfScanPassCompleted + 1);
-    objectCaptureViewRef.current?.pauseSession();
+    ObjectCaptureSession.pauseSession();
     navigation.navigate('ScanPassStageModal');
   };
 
@@ -75,32 +76,31 @@ export default function ObjectSessionScreen({
   };
 
   const handleStartDetection = async () => {
-    await objectCaptureViewRef.current?.startDetection();
+    await ObjectCaptureSession.startDetection();
   };
 
   const handleResetDetection = async () => {
-    await objectCaptureViewRef.current?.resetDetection();
+    await ObjectCaptureSession.resetDetection();
   };
 
   const handleStartCapturing = async () => {
-    await objectCaptureViewRef.current?.startCapturing();
+    await ObjectCaptureSession.startCapturing();
   };
 
   const handleCancelSession = async () => {
-    await objectCaptureViewRef.current?.cancelSession();
+    await ObjectCaptureSession.cancelSession();
     navigation.goBack();
   };
 
   const showHelp = async () => {
     // pause the session
-    await objectCaptureViewRef.current?.pauseSession();
+    await ObjectCaptureSession.pauseSession();
     navigation.navigate('ObjectSessionHelpModal');
   };
 
   return (
     <View style={styles.container}>
       <ObjectCaptureView
-        ref={objectCaptureViewRef}
         style={styles.container}
         checkpointDirectory={'Snapshots/'}
         imagesDirectory={'Images/'}

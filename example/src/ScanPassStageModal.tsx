@@ -9,9 +9,9 @@ import {
 } from 'react-native';
 import {
   ObjectCapturePointCloudView,
+  ObjectCaptureSession,
   type ObjectCapturePointCloudViewRef,
 } from 'react-native-object-capture';
-import { objectCaptureViewRef } from './utils';
 import EmptyObjectCapture from './components/EmptyObjectCapture';
 import LoadingObjectCapture from './components/LoadingObjectCapture';
 
@@ -32,17 +32,17 @@ export default function ScanPassStageModal({
     Alert.alert('Flip object?', 'Do you want to flip the object?', [
       {
         text: 'Flip',
-        onPress: () => {
-          objectCaptureViewRef.current?.beginNewScanAfterFlip();
-          objectCaptureViewRef.current?.resumeSession();
+        onPress: async () => {
+          await ObjectCaptureSession.beginNewScanAfterFlip();
+          await ObjectCaptureSession.resumeSession();
           navigation.goBack();
         },
       },
       {
         text: 'No',
-        onPress: () => {
-          objectCaptureViewRef.current?.beginNewScan();
-          objectCaptureViewRef.current?.resumeSession();
+        onPress: async () => {
+          await ObjectCaptureSession.beginNewScan();
+          await ObjectCaptureSession.resumeSession();
           navigation.goBack();
         },
       },
@@ -50,9 +50,9 @@ export default function ScanPassStageModal({
     ]);
   };
 
-  const handleFinish = () => {
+  const handleFinish = async () => {
     try {
-      objectCaptureViewRef.current?.finishSession();
+      await ObjectCaptureSession.finishSession();
       navigation.popToTop();
       navigation.navigate('PhotogrammetrySessionScreen');
     } catch (err) {
@@ -65,9 +65,8 @@ export default function ScanPassStageModal({
   };
 
   useEffect(() => {
-    objectCaptureViewRef.current?.pauseSession();
-    objectCaptureViewRef.current?.getNumberOfScanPassUpdates().then((count) => {
-      console.log('count', count);
+    ObjectCaptureSession.pauseSession();
+    ObjectCaptureSession.getNumberOfScanPassUpdates().then((count) => {
       setNumberOfScanPassUpdates(count);
     });
   }, []);

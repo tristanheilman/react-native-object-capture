@@ -1,10 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import {
   ObjectCapturePointCloudView,
+  ObjectCaptureSession,
   type ObjectCapturePointCloudViewRef,
 } from 'react-native-object-capture';
-import { objectCaptureViewRef } from './utils';
 import EmptyObjectCapture from './components/EmptyObjectCapture';
 import LoadingObjectCapture from './components/LoadingObjectCapture';
 
@@ -17,16 +23,15 @@ export default function ObjectSessionHelpModal({
 }: ObjectSessionHelpModalProps) {
   const [numberOfScanPassUpdates, setNumberOfScanPassUpdates] = useState(-1);
   const pointCloudViewRef = useRef<ObjectCapturePointCloudViewRef>(null);
+  const { width, height } = useWindowDimensions();
 
   const handleResumeSession = async () => {
-    await objectCaptureViewRef.current?.resumeSession();
+    await ObjectCaptureSession.resumeSession();
     navigation.goBack();
   };
 
   useEffect(() => {
-    console.log('objectCaptureViewRef.current', objectCaptureViewRef.current);
-    objectCaptureViewRef.current?.getNumberOfScanPassUpdates().then((count) => {
-      console.log('count', count);
+    ObjectCaptureSession.getNumberOfScanPassUpdates().then((count) => {
       setNumberOfScanPassUpdates(count);
     });
   }, []);
@@ -39,8 +44,8 @@ export default function ObjectSessionHelpModal({
         ref={pointCloudViewRef}
         imagesDirectory="Images/"
         checkpointDirectory="Snapshots/"
-        // onAppear={getSessionState}
-        // onCloudPointViewAppear={getSessionState}
+        // height and width must be set for the point cloud view to render
+        style={{ height: height / 2, width }}
         ObjectCaptureEmptyComponent={EmptyObjectCapture}
         ObjectCaptureLoadingComponent={LoadingObjectCapture}
       />

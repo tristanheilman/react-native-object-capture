@@ -82,9 +82,24 @@ interface RNObjectCaptureInterface extends NativeModule {
   };
 }
 
-// Export the native module with proper typing. This module exists only to carry
-// the enum constants - session events reach JS through the view's own event
-// emitter (the `on*` props on ObjectCaptureView), not through a module emitter.
+// Export the native module with proper typing. Be aware that at runtime this
+// object is inert on both of the things it appears to offer:
+//
+// - Constants: RNObjectCapture.swift exposes `getConstants()`, but RN sources
+//   legacy-module constants from `constantsToExport` (RCTModuleData gates on
+//   `instancesRespondToSelector:@selector(constantsToExport)`), which neither
+//   the class nor RCTEventEmitter implements. `.constants` is undefined, and so
+//   is the `ObjectCaptureConstants` re-export in index.ts.
+// - Events: it is an RCTEventEmitter, and SessionView.handleAppear means to pass
+//   this instance to RNObjectCaptureSessionManager so the manager can sendEvent
+//   on session, tracking, feedback, capture and error changes. That lookup goes
+//   through `RCTBridge.current()`, nil under bridgeless, so on the New
+//   Architecture it never attaches and nothing is ever emitted.
+//
+// The types above are what this file actually provides. Session events reach
+// consumers through the typed `on*` props on ObjectCaptureView, and the enum
+// values through the exported string-union types - hence no NativeEventEmitter
+// here. Restoring either path means fixing the native side first.
 export const RNObjectCapture =
   NativeModules.RNObjectCapture as RNObjectCaptureInterface;
 

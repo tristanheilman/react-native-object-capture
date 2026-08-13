@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.6](https://github.com/tristanheilman/react-native-object-capture/compare/v0.2.5...v0.2.6) (2026-08-13)
+
+
+### Bug Fixes
+
+* remove hooks and module emitter that could never fire ([9a097f8](https://github.com/tristanheilman/react-native-object-capture/commit/9a097f8f1a6267c8a837d7937e8a48d0756ef232))
+
 ## [0.2.5](https://github.com/tristanheilman/react-native-object-capture/compare/v0.2.4...v0.2.5) (2026-07-31)
 
 

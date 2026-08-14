@@ -99,5 +99,12 @@ kotlinVersion=2.0.21    ndkVersion=27.1.12297006
 `minSdk 24` matches the ARCore floor (Android 7.0), which is convenient but coincidental — nothing
 here depends on ARCore and there is no `com.google.ar:core` dependency.
 
-`targetSdkVersion 34` is behind the Play Store's requirement for new submissions and worth bumping
-regardless of what happens with Android support. **Still outstanding.**
+These are **fallback defaults, not values imposed on consumers**. `android/build.gradle` reads them
+through `getExtOrIntegerDefault`, which prefers `rootProject.ext` and only falls back to
+`gradle.properties`. Any React Native app from a current template defines `ext.targetSdkVersion` at
+the root, so the library compiles against the app's value — the example app here builds this module
+at 36, not 34.
+
+So `targetSdkVersion 34` is worth refreshing for tidiness and for anyone consuming the module
+without root ext values, but it does not hold an app back from the Play Store's requirement for
+new submissions. **Still outstanding, low priority.**

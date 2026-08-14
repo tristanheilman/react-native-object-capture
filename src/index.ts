@@ -68,4 +68,9 @@ export { PhotogrammetrySession };
 export { default as ObjectCaptureSession } from './modules/ObjectCaptureSession';
 
 // Export constants
-export const ObjectCaptureConstants = ObjectCapture.constants;
+//
+// Undefined at runtime on every platform - the native module never exposes
+// `constantsToExport`, and off iOS the module itself is absent. Kept as an
+// export for compatibility, guarded so importing this package cannot throw on
+// Android. Use the exported string-union types instead.
+export const ObjectCaptureConstants = ObjectCapture?.constants;

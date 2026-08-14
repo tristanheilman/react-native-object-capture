@@ -100,7 +100,12 @@ interface RNObjectCaptureInterface extends NativeModule {
 // consumers through the typed `on*` props on ObjectCaptureView, and the enum
 // values through the exported string-union types - hence no NativeEventEmitter
 // here. Restoring either path means fixing the native side first.
-export const RNObjectCapture =
-  NativeModules.RNObjectCapture as RNObjectCaptureInterface;
+//
+// Typed as possibly undefined because it genuinely is: there is no Android
+// counterpart at all (see `docs/android/`), so the lookup returns undefined
+// there. Callers must guard.
+export const RNObjectCapture = NativeModules.RNObjectCapture as
+  | RNObjectCaptureInterface
+  | undefined;
 
 export default RNObjectCapture;

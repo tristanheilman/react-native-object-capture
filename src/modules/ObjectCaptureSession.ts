@@ -55,8 +55,19 @@ const ObjectCaptureSession = {
     return requireModule().cancelSession();
   },
 
+  /**
+   * The sanctioned capability gate. Prefer this over branching on
+   * `Platform.OS`: Object Capture also needs LiDAR, so plenty of iOS devices
+   * answer `false` too.
+   *
+   * Resolves `false` rather than rejecting when the native module is absent -
+   * a capability check that throws is one every caller has to wrap.
+   */
   async isDeviceSupported(): Promise<boolean> {
-    return requireModule().isDeviceSupported();
+    if (!NativeObjectCaptureSession) {
+      return false;
+    }
+    return NativeObjectCaptureSession.isDeviceSupported();
   },
   async getSessionState(): Promise<SessionState> {
     return (await requireModule().getSessionState()) as SessionState;

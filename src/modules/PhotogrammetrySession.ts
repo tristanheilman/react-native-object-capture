@@ -1,6 +1,7 @@
 import {
   NativeEventEmitter,
   NativeModules,
+  Platform,
   type NativeModule,
   type NativeSyntheticEvent,
 } from 'react-native';
@@ -104,11 +105,29 @@ interface RNPhotogrammetrySessionInterface extends NativeModule {
 // Resolved through TurboModuleRegistry, which falls back to NativeModules when
 // the New Architecture is not enabled, so this works under both.
 export const RNPhotogrammetrySession = (NativePhotogrammetrySession ??
-  NativeModules.RNPhotogrammetrySession) as RNPhotogrammetrySessionInterface;
+  NativeModules.RNPhotogrammetrySession) as
+  | RNPhotogrammetrySessionInterface
+  | undefined;
 
-// Export the event emitter
+function requireModule(): RNPhotogrammetrySessionInterface {
+  if (!RNPhotogrammetrySession) {
+    throw new Error(
+      'RNPhotogrammetrySession native module is not available. ' +
+        'Photogrammetry requires iOS 17 or later.'
+    );
+  }
+  return RNPhotogrammetrySession;
+}
+
+// Only iOS backs this emitter. The Android module implements the three
+// reconstruction methods (each rejecting with NOT_IMPLEMENTED) but not the
+// `addListener`/`removeListeners` bookkeeping NativeEventEmitter expects, so
+// passing it there earns two console warnings on every import in exchange for
+// listeners that can never fire. Passing undefined instead is the same dead
+// emitter without the noise - and on iOS the module is an RCTEventEmitter, so
+// the invariant that only fires there is satisfied.
 export const photogrammetryEmitter = new NativeEventEmitter(
-  RNPhotogrammetrySession
+  Platform.OS === 'ios' ? RNPhotogrammetrySession : undefined
 );
 
 class PhotogrammetrySession {
@@ -125,7 +144,7 @@ class PhotogrammetrySession {
     outputPath,
     detail,
   }: PhotogrammetrySessionOptions) {
-    return RNPhotogrammetrySession.startReconstruction(
+    return requireModule().startReconstruction(
       imagesDirectory,
       checkpointDirectory,
       outputPath,
@@ -134,11 +153,11 @@ class PhotogrammetrySession {
   }
 
   async cancelReconstruction() {
-    return RNPhotogrammetrySession.cancelReconstruction();
+    return requireModule().cancelReconstruction();
   }
 
   async listDirectoryContents(directory: string) {
-    return RNPhotogrammetrySession.listDirectoryContents(directory);
+    return requireModule().listDirectoryContents(directory);
   }
 
   addProgressListener(callback: (progress: number) => void) {

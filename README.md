@@ -29,8 +29,14 @@ See [`docs/ROADMAP.md`](docs/ROADMAP.md) for what's planned.
 - iPhone 12 Pro or newer (LiDAR)
 - React Native 0.79 or later with the New Architecture (Fabric / TurboModules) enabled
 
-**iOS only.** Object Capture is an Apple framework with no Android equivalent — the Android
-module is a stub that rejects with `NOT_IMPLEMENTED`. See the roadmap for where that stands.
+**iOS only, by design.** Object Capture is an Apple framework with no Android equivalent, and
+Android has no reconstruction API at any level to build one on. Every call degrades with a message
+naming the reason rather than failing obscurely, and `ObjectCaptureSession.isDeviceSupported()` is
+the capability gate to branch on — prefer it over `Platform.OS`, since plenty of iOS devices lack
+LiDAR too.
+
+The full survey of what Android does and doesn't offer, what it would cost to close the gap, and
+what would have to change for that to be worth doing, is in [`docs/android/`](docs/android/README.md).
 
 ## Installation
 

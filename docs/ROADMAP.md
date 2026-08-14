@@ -54,10 +54,12 @@ How the native layer fits together is documented in [`IOS_ARCHITECTURE.md`](IOS_
   library is usually wanted for.
 - **Scan catalog** — persistence, metadata and thumbnails for completed scans. Today there's only
   `listDirectoryContents`.
-- **Android story.** There is no Android equivalent to Object Capture; genuine cross-platform
-  support would mean a cloud reconstruction pipeline, which is a much larger scope. The current
-  Android stubs imply a roadmap that doesn't exist — they will either be scoped honestly or
-  removed.
+- **Android story.** Researched in depth — see [`docs/android/`](android/README.md). There is no
+  Android equivalent to Object Capture and none announced: no reconstruction API at any level, no
+  current device with a depth sensor, and Google's AR investment has moved to headsets and glasses.
+  The recommendation is **no native Android parity**; delete the stubs that imply a roadmap that
+  doesn't exist, make the degradation honest, and revisit only on a
+  [specific trigger](android/ROADMAP_SIGNALS.md#what-would-have-to-change).
 
 ---
 

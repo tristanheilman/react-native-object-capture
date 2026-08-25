@@ -13,6 +13,7 @@
     "./package.json": "./package.json"
   },
   "files": [
+    "app.plugin.js",
     "src",
     "lib",
     "android",

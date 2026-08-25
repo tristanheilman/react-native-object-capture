@@ -40,6 +40,22 @@ compile. To edit it, open `example/android` in Android Studio and find the sourc
 **Testing capture changes requires a physical device** with LiDAR (iPhone 12 Pro or newer, iOS 17+).
 The simulator can run the app, but not a capture session.
 
+## What you can contribute without a LiDAR device
+
+Most contributions do not require capture hardware. An issue labeled [`needs device`](https://github.com/tristanheilman/react-native-object-capture/labels/needs%20device) needs verification on a LiDAR-capable iPhone; if that label is absent, you can work on it without one.
+
+Hardware-free contributions include:
+
+- documentation and TypeScript types;
+- Jest tests and mocks;
+- JavaScript or TypeScript in the example app;
+- the Expo config plugin tracked in [#29](https://github.com/tristanheilman/react-native-object-capture/issues/29);
+- Android build compatibility, tooling, and CI.
+
+Before reviewing or extending the native iOS layer, read [`docs/IOS_ARCHITECTURE.md`](./docs/IOS_ARCHITECTURE.md). It documents the ObjC++/Swift/SwiftUI boundaries, generated-code contracts, Fabric recycling behavior, and the device smoke test expected for native changes.
+
+If you do have a compatible device, the most useful contribution is a detailed bug or compatibility report. Include the exact device model and iOS version, along with reproduction steps and relevant logs. See [#32](https://github.com/tristanheilman/react-native-object-capture/issues/32) for the current compatibility-report request.
+
 You can use various commands from the root directory to work with the project.
 
 To start the packager:

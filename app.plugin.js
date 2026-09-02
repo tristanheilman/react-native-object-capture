@@ -8,11 +8,17 @@ const DEFAULT_PHOTO_LIBRARY_PERMISSION =
 const withObjectCapture = (config, props = {}) =>
   withInfoPlist(config, (modConfig) => {
     modConfig.modResults.NSCameraUsageDescription =
-      props.cameraPermission ?? DEFAULT_CAMERA_PERMISSION;
+      props.cameraPermission ??
+      modConfig.modResults.NSCameraUsageDescription ??
+      DEFAULT_CAMERA_PERMISSION;
     modConfig.modResults.NSPhotoLibraryUsageDescription =
-      props.photoLibraryPermission ?? DEFAULT_PHOTO_LIBRARY_PERMISSION;
+      props.photoLibraryPermission ??
+      modConfig.modResults.NSPhotoLibraryUsageDescription ??
+      DEFAULT_PHOTO_LIBRARY_PERMISSION;
     modConfig.modResults.NSPhotoLibraryAddUsageDescription =
-      props.photoLibraryAddPermission ?? DEFAULT_PHOTO_LIBRARY_PERMISSION;
+      props.photoLibraryAddPermission ??
+      modConfig.modResults.NSPhotoLibraryAddUsageDescription ??
+      DEFAULT_PHOTO_LIBRARY_PERMISSION;
 
     return modConfig;
   });

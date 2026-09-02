@@ -51,4 +51,18 @@ describe('withObjectCapture', () => {
       NSPhotoLibraryAddUsageDescription: 'Save the generated model',
     });
   });
+
+  it('preserves existing iOS permission descriptions', () => {
+    const config = createConfig();
+    config.modResults = {
+      ...config.modResults,
+      NSCameraUsageDescription: 'Scan inventory items in 3D',
+      NSPhotoLibraryUsageDescription: 'Pick reference photos',
+      NSPhotoLibraryAddUsageDescription: 'Save captured models',
+    };
+
+    const result = withObjectCapture(config);
+
+    expect(result.modResults).toEqual(config.modResults);
+  });
 });

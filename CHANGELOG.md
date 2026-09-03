@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.7](https://github.com/tristanheilman/react-native-object-capture/compare/v0.2.6...v0.2.7) (2026-09-03)
+
+
+### Features
+
+* add Expo config plugin ([#39](https://github.com/tristanheilman/react-native-object-capture/issues/39)) ([46b8aa8](https://github.com/tristanheilman/react-native-object-capture/commit/46b8aa8ade6720a4c204df3490bddf4504667344)), closes [#29](https://github.com/tristanheilman/react-native-object-capture/issues/29)
+
+
+### Bug Fixes
+
+* **android:** remove unreachable stubs and harden platform degradation ([040b54b](https://github.com/tristanheilman/react-native-object-capture/commit/040b54bd4f0c0fa4abefdea5654040ccd0aef4a8))
+
 ## [0.2.6](https://github.com/tristanheilman/react-native-object-capture/compare/v0.2.5...v0.2.6) (2026-08-13)
 
 

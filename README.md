@@ -40,13 +40,45 @@ what would have to change for that to be worth doing, is in [`docs/android/`](do
 
 ## Installation
 
+### Expo (CNG / prebuild)
+
+```sh
+npx expo install react-native-object-capture
+```
+
+Add the config plugin to your app config. The permission strings are optional and default to the
+messages shown in the bare React Native section below.
+
+```json
+{
+  "expo": {
+    "plugins": [
+      [
+        "react-native-object-capture",
+        {
+          "cameraPermission": "Allow this app to capture 3D objects",
+          "photoLibraryPermission": "Allow this app to read captured images",
+          "photoLibraryAddPermission": "Allow this app to save captured 3D objects"
+        }
+      ]
+    ]
+  }
+}
+```
+
+Apply the plugin by regenerating the native project:
+
+```sh
+npx expo prebuild
+```
+
+### Bare React Native
+
 ```sh
 npm install react-native-object-capture
 # or
 yarn add react-native-object-capture
-```
 
-```sh
 cd ios && pod install
 ```
 

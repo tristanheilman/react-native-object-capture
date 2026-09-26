@@ -72,7 +72,14 @@ jobs:
 
       - name: Check turborepo cache for Android
         run: |
-          TURBO_CACHE_STATUS=$(node -p "($(yarn turbo run build:android --cache-dir="${{ env.TURBO_CACHE_DIR }}" --dry=json)).tasks.find(t => t.task === 'build:android').cache.status")
+          yarn turbo run build:android --cache-dir="${{ env.TURBO_CACHE_DIR }}" --dry=json > turbo-dry.json
+
+          # turbo.json inputs resolve relative to example/, which owns the task.
+          # If the library's native sources ever fall out of the hash again, a
+          # cached green build would replay without compiling them (#42).
+          node -e "const t = require('./turbo-dry.json').tasks.find(t => t.task === 'build:android'); if (!Object.keys(t.inputs).some(f => f.startsWith('../android/'))) { console.error('build:android cache key does not hash ../android/'); process.exit(1) }"
+
+          TURBO_CACHE_STATUS=$(node -p "require('./turbo-dry.json').tasks.find(t => t.task === 'build:android').cache.status")
 
           if [[ $TURBO_CACHE_STATUS == "HIT" ]]; then
             echo "turbo_cache_hit=1" >> $GITHUB_ENV
@@ -129,7 +136,14 @@ jobs:
 
       - name: Check turborepo cache for iOS
         run: |
-          TURBO_CACHE_STATUS=$(node -p "($(yarn turbo run build:ios --cache-dir="${{ env.TURBO_CACHE_DIR }}" --dry=json)).tasks.find(t => t.task === 'build:ios').cache.status")
+          yarn turbo run build:ios --cache-dir="${{ env.TURBO_CACHE_DIR }}" --dry=json > turbo-dry.json
+
+          # turbo.json inputs resolve relative to example/, which owns the task.
+          # If the library's native sources ever fall out of the hash again, a
+          # cached green build would replay without compiling them (#42).
+          node -e "const t = require('./turbo-dry.json').tasks.find(t => t.task === 'build:ios'); if (!Object.keys(t.inputs).some(f => f.startsWith('../ios/'))) { console.error('build:ios cache key does not hash ../ios/'); process.exit(1) }"
+
+          TURBO_CACHE_STATUS=$(node -p "require('./turbo-dry.json').tasks.find(t => t.task === 'build:ios').cache.status")
 
           if [[ $TURBO_CACHE_STATUS == "HIT" ]]; then
             echo "turbo_cache_hit=1" >> $GITHUB_ENV

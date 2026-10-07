@@ -1,19 +1,27 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { useLayoutEffect } from 'react';
+import { StyleSheet, View } from 'react-native';
 import { QuickLookView } from 'react-native-object-capture';
+import { colors } from './theme';
 
 type ModelOutputScreenProps = {
   navigation: any;
   route: any;
 };
 
-export default function ModelOutputScreen({ route }: ModelOutputScreenProps) {
-  const { path } = route.params;
+export default function ModelOutputScreen({
+  navigation,
+  route,
+}: ModelOutputScreenProps) {
+  const { path, name } = route.params;
 
-  console.log('path', path);
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: name ? name.replace(/\.usdz$/i, '') : 'Model',
+    });
+  }, [navigation, name]);
+
   return (
     <View style={styles.container}>
-      <Text>Model Output Screen</Text>
-
       <QuickLookView path={path} style={styles.quickLookView} />
     </View>
   );
@@ -22,13 +30,9 @@ export default function ModelOutputScreen({ route }: ModelOutputScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#fff',
-    gap: 10,
+    backgroundColor: colors.background,
   },
   quickLookView: {
-    width: '100%',
-    height: '100%',
+    flex: 1,
   },
 });

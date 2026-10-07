@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import {
-  Pressable,
+  ActivityIndicator,
   StyleSheet,
   Text,
   View,
   type NativeSyntheticEvent,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   ObjectCaptureSession,
   ObjectCaptureView,
@@ -19,6 +20,9 @@ import {
   type CaptureComplete,
   type ScanPassCompleted,
 } from 'react-native-object-capture';
+import { Button, IconButton, Pill } from './ui';
+import { feedbackLabels, stateHint, trackingLabels } from './labels';
+import { colors, radius, RECOMMENDED_PASSES, spacing, type } from './theme';
 
 type ObjectSessionScreenProps = {
   navigation: any;
@@ -27,6 +31,7 @@ type ObjectSessionScreenProps = {
 export default function ObjectSessionScreen({
   navigation,
 }: ObjectSessionScreenProps) {
+  const insets = useSafeAreaInsets();
   const [sessionState, setSessionState] =
     useState<SessionState>('initializing');
   const [trackingState, setTrackingState] =
@@ -59,7 +64,6 @@ export default function ObjectSessionScreen({
     event: NativeSyntheticEvent<CaptureComplete>
   ) => {
     console.log('Capture completed:', event.nativeEvent);
-    //navigation.navigate('ScanPassStageModal');
   };
 
   const handleScanPassCompleted = (
@@ -98,10 +102,19 @@ export default function ObjectSessionScreen({
   };
 
   const showHelp = async () => {
-    // pause the session
     await ObjectCaptureSession.pauseSession();
     navigation.navigate('ObjectSessionHelpModal');
   };
+
+  const currentPass = numberOfScanPassCompleted + 1;
+  // Three is a recommendation, not a cap - keep counting past it.
+  const totalPasses = Math.max(RECOMMENDED_PASSES, currentPass);
+  const capturing = sessionState === 'capturing';
+  // Show at most two hints at once; RealityKit can report several together.
+  const feedback = feedbackState
+    .slice(0, 2)
+    .map((f) => feedbackLabels[f])
+    .join(' · ');
 
   return (
     <View style={styles.container}>
@@ -117,58 +130,83 @@ export default function ObjectSessionScreen({
         onError={handleError}
       />
 
-      {feedbackState.length > 0 && (
-        <View style={styles.feedbackContainer}>
-          <View style={styles.feedbackButton}>
-            <Text style={styles.feedbackText}>{feedbackState.join(', ')}</Text>
+      <View style={[styles.topBar, { top: insets.top + spacing.sm }]}>
+        <IconButton
+          glyph="✕"
+          accessibilityLabel="Cancel scan"
+          onPress={handleCancelSession}
+        />
+        <View style={styles.passIndicator}>
+          <Text style={styles.passLabel}>
+            Pass {currentPass} of {totalPasses}
+          </Text>
+          <View style={styles.passDots}>
+            {Array.from({ length: totalPasses }).map((_, i) => (
+              <View
+                key={i}
+                style={[
+                  styles.passDot,
+                  i < numberOfScanPassCompleted && styles.passDotDone,
+                  i === numberOfScanPassCompleted && styles.passDotCurrent,
+                ]}
+              />
+            ))}
           </View>
         </View>
-      )}
-
-      <View style={styles.trackingContainer}>
-        <View style={styles.trackingButton}>
-          <Text style={styles.trackingText}>
-            Pass {numberOfScanPassCompleted + 1} · {trackingState}
-          </Text>
-        </View>
+        <IconButton
+          glyph="?"
+          accessibilityLabel="Scanning tips"
+          onPress={showHelp}
+        />
       </View>
 
-      <View style={styles.floatingBackButton}>
-        <Pressable style={styles.button} onPress={handleCancelSession}>
-          <Text>Cancel</Text>
-        </Pressable>
+      <View style={[styles.hints, { top: insets.top + 68 }]}>
+        {feedback.length > 0 && <Pill label={feedback} tone="warning" />}
+        {trackingState === 'limited' && (
+          <Pill label={trackingLabels.limited} tone="warning" />
+        )}
+        {/* While capturing, the panel steps aside for RealityKit's capture
+            ring, so its instruction moves up here. */}
+        {capturing && feedback.length === 0 && (
+          <Pill label={stateHint('capturing')} />
+        )}
       </View>
 
-      <View style={styles.floatingHelpButton}>
-        <Pressable style={styles.button} onPress={showHelp}>
-          <Text>Help</Text>
-        </Pressable>
-      </View>
-
-      <View style={styles.floatingContainer}>
-        <View style={styles.buttonContainer}>
+      {!capturing && (
+        <View
+          style={[styles.panel, { paddingBottom: insets.bottom + spacing.lg }]}
+        >
+          <Text style={styles.panelHint}>{stateHint(sessionState)}</Text>
           {sessionState === 'initializing' && (
-            <View style={styles.button}>
-              <Text>Initializing...</Text>
-            </View>
+            <ActivityIndicator color={colors.text} style={styles.spinner} />
           )}
           {sessionState === 'ready' && (
-            <Pressable style={styles.button} onPress={handleStartDetection}>
-              <Text>Start Detection</Text>
-            </Pressable>
+            <Button label="Start Detection" onPress={handleStartDetection} />
           )}
           {sessionState === 'detecting' && (
             <View style={styles.buttonRow}>
-              <Pressable style={styles.button} onPress={handleResetDetection}>
-                <Text>Reset Detection</Text>
-              </Pressable>
-              <Pressable style={styles.button} onPress={handleStartCapturing}>
-                <Text>Start Capturing</Text>
-              </Pressable>
+              <Button
+                label="Reset"
+                variant="secondary"
+                onPress={handleResetDetection}
+                style={styles.secondaryAction}
+              />
+              <Button
+                label="Start Capturing"
+                onPress={handleStartCapturing}
+                style={styles.primaryAction}
+              />
             </View>
           )}
+          {sessionState === 'failed' && (
+            <Button
+              label="Close"
+              variant="secondary"
+              onPress={handleCancelSession}
+            />
+          )}
         </View>
-      </View>
+      )}
     </View>
   );
 }
@@ -176,77 +214,80 @@ export default function ObjectSessionScreen({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#000',
   },
-  button: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#CD8987',
-    borderRadius: 5,
-  },
-  feedbackButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    borderRadius: 5,
-  },
-  feedbackContainer: {
+  topBar: {
     position: 'absolute',
-    top: 150,
-    right: 50,
-    left: 50,
+    left: spacing.lg,
+    right: spacing.lg,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  floatingContainer: {
+  passIndicator: {
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.pill,
+    backgroundColor: colors.overlay,
+  },
+  passLabel: {
+    color: colors.text,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  passDots: {
+    flexDirection: 'row',
+    gap: 5,
+  },
+  passDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+  },
+  passDotDone: {
+    backgroundColor: colors.success,
+  },
+  passDotCurrent: {
+    backgroundColor: colors.accent,
+  },
+  hints: {
+    position: 'absolute',
+    left: spacing.lg,
+    right: spacing.lg,
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  panel: {
     position: 'absolute',
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    paddingBottom: 30,
-    paddingTop: 16,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
+    gap: spacing.lg,
+    paddingTop: spacing.xl,
+    paddingHorizontal: spacing.xl,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
+    backgroundColor: colors.overlayStrong,
   },
-  floatingBackButton: {
-    position: 'absolute',
-    top: 60,
-    left: 0,
-    padding: 16,
+  panelHint: {
+    ...type.callout,
+    color: colors.text,
+    textAlign: 'center',
   },
-  floatingHelpButton: {
-    position: 'absolute',
-    top: 60,
-    right: 0,
-    padding: 16,
-  },
-  buttonContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+  spinner: {
+    marginVertical: spacing.md,
   },
   buttonRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 10,
-    alignItems: 'center',
+    gap: spacing.md,
   },
-  feedbackText: {
-    color: '#ffffff',
+  secondaryAction: {
+    flex: 1,
   },
-  trackingContainer: {
-    position: 'absolute',
-    bottom: 150,
-    left: 50,
-    right: 50,
-    alignItems: 'center',
-  },
-  trackingButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    borderRadius: 5,
-  },
-  trackingText: {
-    color: '#ffffff',
+  primaryAction: {
+    flex: 2,
   },
 });

@@ -14,6 +14,11 @@ const usePhotogrammetrySession = () => {
     checkpointDirectory,
     outputPath,
   }: PhotogrammetrySessionOptions) => {
+    // Clear the last attempt's outcome so a retry after a cancel or error
+    // reads as in progress rather than finished.
+    setError(null);
+    setResult(null);
+    setProgress(0);
     try {
       const startResult = await PhotogrammetrySession.startReconstruction({
         imagesDirectory,

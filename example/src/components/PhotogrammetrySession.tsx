@@ -1,50 +1,116 @@
-import { View, Text, StyleSheet, Pressable, TextInput } from 'react-native';
-import usePhotogrammetrySession from '../hooks/usePhotogrammetrySession';
 import { useState } from 'react';
+import { View, Text, StyleSheet, TextInput } from 'react-native';
+import usePhotogrammetrySession from '../hooks/usePhotogrammetrySession';
+import { Button, Card } from '../ui';
+import { colors, radius, spacing, type } from '../theme';
 
-const PhotogrammetrySession = () => {
-  const [modelName, setModelName] = useState('model.usdz');
+// A dated default, so building a second model doesn't silently overwrite the
+// first one under the same name.
+function defaultModelName() {
+  const d = new Date();
+  const pad = (n: number) => `${n}`.padStart(2, '0');
+  return `scan-${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}`;
+}
+
+const PhotogrammetrySession = ({
+  onViewModels,
+}: {
+  onViewModels: () => void;
+}) => {
+  const [modelName, setModelName] = useState(defaultModelName);
+  const [started, setStarted] = useState(false);
   const { error, progress, result, startReconstruction, cancelReconstruction } =
     usePhotogrammetrySession();
 
-  console.log('progress', progress, typeof progress);
+  const fileName = `${modelName.trim().replace(/\.usdz$/i, '') || 'model'}.usdz`;
+  const running = started && !result && !error;
+
+  const start = () => {
+    setStarted(true);
+    startReconstruction({
+      imagesDirectory: 'Images/',
+      checkpointDirectory: 'Snapshots/',
+      outputPath: `Outputs/${fileName}`,
+    });
+  };
+
   return (
     <View style={styles.container}>
-      <View style={styles.inputContainer}>
-        <Text style={styles.labelText}>Model Name</Text>
-        <TextInput
-          style={styles.input}
-          value={modelName}
-          onChangeText={setModelName}
-        />
-      </View>
-      {progress > 0 && progress < 1 ? (
-        <View style={styles.progressContainer}>
-          <Pressable style={styles.button} onPress={cancelReconstruction}>
-            <Text>Cancel Reconstruction</Text>
-          </Pressable>
-          <Text style={styles.progressText}>
-            Progress: {(progress * 100)?.toFixed(2)}%
-          </Text>
+      <View style={styles.field}>
+        <Text style={type.caption}>File name</Text>
+        <View style={[styles.inputRow, running && styles.inputDisabled]}>
+          <TextInput
+            style={styles.input}
+            value={modelName}
+            onChangeText={setModelName}
+            editable={!running && result !== 'completed'}
+            autoCapitalize="none"
+            autoCorrect={false}
+            placeholder="model"
+            placeholderTextColor={colors.textTertiary}
+          />
+          <Text style={styles.suffix}>.usdz</Text>
         </View>
-      ) : (
-        result !== 'completed' && (
-          <Pressable
-            style={styles.button}
-            onPress={() =>
-              startReconstruction({
-                imagesDirectory: 'Images/',
-                checkpointDirectory: 'Snapshots/',
-                outputPath: `Outputs/${modelName}`,
-              })
-            }
-          >
-            <Text>Start Reconstruction</Text>
-          </Pressable>
-        )
+      </View>
+
+      {running && (
+        <Card style={styles.progressCard}>
+          <View style={styles.progressHeader}>
+            <Text style={type.headline}>Building model…</Text>
+            <Text style={styles.percent}>{Math.round(progress * 100)}%</Text>
+          </View>
+          <View style={styles.track}>
+            <View
+              style={[
+                styles.fill,
+                { width: `${Math.max(progress, 0.02) * 100}%` },
+              ]}
+            />
+          </View>
+          <Text style={type.footnote}>
+            This can take a few minutes. Keep the app open.
+          </Text>
+        </Card>
       )}
-      {error && <Text style={styles.error}>Error: {error?.message}</Text>}
-      <Text style={styles.resultText}>Result: {result || 'No result yet'}</Text>
+
+      {result === 'completed' && (
+        <Card style={[styles.statusCard, styles.successCard]}>
+          <Text style={[type.headline, { color: colors.success }]}>
+            Model ready
+          </Text>
+          <Text style={type.footnote}>Saved as {fileName}</Text>
+        </Card>
+      )}
+      {result === 'cancelled' && (
+        <Card style={styles.statusCard}>
+          <Text style={type.headline}>Build cancelled</Text>
+          <Text style={type.footnote}>
+            Your captured photos are still here; you can start again.
+          </Text>
+        </Card>
+      )}
+      {error && (
+        <Card style={[styles.statusCard, styles.errorCard]}>
+          <Text style={[type.headline, { color: colors.danger }]}>
+            Couldn't build the model
+          </Text>
+          <Text style={type.footnote}>{error.message}</Text>
+        </Card>
+      )}
+
+      <View style={styles.spacer} />
+
+      {result === 'completed' ? (
+        <Button label="View your models" onPress={onViewModels} />
+      ) : running ? (
+        <Button
+          label="Cancel"
+          variant="danger"
+          onPress={cancelReconstruction}
+        />
+      ) : (
+        <Button label={started ? 'Try again' : 'Build model'} onPress={start} />
+      )}
     </View>
   );
 };
@@ -53,47 +119,69 @@ export default PhotogrammetrySession;
 
 const styles = StyleSheet.create({
   container: {
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-    marginTop: 20,
-    width: '100%',
-    gap: 20,
+    flex: 1,
+    marginTop: spacing.xl,
+    gap: spacing.lg,
   },
-  progressContainer: {
+  field: {
+    gap: spacing.sm,
+  },
+  inputRow: {
     flexDirection: 'row',
-    gap: 10,
     alignItems: 'center',
-    justifyContent: 'flex-start',
+    borderRadius: radius.md,
+    backgroundColor: colors.surface,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
+    paddingHorizontal: spacing.lg,
   },
-  button: {
-    backgroundColor: '#CD8987',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 5,
-  },
-  inputContainer: {
-    width: '100%',
-    gap: 5,
+  inputDisabled: {
+    opacity: 0.5,
   },
   input: {
-    borderWidth: 1,
-    borderColor: 'gray',
-    padding: 15,
-    borderRadius: 5,
-    width: '100%',
+    flex: 1,
+    paddingVertical: spacing.lg,
+    color: colors.text,
+    fontSize: 17,
   },
-  labelText: {
-    fontSize: 16,
-    fontWeight: 'bold',
+  suffix: {
+    ...type.body,
+    color: colors.textTertiary,
   },
-  progressText: {
-    fontSize: 16,
-    fontWeight: 'bold',
+  progressCard: {
+    gap: spacing.md,
   },
-  resultText: {
-    fontSize: 20,
+  progressHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'baseline',
   },
-  error: {
-    color: 'red',
+  percent: {
+    ...type.headline,
+    color: colors.accent,
+    fontVariant: ['tabular-nums'],
+  },
+  track: {
+    height: 6,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surfaceRaised,
+    overflow: 'hidden',
+  },
+  fill: {
+    height: '100%',
+    borderRadius: radius.pill,
+    backgroundColor: colors.accent,
+  },
+  statusCard: {
+    gap: spacing.xs,
+  },
+  successCard: {
+    borderColor: colors.successMuted,
+  },
+  errorCard: {
+    borderColor: colors.dangerMuted,
+  },
+  spacer: {
+    flex: 1,
   },
 });

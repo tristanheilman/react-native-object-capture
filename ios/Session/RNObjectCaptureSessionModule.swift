@@ -64,7 +64,14 @@ class RNObjectCaptureSessionModule: NSObject {
     @objc
     func beginNewScan(_ resolve: @escaping RCTPromiseResolveBlock,
                       rejecter reject: @escaping RCTPromiseRejectBlock) {
-        Task { await sessionManager.beginNewScan(); resolve(nil) }
+        Task {
+            do {
+                try await sessionManager.beginNewScan()
+                resolve(nil)
+            } catch {
+                reject("ERROR", error.localizedDescription, error)
+            }
+        }
     }
 
     @objc

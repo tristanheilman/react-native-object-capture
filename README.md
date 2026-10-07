@@ -204,7 +204,7 @@ module is unavailable rather than failing with `undefined is not a function`.
 | `startDetection` | Begins detecting objects in the current view |
 | `resetDetection` | Resets any detected objects |
 | `startCapturing` | Transitions the session from `detecting` to `capturing` |
-| `beginNewScan` | Begins a new scan pass |
+| `beginNewScan` | Begins a new scan pass. Rejects unless the session is `capturing` — RealityKit would otherwise crash the app, e.g. after `beginNewScanAfterFlip` has returned the session to `ready`. Pausing doesn't change the state, so a session paused for a pass review still qualifies |
 | `beginNewScanAfterFlip` | Begins a new pass capturing a different orientation, for flippable objects |
 | `finishSession` | Ends the capture session and finalises the images so they can be handed to a `PhotogrammetrySession`. Call once all scan passes are complete |
 | `cancelSession` | Tears down the session — call this when cleaning up |

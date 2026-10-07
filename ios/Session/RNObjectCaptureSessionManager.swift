@@ -327,9 +327,18 @@ class RNObjectCaptureSessionManager: NSObject, ObservableObject {
     }
 
     @MainActor
-    func beginNewScan() async {
+    func beginNewScan() async throws {
         print("Beginning new scan") // Debug log
         if let existingSession = session {
+            // RealityKit traps (crashing the app) if beginNewScanPass() is called
+            // outside .capturing - e.g. after beginNewScanPassAfterFlip() has
+            // returned the session to .ready. Pausing doesn't change the state,
+            // so a session paused mid-capture still passes. Reject instead.
+            guard existingSession.state == .capturing else {
+                throw NSError(domain: "RNObjectCapture", code: 1, userInfo: [
+                    NSLocalizedDescriptionKey: "beginNewScan() requires the session to be capturing, but it is \(existingSession.state.stringValue)"
+                ])
+            }
             existingSession.beginNewScanPass()
         }
     }

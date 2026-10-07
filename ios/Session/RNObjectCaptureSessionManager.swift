@@ -24,6 +24,12 @@ class RNObjectCaptureSessionManager: NSObject, ObservableObject {
     private weak var pointCloudViewManager: RNObjectCapturePointCloudView?
     // Number of scan pass' completed
     private var numberOfScanPassCompleted: Int = 0
+    // Set once the consumer finishes or cancels. Nil-ing the session swaps the
+    // SwiftUI wrapper back to LoadingView, whose onAppear would otherwise set up
+    // a fresh session - and setup clears Images/ and Snapshots/, deleting the
+    // capture that reconstruction is about to read. A newly mounted capture view
+    // clears the flag via prepareForNewView().
+    private(set) var sessionEnded = false
     // Checkpoint directory file path
     private var checkpointDirectory: String = "Snapshots/"
     // Images directory file path
@@ -149,6 +155,10 @@ class RNObjectCaptureSessionManager: NSObject, ObservableObject {
     func onAppear(_ node: NSNumber) {
         self.pointCloudViewManager?.onAppear(node)
         fabricPointCloudOnAppear?()
+    }
+
+    func prepareForNewView() {
+        sessionEnded = false
     }
 
     @MainActor
@@ -280,6 +290,7 @@ class RNObjectCaptureSessionManager: NSObject, ObservableObject {
     @MainActor
     func cancelSession() async {
         print("Cancelling session") // Debug log
+        sessionEnded = true
         if let existingSession = session {
             existingSession.cancel()
             session = nil
@@ -371,6 +382,7 @@ class RNObjectCaptureSessionManager: NSObject, ObservableObject {
     @MainActor
     func finishSession() async {
         print("Finishing session") // Debug log
+        sessionEnded = true
         if let existingSession = session {
             existingSession.finish()
 

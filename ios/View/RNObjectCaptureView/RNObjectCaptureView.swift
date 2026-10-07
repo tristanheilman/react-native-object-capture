@@ -30,6 +30,7 @@ class RNObjectCaptureView: RCTViewManager {
     }
     
     override func view() -> UIView! {
+        _sharedSessionManager.prepareForNewView()
         let view = RNObjectCaptureViewContainer()
         let hostingController = UIHostingController(rootView: RNObjectCaptureViewWrapper(sessionManager: _sharedSessionManager))
         view.hostingController = hostingController

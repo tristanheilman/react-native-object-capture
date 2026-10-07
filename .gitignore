@@ -90,3 +90,6 @@ nitrogen/
 
 # Jest
 coverage/
+# Personal agent settings and notes
+.claude/settings.local.json
+CLAUDE.local.md

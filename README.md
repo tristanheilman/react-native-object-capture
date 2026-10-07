@@ -178,7 +178,7 @@ session lifecycle.
 | `onSessionStateChange` | (evt: `NativeSyntheticEvent<SessionStateChange>`) => void | No | Fired when the capture session state changes |
 | `onTrackingStateChange` | (evt: `NativeSyntheticEvent<TrackingStateChange>`) => void | No | Fired when the tracking state changes |
 | `onFeedbackStateChange` | (evt: `NativeSyntheticEvent<FeedbackStateChange>`) => void | No | Fired when the feedback state changes |
-| `onScanPassCompleted` | (evt: `NativeSyntheticEvent<ScanPassCompleted>`) => void | No | Fired when a scan pass completes. Three passes are recommended before finishing the session |
+| `onScanPassCompleted` | (evt: `NativeSyntheticEvent<ScanPassCompleted>`) => void | No | Fired when a scan pass completes. Three passes are recommended before finishing the session. Also fires with `completed: false` when `beginNewScan` / `beginNewScanAfterFlip` resets the flag — check `nativeEvent.completed` before acting on it |
 | `onCaptureComplete` | (evt: `NativeSyntheticEvent<CaptureComplete>`) => void | No | Fired when object capture is complete |
 | `onError` | (evt: `NativeSyntheticEvent<SessionError>`) => void | No | Fired when an error occurs during capture |
 

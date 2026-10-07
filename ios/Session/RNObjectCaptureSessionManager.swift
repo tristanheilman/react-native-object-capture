@@ -97,7 +97,9 @@ class RNObjectCaptureSessionManager: NSObject, ObservableObject {
             "completed": completed
         ])
         fabricCaptureOnScanPassCompleted?(completed)
-        numberOfScanPassCompleted += 1
+        // The flag also flips back to false when a new pass begins; only count
+        // completions.
+        if completed { numberOfScanPassCompleted += 1 }
     }
 
     @objc
@@ -266,6 +268,7 @@ class RNObjectCaptureSessionManager: NSObject, ObservableObject {
         newSession.start(imagesDirectory: self.getImagesDirectory(), configuration: config)
         self.session = newSession
         self.configuration = config
+        self.numberOfScanPassCompleted = 0
         print("Session started successfully")
         completion(true, nil)
     }

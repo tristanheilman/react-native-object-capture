@@ -178,7 +178,7 @@ session lifecycle.
 | `onSessionStateChange` | (evt: `NativeSyntheticEvent<SessionStateChange>`) => void | No | Fired when the capture session state changes |
 | `onTrackingStateChange` | (evt: `NativeSyntheticEvent<TrackingStateChange>`) => void | No | Fired when the tracking state changes |
 | `onFeedbackStateChange` | (evt: `NativeSyntheticEvent<FeedbackStateChange>`) => void | No | Fired when the feedback state changes |
-| `onScanPassCompleted` | (evt: `NativeSyntheticEvent<ScanPassCompleted>`) => void | No | Fired when a scan pass completes. Three passes are recommended before finishing the session |
+| `onScanPassCompleted` | (evt: `NativeSyntheticEvent<ScanPassCompleted>`) => void | No | Fired when a scan pass completes. Three passes are recommended before finishing the session. Also fires with `completed: false` when `beginNewScan` / `beginNewScanAfterFlip` resets the flag — check `nativeEvent.completed` before acting on it |
 | `onCaptureComplete` | (evt: `NativeSyntheticEvent<CaptureComplete>`) => void | No | Fired when object capture is complete |
 | `onError` | (evt: `NativeSyntheticEvent<SessionError>`) => void | No | Fired when an error occurs during capture |
 
@@ -204,8 +204,8 @@ module is unavailable rather than failing with `undefined is not a function`.
 | `startDetection` | Begins detecting objects in the current view |
 | `resetDetection` | Resets any detected objects |
 | `startCapturing` | Transitions the session from `detecting` to `capturing` |
-| `beginNewScan` | Begins a new scan pass |
-| `beginNewScanAfterFlip` | Begins a new pass capturing a different orientation, for flippable objects |
+| `beginNewScan` | Begins a new scan pass. Rejects unless the session is `capturing` — RealityKit would otherwise crash the app, e.g. after `beginNewScanAfterFlip` has returned the session to `ready`. Calling it on a session you paused for a pass review is fine: it resumes the session first, because starting a pass while paused can leave capture frozen |
+| `beginNewScanAfterFlip` | Begins a new pass capturing a different orientation, for flippable objects. Returns the session to `ready`, so call `startDetection` and `startCapturing` again |
 | `finishSession` | Ends the capture session and finalises the images so they can be handed to a `PhotogrammetrySession`. Call once all scan passes are complete |
 | `cancelSession` | Tears down the session — call this when cleaning up |
 | `isDeviceSupported` | Whether the device supports AR and LiDAR |

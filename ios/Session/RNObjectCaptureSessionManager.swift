@@ -24,6 +24,12 @@ class RNObjectCaptureSessionManager: NSObject, ObservableObject {
     private weak var pointCloudViewManager: RNObjectCapturePointCloudView?
     // Number of scan pass' completed
     private var numberOfScanPassCompleted: Int = 0
+    // Set once the consumer finishes or cancels. Nil-ing the session swaps the
+    // SwiftUI wrapper back to LoadingView, whose onAppear would otherwise set up
+    // a fresh session - and setup clears Images/ and Snapshots/, deleting the
+    // capture that reconstruction is about to read. A newly mounted capture view
+    // clears the flag via prepareForNewView().
+    private(set) var sessionEnded = false
     // Checkpoint directory file path
     private var checkpointDirectory: String = "Snapshots/"
     // Images directory file path
@@ -91,7 +97,9 @@ class RNObjectCaptureSessionManager: NSObject, ObservableObject {
             "completed": completed
         ])
         fabricCaptureOnScanPassCompleted?(completed)
-        numberOfScanPassCompleted += 1
+        // The flag also flips back to false when a new pass begins; only count
+        // completions.
+        if completed { numberOfScanPassCompleted += 1 }
     }
 
     @objc
@@ -149,6 +157,10 @@ class RNObjectCaptureSessionManager: NSObject, ObservableObject {
     func onAppear(_ node: NSNumber) {
         self.pointCloudViewManager?.onAppear(node)
         fabricPointCloudOnAppear?()
+    }
+
+    func prepareForNewView() {
+        sessionEnded = false
     }
 
     @MainActor
@@ -256,6 +268,7 @@ class RNObjectCaptureSessionManager: NSObject, ObservableObject {
         newSession.start(imagesDirectory: self.getImagesDirectory(), configuration: config)
         self.session = newSession
         self.configuration = config
+        self.numberOfScanPassCompleted = 0
         print("Session started successfully")
         completion(true, nil)
     }
@@ -280,6 +293,7 @@ class RNObjectCaptureSessionManager: NSObject, ObservableObject {
     @MainActor
     func cancelSession() async {
         print("Cancelling session") // Debug log
+        sessionEnded = true
         if let existingSession = session {
             existingSession.cancel()
             session = nil
@@ -318,18 +332,52 @@ class RNObjectCaptureSessionManager: NSObject, ObservableObject {
         }
     }
 
+    // beginNewScanPass() on a paused session briefly un-pauses it and then
+    // re-pauses it, and a resume() issued in that window is lost - the session
+    // stays paused and never takes another photo (observed on iOS 26). Apple
+    // documents starting a pass while paused as valid, and its sample gets away
+    // with it only because it resumes after a sheet animation. Consumers
+    // naturally pause while showing a pass review and resume straight after,
+    // so resume first and wait for it to land: isPaused updates
+    // asynchronously. Bounded at ~1s so a session that never reports
+    // un-pausing can't hang the call.
+    @MainActor
+    private func resumeBeforeNewPass(_ session: ObjectCaptureSession) async {
+        guard session.isPaused else { return }
+        session.resume()
+        var waited = 0
+        while session.isPaused && waited < 40 {
+            try? await Task.sleep(nanoseconds: 25_000_000)
+            waited += 1
+        }
+    }
+
     @MainActor
     func beginNewScanAfterFlip() async {
         print("Beginning new scan after flip") // Debug log
         if let existingSession = session {
+            // Deliberately no resumeBeforeNewPass(): calling this right after a
+            // resume() traps (observed on iOS 26), while calling it paused
+            // works - the session drops back to .ready and capture restarts
+            // through startDetection()/startCapturing().
             existingSession.beginNewScanPassAfterFlip()
         }
     }
 
     @MainActor
-    func beginNewScan() async {
+    func beginNewScan() async throws {
         print("Beginning new scan") // Debug log
         if let existingSession = session {
+            // RealityKit traps (crashing the app) if beginNewScanPass() is called
+            // outside .capturing - e.g. after beginNewScanPassAfterFlip() has
+            // returned the session to .ready. Pausing doesn't change the state,
+            // so a session paused mid-capture still passes. Reject instead.
+            guard existingSession.state == .capturing else {
+                throw NSError(domain: "RNObjectCapture", code: 1, userInfo: [
+                    NSLocalizedDescriptionKey: "beginNewScan() requires the session to be capturing, but it is \(existingSession.state.stringValue)"
+                ])
+            }
+            await resumeBeforeNewPass(existingSession)
             existingSession.beginNewScanPass()
         }
     }
@@ -337,6 +385,7 @@ class RNObjectCaptureSessionManager: NSObject, ObservableObject {
     @MainActor
     func finishSession() async {
         print("Finishing session") // Debug log
+        sessionEnded = true
         if let existingSession = session {
             existingSession.finish()
 

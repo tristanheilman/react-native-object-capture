@@ -47,6 +47,9 @@ import UIKit
         guard let hc = hostingController else { return }
         if window != nil {
             if hc.parent == nil, let parentVC = parentViewController() {
+                // Fabric recycles this container, so init isn't a reliable
+                // "new capture view" signal - attaching to a window is.
+                sessionManager.prepareForNewView()
                 parentVC.addChild(hc)
                 hc.view.frame = bounds
                 hc.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]

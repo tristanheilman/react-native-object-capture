@@ -12,6 +12,10 @@ struct LoadingView: View {
             ProgressView()
                 .progressViewStyle(CircularProgressViewStyle())
                 .onAppear {
+                    guard !sessionManager.sessionEnded else {
+                        print("Session ended - not setting up a new one")
+                        return
+                    }
                     sessionManager.setupSession { success, error in
                         if !success {
                             print("Failed to setup session: \(error ?? "Unknown error")")

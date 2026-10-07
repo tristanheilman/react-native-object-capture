@@ -45,6 +45,11 @@ const ObjectCaptureSession = {
   async beginNewScanAfterFlip(): Promise<void> {
     return requireModule().beginNewScanAfterFlip();
   },
+  /**
+   * Rejects unless the session is `capturing`. RealityKit traps if a new pass
+   * begins in any other state, so the native side refuses rather than letting
+   * the app crash.
+   */
   async beginNewScan(): Promise<void> {
     return requireModule().beginNewScan();
   },

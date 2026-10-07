@@ -66,6 +66,11 @@ export default function ObjectSessionScreen({
     event: NativeSyntheticEvent<ScanPassCompleted>
   ) => {
     console.log('Scan pass completed:', event.nativeEvent);
+    // Fires on every change to the flag, including the reset to false that
+    // beginNewScan / beginNewScanAfterFlip cause. Only a completed pass should
+    // open the modal - reopening it on the reset invites a second
+    // beginNewScan outside the capturing state.
+    if (!event.nativeEvent.completed) return;
     setNumberOfScanPassCompleted(numberOfScanPassCompleted + 1);
     ObjectCaptureSession.pauseSession();
     navigation.navigate('ScanPassStageModal');
@@ -114,19 +119,18 @@ export default function ObjectSessionScreen({
 
       {feedbackState.length > 0 && (
         <View style={styles.feedbackContainer}>
-          <Pressable
-            style={styles.feedbackButton}
-            onPress={handleCancelSession}
-          >
+          <View style={styles.feedbackButton}>
             <Text style={styles.feedbackText}>{feedbackState.join(', ')}</Text>
-          </Pressable>
+          </View>
         </View>
       )}
 
       <View style={styles.trackingContainer}>
-        <Pressable style={styles.trackingButton} onPress={handleCancelSession}>
-          <Text style={styles.trackingText}>{trackingState}</Text>
-        </Pressable>
+        <View style={styles.trackingButton}>
+          <Text style={styles.trackingText}>
+            Pass {numberOfScanPassCompleted + 1} · {trackingState}
+          </Text>
+        </View>
       </View>
 
       <View style={styles.floatingBackButton}>

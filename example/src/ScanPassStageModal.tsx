@@ -25,6 +25,7 @@ export default function ScanPassStageModal({
   const pointCloudViewRef = useRef<ObjectCapturePointCloudViewRef>(null);
   const { width, height } = useWindowDimensions();
   const [numberOfScanPassUpdates, setNumberOfScanPassUpdates] = useState(-1);
+  const [numberOfShots, setNumberOfShots] = useState(-1);
 
   const handleContinue = () => {
     // either call beginNewScan or beginNewScanAfterFlip
@@ -41,7 +42,12 @@ export default function ScanPassStageModal({
       {
         text: 'No',
         onPress: async () => {
-          await ObjectCaptureSession.beginNewScan();
+          try {
+            await ObjectCaptureSession.beginNewScan();
+          } catch (err) {
+            Alert.alert('Cannot start a new pass', String(err));
+            return;
+          }
           await ObjectCaptureSession.resumeSession();
           navigation.goBack();
         },
@@ -60,21 +66,18 @@ export default function ScanPassStageModal({
     }
   };
 
-  const handleCancel = () => {
-    navigation.goBack();
-  };
-
   useEffect(() => {
-    ObjectCaptureSession.pauseSession();
     ObjectCaptureSession.getNumberOfScanPassUpdates().then((count) => {
       setNumberOfScanPassUpdates(count);
     });
+    ObjectCaptureSession.getNumberOfShotsTaken().then(setNumberOfShots);
   }, []);
 
   return (
     <View style={styles.container}>
       <Text>ScanPassStageModal</Text>
-      <Text>Segments Completed: {numberOfScanPassUpdates}</Text>
+      <Text>Scan passes completed: {numberOfScanPassUpdates}</Text>
+      <Text>Photos captured so far: {numberOfShots}</Text>
 
       <ObjectCapturePointCloudView
         ref={pointCloudViewRef}
@@ -97,10 +100,8 @@ export default function ScanPassStageModal({
       <Pressable style={styles.button} onPress={handleFinish}>
         <Text>Finish</Text>
       </Pressable>
-
-      <Pressable style={styles.button} onPress={handleCancel}>
-        <Text>Cancel</Text>
-      </Pressable>
+      {/* No Cancel: once a pass completes, the session waits for a new pass,
+          a flip, or finish. There is no state to go back to the same pass. */}
     </View>
   );
 }

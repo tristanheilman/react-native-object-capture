@@ -6,10 +6,14 @@ import UIKit
     private var hostingController: UIHostingController<RNQuickLookViewWrapper>?
     private var previewController: QLPreviewController?
     private var dataSource: PreviewControllerDataSource?
+    private var currentPath: String?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
+        makePreviewController()
+    }
 
+    private func makePreviewController() {
         let pc = QLPreviewController()
         previewController = pc
 
@@ -19,25 +23,31 @@ import UIKit
         hostingController = hc
     }
 
+    private func attachHostingController() {
+        guard let hc = hostingController, hc.parent == nil,
+              let parentVC = parentViewController() else { return }
+        parentVC.addChild(hc)
+        hc.view.frame = bounds
+        hc.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        addSubview(hc.view)
+        hc.didMove(toParent: parentVC)
+    }
+
+    private func detachHostingController() {
+        guard let hc = hostingController, hc.parent != nil else { return }
+        hc.willMove(toParent: nil)
+        hc.view.removeFromSuperview()
+        hc.removeFromParent()
+    }
+
     required init?(coder: NSCoder) { fatalError("init(coder:) not supported") }
 
     override func didMoveToWindow() {
         super.didMoveToWindow()
-        guard let hc = hostingController else { return }
         if window != nil {
-            if hc.parent == nil, let parentVC = parentViewController() {
-                parentVC.addChild(hc)
-                hc.view.frame = bounds
-                hc.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-                addSubview(hc.view)
-                hc.didMove(toParent: parentVC)
-            }
+            attachHostingController()
         } else {
-            if hc.parent != nil {
-                hc.willMove(toParent: nil)
-                hc.view.removeFromSuperview()
-                hc.removeFromParent()
-            }
+            detachHostingController()
         }
     }
 
@@ -56,8 +66,20 @@ import UIKit
     }
 
     @objc func setPath(_ path: String) {
-        let url = URL(fileURLWithPath: path)
-        dataSource = PreviewControllerDataSource(url: url)
+        // updateProps runs on every prop change, not only path changes.
+        guard path != currentPath else { return }
+        // Fabric recycles this container, so opening a second model hands the
+        // first one's QLPreviewController a new path. reloadData() on it keeps
+        // showing the item already loaded at index 0, so start from a fresh
+        // controller whenever the path actually changes.
+        if currentPath != nil {
+            let wasAttached = hostingController?.parent != nil
+            detachHostingController()
+            makePreviewController()
+            if wasAttached || window != nil { attachHostingController() }
+        }
+        currentPath = path
+        dataSource = PreviewControllerDataSource(url: URL(fileURLWithPath: path))
         previewController?.dataSource = dataSource
         previewController?.reloadData()
     }

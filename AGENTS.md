@@ -40,7 +40,7 @@ yarn example ios     # run the example app
 yarn example android
 ```
 
-Native changes: compile before pushing, rather than waiting ~20 min for CI.
+Native changes: compile before pushing, rather than waiting ~12 min for CI (about 1 min locally).
 No device or signing needed:
 
 ```sh
@@ -100,7 +100,7 @@ pause/resume/new-pass code, and re-verify any change there on a device.
 
 **`ci.yml` does not run on push to `main`.** Only `pull_request` and
 `merge_group`. The reasoning is in a comment at the top of the file: PRs and the
-merge queue already ran the full matrix, and the iOS build is ~20 minutes.
+merge queue already ran the full matrix, and the iOS build is ~12 minutes.
 Re-running it on merge is pure duplication. Don't "fix" this by adding a push
 trigger.
 

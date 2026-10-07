@@ -1,7 +1,7 @@
 name: CI
 on:
   # No `push: main` trigger: PRs (and the merge queue) already run these checks
-  # before landing, so re-running the full matrix — including the ~20-min iOS
+  # before landing, so re-running the full matrix — including the ~12-min iOS
   # build — on every merge is pure duplication. The Release workflow re-runs the
   # fast JS checks as a pre-publish gate.
   pull_request:

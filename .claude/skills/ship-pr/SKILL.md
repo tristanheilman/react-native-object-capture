@@ -76,7 +76,7 @@ publishes to npm. That's `/release-check`, and the maintainer's decision.
 
 ## Notes
 
-- A full iOS CI build takes ~20 min on any native change; the turbo cache only
+- A full iOS CI build takes ~12 min on any native change; the turbo cache only
   helps when nothing relevant changed.
 - First-time outside contributors' CI sits in `action_required` — not failed,
   just not yet approved to run.

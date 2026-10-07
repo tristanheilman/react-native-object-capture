@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(./lib/**)",
+      "Read(./example/ios/Pods/**)",
+      "Read(./example/ios/build/**)",
+      "Read(./example/android/build/**)",
+      "Read(./example/android/app/build/**)",
+      "Read(./.turbo/**)"
+    ]
+  }
+}

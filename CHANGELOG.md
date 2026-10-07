@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.2.8](https://github.com/tristanheilman/react-native-object-capture/compare/v0.2.7...v0.2.8) (2026-10-07)
+
+
+### Bug Fixes
+
+* **ci:** hash the library's native sources in the build cache keys ([#43](https://github.com/tristanheilman/react-native-object-capture/issues/43)) ([cd1fdf9](https://github.com/tristanheilman/react-native-object-capture/commit/cd1fdf928363e6e4292303650a668b111fd25c5b)), closes [#42](https://github.com/tristanheilman/react-native-object-capture/issues/42)
+* **ios:** make multi-pass capture work end to end ([#45](https://github.com/tristanheilman/react-native-object-capture/issues/45)) ([627a664](https://github.com/tristanheilman/react-native-object-capture/commit/627a664021c08bc843f237ed75cdb2e740591202))
+* **ios:** show the new model when QuickLookView's path changes ([#46](https://github.com/tristanheilman/react-native-object-capture/issues/46)) ([0a7c13f](https://github.com/tristanheilman/react-native-object-capture/commit/0a7c13fd8e81f993fa4fe7b02ab8a4056caf43b4))
+
 ## [0.2.7](https://github.com/tristanheilman/react-native-object-capture/compare/v0.2.6...v0.2.7) (2026-09-03)
 
 

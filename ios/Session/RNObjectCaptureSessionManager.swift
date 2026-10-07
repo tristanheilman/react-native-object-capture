@@ -318,10 +318,34 @@ class RNObjectCaptureSessionManager: NSObject, ObservableObject {
         }
     }
 
+    // beginNewScanPass() on a paused session briefly un-pauses it and then
+    // re-pauses it, and a resume() issued in that window is lost - the session
+    // stays paused and never takes another photo (observed on iOS 26). Apple
+    // documents starting a pass while paused as valid, and its sample gets away
+    // with it only because it resumes after a sheet animation. Consumers
+    // naturally pause while showing a pass review and resume straight after,
+    // so resume first and wait for it to land: isPaused updates
+    // asynchronously. Bounded at ~1s so a session that never reports
+    // un-pausing can't hang the call.
+    @MainActor
+    private func resumeBeforeNewPass(_ session: ObjectCaptureSession) async {
+        guard session.isPaused else { return }
+        session.resume()
+        var waited = 0
+        while session.isPaused && waited < 40 {
+            try? await Task.sleep(nanoseconds: 25_000_000)
+            waited += 1
+        }
+    }
+
     @MainActor
     func beginNewScanAfterFlip() async {
         print("Beginning new scan after flip") // Debug log
         if let existingSession = session {
+            // Deliberately no resumeBeforeNewPass(): calling this right after a
+            // resume() traps (observed on iOS 26), while calling it paused
+            // works - the session drops back to .ready and capture restarts
+            // through startDetection()/startCapturing().
             existingSession.beginNewScanPassAfterFlip()
         }
     }
@@ -339,6 +363,7 @@ class RNObjectCaptureSessionManager: NSObject, ObservableObject {
                     NSLocalizedDescriptionKey: "beginNewScan() requires the session to be capturing, but it is \(existingSession.state.stringValue)"
                 ])
             }
+            await resumeBeforeNewPass(existingSession)
             existingSession.beginNewScanPass()
         }
     }

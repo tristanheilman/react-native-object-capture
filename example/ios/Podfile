@@ -1,4 +1,10 @@
 ENV['RCT_NEW_ARCH_ENABLED'] = '1'
+# Use React Native's prebuilt core instead of compiling ~340 C++ files on every
+# clean build: this library's own Swift/ObjC++ still compiles from source, which
+# is what CI is here to check. RN falls back to source when a version has no
+# prebuilt artifact. Opt out with RCT_USE_PREBUILT_RNCORE=0 pod install.
+ENV['RCT_USE_PREBUILT_RNCORE'] ||= '1'
+ENV['RCT_USE_RN_DEP'] ||= '1'
 
 def node_require(script)
   # Resolve react_native_pods.rb with node to allow for hoisting

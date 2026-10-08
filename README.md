@@ -6,6 +6,12 @@
 [![license](https://img.shields.io/npm/l/react-native-object-capture)](./LICENSE)
 [![platform - iOS](https://img.shields.io/badge/platform-iOS-lightgrey)](https://developer.apple.com/documentation/realitykit/objectcapturesession)
 
+<p align="center">
+  <a href="https://tristanheilman.github.io/react-native-object-capture/">
+    <img src="docs/media/demo.gif" width="320" alt="Scanning a tissue box with a LiDAR iPhone, then the finished model reporting its measured size, 23.5 × 12.7 × 13.8 cm, switched to inches">
+  </a>
+</p>
+
 A React Native wrapper around Apple's [Object Capture](https://developer.apple.com/documentation/realitykit/objectcapturesession)
 and [PhotogrammetrySession](https://developer.apple.com/documentation/realitykit/photogrammetrysession):
 guided 3D scanning of a real object, on-device reconstruction to USDZ, and the object's

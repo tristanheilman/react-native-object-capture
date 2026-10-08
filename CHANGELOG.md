@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.9](https://github.com/tristanheilman/react-native-object-capture/compare/v0.2.8...v0.2.9) (2026-10-08)
+
+
+### Bug Fixes
+
+* **ios:** report onDimensions from the finished model, not the capture volume ([b694902](https://github.com/tristanheilman/react-native-object-capture/commit/b694902274658055757fb75d7ed49769be4efe1e)), closes [#36](https://github.com/tristanheilman/react-native-object-capture/issues/36)
+
 ## [0.2.8](https://github.com/tristanheilman/react-native-object-capture/compare/v0.2.7...v0.2.8) (2026-10-07)
 
 

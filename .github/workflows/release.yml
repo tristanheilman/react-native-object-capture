@@ -36,7 +36,7 @@ jobs:
     if: ${{ needs.release-please.outputs.release_created == 'true' }}
     runs-on: ubuntu-latest
     permissions:
-      contents: write # edit the GitHub Release with AI-generated notes
+      contents: read
       id-token: write # npm publish provenance
     steps:
       - name: Checkout
@@ -71,10 +71,24 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      # Best-effort: replace the release body with human-readable notes written by
-      # Claude. If it fails, the release keeps release-please's default notes.
+  # Replaces the release body with human-readable notes. Its own job, after
+  # publish, so a failure (e.g. an empty API credit balance) shows red without
+  # touching the release, and "Re-run failed jobs" retries just this - never
+  # npm publish. If it stays failed, the release keeps release-please's notes.
+  notes:
+    needs: [release-please, publish]
+    if: ${{ needs.release-please.outputs.release_created == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # edit the GitHub Release
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
       - name: Generate AI release notes
-        continue-on-error: true
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}

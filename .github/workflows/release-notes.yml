@@ -1,9 +1,10 @@
 name: Release notes
 
-# Regenerates a release's notes on demand. The Release workflow's notes step
-# is best-effort (continue-on-error) and runs after `npm publish`, so when it
-# fails, re-running that job would try to publish the same version again and
-# stop before the notes step. This runs only the notes script, for any tag.
+# Regenerates a release's notes on demand, for any tag. New releases don't
+# need this: their notes run as a separate job, so "Re-run failed jobs"
+# retries them. It's for releases cut before that split (0.2.9 and earlier),
+# where the notes step ran after `npm publish` in the same job and a re-run
+# would try to publish the same version again.
 on:
   workflow_dispatch:
     inputs:

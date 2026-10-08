@@ -7,7 +7,8 @@
   <meta name="description" content="A React Native library wrapping Apple's Object Capture: scan a real object on a LiDAR iPhone and get a dimensionally accurate USDZ model, reconstructed on device.">
   <meta property="og:title" content="react-native-object-capture">
   <meta property="og:description" content="Scan a real object. Get a true-scale 3D model.">
-  <meta property="og:image" content="media/demo-poster.jpg">
+  <meta property="og:image" content="https://tristanheilman.github.io/react-native-object-capture/media/demo-poster.jpg">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#0B0B0F">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230B0B0F'/%3E%3Ccircle cx='16' cy='16' r='9' fill='none' stroke='%234F8CFF' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='3' fill='%234F8CFF'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="style.css">
@@ -40,7 +41,7 @@
       <p>Reconstruction bakes real-world scale into the model, and the library reports it. A tissue box, scanned on an iPhone 16 Pro Max:</p>
       <div class="compare">
         <div class="stat"><span class="label">Tape measure</span><span class="value">22 × 11 × 11 cm</span></div>
-        <div class="stat accent"><span class="label">Model, from <code>onDimensions</code></span><span class="value">23.1 × 12.5 × 13.2 cm</span></div>
+        <div class="stat accent"><span class="label">Model, from <code>onDimensions</code></span><span class="value">23.5 × 12.7 × 13.8 cm</span></div>
       </div>
       <p class="note">The extra height is tissue poking out of the top.</p>
     </section>

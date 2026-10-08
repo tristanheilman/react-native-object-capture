@@ -1,0 +1,30 @@
+name: Release notes
+
+# Regenerates a release's notes on demand. The Release workflow's notes step
+# is best-effort (continue-on-error) and runs after `npm publish`, so when it
+# fails, re-running that job would try to publish the same version again and
+# stop before the notes step. This runs only the notes script, for any tag.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to regenerate notes for (e.g. v0.2.9)
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  notes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Generate AI release notes
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          RELEASE_TAG: ${{ inputs.tag }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash .github/scripts/ai-release-notes.sh

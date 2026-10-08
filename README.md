@@ -294,7 +294,7 @@ Turns the captured images into a 3D model, reporting progress and the object's r
 | Listener | Callback | Description |
 |----------|----------|-------------|
 | `addProgressListener` | (progress: number) => void | Reconstruction progress updates |
-| `addDimensionsListener` | (dimensions: PhotogrammetryDimensions) => void | Fired once per reconstruction with the object's real-world size in **metres** |
+| `addDimensionsListener` | (dimensions: PhotogrammetryDimensions) => void | Fired once per reconstruction with the object's real-world size in **metres**, measured from the finished model's mesh |
 | `addCompleteListener` | () => void | Reconstruction completed successfully |
 | `addErrorListener` | (error: string) => void | An error occurred during reconstruction |
 | `addCancelledListener` | () => void | Reconstruction was cancelled |

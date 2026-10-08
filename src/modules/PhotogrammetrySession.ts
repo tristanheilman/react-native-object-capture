@@ -178,9 +178,9 @@ class PhotogrammetrySession {
   }
 
   /**
-   * Fires once per reconstruction with the object's real-world size in metres.
-   * Emitted when the bounds request completes, which is typically before
-   * `onComplete`.
+   * Fires once per reconstruction with the object's real-world size in metres,
+   * measured from the finished model's mesh. Emitted when the model file is
+   * written, before `onComplete`.
    */
   addDimensionsListener(callback: (event: PhotogrammetryDimensions) => void) {
     this.listeners.dimensions = this.eventEmitter.addListener(

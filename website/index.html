@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>react-native-object-capture — true-scale 3D scans in React Native</title>
+  <meta name="description" content="A React Native library wrapping Apple's Object Capture: scan a real object on a LiDAR iPhone and get a dimensionally accurate USDZ model, reconstructed on device.">
+  <meta property="og:title" content="react-native-object-capture">
+  <meta property="og:description" content="Scan a real object. Get a true-scale 3D model.">
+  <meta property="og:image" content="media/demo-poster.jpg">
+  <meta name="theme-color" content="#0B0B0F">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230B0B0F'/%3E%3Ccircle cx='16' cy='16' r='9' fill='none' stroke='%234F8CFF' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='3' fill='%234F8CFF'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-text">
+      <p class="eyebrow">React Native · iOS · LiDAR</p>
+      <h1>Scan a real object.<br>Get a true-scale 3D model.</h1>
+      <p class="lede">A React Native wrapper for Apple's Object Capture. Guided capture, on-device reconstruction, and a USDZ whose dimensions match a tape measure.</p>
+      <div class="install">
+        <code id="install-cmd">yarn add react-native-object-capture</code>
+        <button type="button" id="copy" aria-label="Copy install command">Copy</button>
+      </div>
+      <nav class="actions">
+        <a class="button primary" href="https://github.com/tristanheilman/react-native-object-capture">GitHub</a>
+        <a class="button" href="https://www.npmjs.com/package/react-native-object-capture">npm</a>
+      </nav>
+    </div>
+    <div class="phone">
+      <video id="demo" src="media/demo.mp4" poster="media/demo-poster.jpg"
+             muted loop playsinline preload="metadata" controls
+             aria-label="Demo: scanning a tissue box in two passes, building the model on device, and reading its measured size in centimetres and inches"></video>
+    </div>
+  </header>
+
+  <main>
+    <section class="measured">
+      <h2>Measured, not guessed</h2>
+      <p>Reconstruction bakes real-world scale into the model, and the library reports it. A tissue box, scanned on an iPhone 16 Pro Max:</p>
+      <div class="compare">
+        <div class="stat"><span class="label">Tape measure</span><span class="value">22 × 11 × 11 cm</span></div>
+        <div class="stat accent"><span class="label">Model, from <code>onDimensions</code></span><span class="value">23.1 × 12.5 × 13.2 cm</span></div>
+      </div>
+      <p class="note">The extra height is tissue poking out of the top.</p>
+    </section>
+
+    <section class="steps">
+      <h2>How it works</h2>
+      <ol>
+        <li><strong>Detect.</strong> Frame the object and fit the bounding box.</li>
+        <li><strong>Capture.</strong> Walk around it in guided passes. Three at different heights is Apple's recommendation.</li>
+        <li><strong>Reconstruct.</strong> Photogrammetry runs on device. No upload, no account.</li>
+        <li><strong>Use it.</strong> A USDZ, plus its width, height and depth in metres.</li>
+      </ol>
+    </section>
+
+    <section class="requirements">
+      <h2>Requirements</h2>
+      <ul>
+        <li>iPhone 12 Pro or newer (LiDAR)</li>
+        <li>iOS 17+</li>
+        <li>React Native 0.79+ with the New Architecture</li>
+      </ul>
+      <p class="note">Expo works too, via the bundled config plugin. Check support at runtime with <code>ObjectCaptureSession.isDeviceSupported()</code>.</p>
+    </section>
+
+    <section class="quickstart">
+      <h2>Quick start</h2>
+<pre><code>import {
+  ObjectCaptureView,
+  ObjectCaptureSession,
+  PhotogrammetrySession,
+} from 'react-native-object-capture';
+
+// 1. Scan
+&lt;ObjectCaptureView imagesDirectory="Images/" checkpointDirectory="Snapshots/" style={{ flex: 1 }} /&gt;
+
+await ObjectCaptureSession.startDetection();
+await ObjectCaptureSession.startCapturing();
+
+// 2. Reconstruct on device, and get the true size
+PhotogrammetrySession.addDimensionsListener(({ width, height, depth }) =&gt;
+  console.log(`${width} × ${height} × ${depth} m`));
+
+await ObjectCaptureSession.finishSession();
+await PhotogrammetrySession.startReconstruction({
+  imagesDirectory: 'Images/',
+  checkpointDirectory: 'Snapshots/',
+  outputPath: 'Outputs/model.usdz',
+});</code></pre>
+      <p><a href="https://github.com/tristanheilman/react-native-object-capture#readme">Full guide and API reference in the README →</a></p>
+    </section>
+  </main>
+
+  <footer>
+    <p>MIT licensed · <a href="https://github.com/tristanheilman/react-native-object-capture">GitHub</a> · <a href="https://www.npmjs.com/package/react-native-object-capture">npm</a></p>
+    <p class="note">This site uses Cloudflare Web Analytics: no cookies, no personal data.</p>
+  </footer>
+
+  <script>
+    // Respect reduced motion: the poster stays, and the visitor can press play.
+    const demo = document.getElementById('demo');
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      demo.autoplay = true;
+      demo.play().catch(() => {});
+    }
+    // The Clipboard API needs a secure context; fall back to selecting the text.
+    document.getElementById('copy').addEventListener('click', async (e) => {
+      const button = e.currentTarget;
+      const cmd = document.getElementById('install-cmd');
+      try {
+        await navigator.clipboard.writeText(cmd.textContent);
+        button.textContent = 'Copied';
+      } catch {
+        const range = document.createRange();
+        range.selectNodeContents(cmd);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        button.textContent = 'Press ⌘C';
+      }
+      setTimeout(() => { button.textContent = 'Copy'; }, 2000);
+    });
+  </script>
+  <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "3968fcefe556444d804d5a7812cb5f7f"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>

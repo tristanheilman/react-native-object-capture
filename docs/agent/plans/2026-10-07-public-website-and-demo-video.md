@@ -64,7 +64,7 @@ dependencies; not a Yarn workspace).
    the video (muted autoplay loop, `playsinline`, poster; no autoplay under
    `prefers-reduced-motion`), the copyable `yarn add react-native-object-capture`,
    and GitHub and npm buttons.
-2. **Measured, not guessed:** the tissue box. Tape measure ~22 × 11 × 11 cm vs
+2. **Measured, not guessed:** the tissue box. Tape measure ~22 × 11 × 12.5 cm vs
    model 23.5 × 12.7 × 13.8 cm (the reading shown in the demo video), with the note that the extra height is tissue
    poking out of the top. Real numbers from #50's device verification.
 3. **How it works:** detect → capture passes → on-device reconstruction →

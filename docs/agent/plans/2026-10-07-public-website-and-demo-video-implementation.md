@@ -18,7 +18,7 @@
 - Site URL `https://tristanheilman.github.io/react-native-object-capture/`. It's served under a sub-path, so **all asset links are relative** (`media/demo.mp4`, never `/media/demo.mp4`).
 - Theme: background `#0B0B0F`, surface `#16161D`, text `#F5F5F7`, secondary `#A1A1AA`, accent `#4F8CFF`. System font stack.
 - Requirements copy, matching README exactly: iPhone 12 Pro or newer (LiDAR) · iOS 17+ · React Native 0.79+ with the New Architecture.
-- Measurement copy (from #50 device verification): tape ~22 × 11 × 11 cm; model 23.1 × 12.5 × 13.2 cm.
+- Measurement copy (from #50 device verification): tape ~22 × 11 × 12.5 cm; model 23.1 × 12.5 × 13.2 cm.
 - Cloudflare snippet, as issued (no `integrity` attribute: Cloudflare updates `beacon.min.js` in place without versioning, so a pinned SRI hash would silently break analytics on their next update): `<script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "3968fcefe556444d804d5a7812cb5f7f"}'></script>`
 - No new npm dependencies; `website/` is not a Yarn workspace. No AI attribution in commits or PR bodies.
 - Commit types: assets/site/workflow are `docs:`; the `package.json` homepage change is `chore:`.
@@ -217,7 +217,7 @@ shots from a second recording made on the fixed build."
       <h2>Measured, not guessed</h2>
       <p>Reconstruction bakes real-world scale into the model, and the library reports it. A tissue box, scanned on an iPhone 16 Pro Max:</p>
       <div class="compare">
-        <div class="stat"><span class="label">Tape measure</span><span class="value">22 × 11 × 11 cm</span></div>
+        <div class="stat"><span class="label">Tape measure</span><span class="value">22 × 11 × 12.5 cm</span></div>
         <div class="stat accent"><span class="label">Model, from <code>onDimensions</code></span><span class="value">23.1 × 12.5 × 13.2 cm</span></div>
       </div>
       <p class="note">The extra height is tissue poking out of the top.</p>

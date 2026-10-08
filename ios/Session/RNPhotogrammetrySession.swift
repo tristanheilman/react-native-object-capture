@@ -4,6 +4,7 @@ import RealityKit
 import ARKit
 import Metal
 import MetalKit
+import ModelIO
 
 @objc(RNPhotogrammetrySession)
 class RNPhotogrammetrySession: RCTEventEmitter {
@@ -172,9 +173,6 @@ class RNPhotogrammetrySession: RCTEventEmitter {
 
                 self.setupOutputListener()
 
-                // Always request bounds alongside the model. Object Capture already knows
-                // the real-world extent of the subject; requesting it is what makes the
-                // measurement available to JS.
                 let modelRequest: PhotogrammetrySession.Request
                 if let requestedDetail {
                     modelRequest = .modelFile(url: outputURL, detail: requestedDetail)
@@ -183,10 +181,10 @@ class RNPhotogrammetrySession: RCTEventEmitter {
                 }
 
                 // Start the session
-                try session.process(requests: [
-                    modelRequest,
-                    .bounds
-                ])
+                // No `.bounds` request: it returns the capture volume (the detection
+                // box plus padding), not the object - about twice the object's size
+                // on device. onDimensions is measured from the finished model instead.
+                try session.process(requests: [modelRequest])
           
                 resolve(true)
             } catch {
@@ -251,6 +249,33 @@ class RNPhotogrammetrySession: RCTEventEmitter {
         }
     }
 
+    /// Emits `onDimensions` from the written model's mesh extent - the size
+    /// the consumer actually gets. Object Capture bakes real-world scale into
+    /// the model (metersPerUnit = 1), so the bounding box is in metres.
+    private func sendDimensions(ofModelAt url: URL) {
+        let asset = MDLAsset(url: url)
+        let box = asset.boundingBox
+        let extents = box.maxBounds - box.minBounds
+        // An empty or unreadable asset yields a degenerate box; report nothing
+        // rather than a size of zero that reads like a measurement.
+        guard asset.count > 0, extents.x > 0, extents.y > 0, extents.z > 0 else {
+            print("Could not measure model at \(url.path)")
+            return
+        }
+        let center = (box.maxBounds + box.minBounds) / 2
+        print("Model extents: \(extents)")
+        sendEvent(withName: "onDimensions", body: [
+            "width": Double(extents.x),
+            "height": Double(extents.y),
+            "depth": Double(extents.z),
+            "center": [
+                "x": Double(center.x),
+                "y": Double(center.y),
+                "z": Double(center.z)
+            ]
+        ])
+    }
+
     private func setupOutputListener() {
         outputTask = Task {
             guard let session = self.session else { return }
@@ -288,21 +313,8 @@ class RNPhotogrammetrySession: RCTEventEmitter {
                             sendEvent(withName: "onError", body: ["error": errorMessage, "code": errorCode, "request": String(describing: request)])
                         case .requestComplete(let request, let result):
                             print("Request complete")
-                            if case .bounds(let boundingBox) = result {
-                                // extents are in metres, in the captured object's own frame.
-                                let extents = boundingBox.extents
-                                let center = boundingBox.center
-                                print("Bounds: \(extents)")
-                                sendEvent(withName: "onDimensions", body: [
-                                    "width": Double(extents.x),
-                                    "height": Double(extents.y),
-                                    "depth": Double(extents.z),
-                                    "center": [
-                                        "x": Double(center.x),
-                                        "y": Double(center.y),
-                                        "z": Double(center.z)
-                                    ]
-                                ])
+                            if case .modelFile(let url) = result {
+                                sendDimensions(ofModelAt: url)
                             }
                             sendEvent(withName: "onRequestComplete", body: [:])
                         case .requestProgress(let request, let fractionComplete):

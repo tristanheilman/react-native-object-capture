@@ -54,7 +54,7 @@
   "bugs": {
     "url": "https://github.com/tristanheilman/react-native-object-capture/issues"
   },
-  "homepage": "https://github.com/tristanheilman/react-native-object-capture#readme",
+  "homepage": "https://tristanheilman.github.io/react-native-object-capture/",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },

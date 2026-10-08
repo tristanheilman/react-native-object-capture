@@ -21,9 +21,9 @@ W=540          # output width; height follows the cropped aspect
 
 # "start end speed" in source seconds; speed 1 = real time.
 A_SEGMENTS=( "0 1.6 1" "1.6 9 3" "9 72 12" "72 76 1" "77 132 12" "132 135 1" )
-B_SEGMENTS=( "5 6 1" "6 40 17" "40 46 1" "49 53 1" "56 61 1" )
+B_SEGMENTS=( "5 6 1" "6 40 17" "40 42.5 1" "49.5 51.5 1" "56 61 1" )
 POSTER_AT=42                                   # in SRC_B: Model ready, cm
-GIF_SEGMENTS=( "A 20 44 6" "B 40 45 1" "B 49 53 1" )
+GIF_SEGMENTS=( "A 9 45 6" "B 40 42.5 1" "B 49.5 51.5 1" )
 
 seg() { # src start end speed out
   ffmpeg -v error -y -ss "$2" -to "$3" -i "$1" -an \
@@ -58,9 +58,9 @@ for s in "${GIF_SEGMENTS[@]}"; do
   seg "$src" "$a" "$b" "$sp" "$WORK/g$n.mp4"; echo "file '$WORK/g$n.mp4'" >> "$WORK/g.txt"; n=$((n+1))
 done
 ffmpeg -v error -y -f concat -safe 0 -i "$WORK/g.txt" -c copy "$WORK/gif.mp4"
-ffmpeg -v error -y -i "$WORK/gif.mp4" -vf "fps=12,scale=320:-2:flags=lanczos,palettegen=max_colors=96:stats_mode=diff" "$WORK/pal.png"
+ffmpeg -v error -y -i "$WORK/gif.mp4" -vf "fps=10,scale=320:-2:flags=lanczos,palettegen=max_colors=96:stats_mode=diff" "$WORK/pal.png"
 ffmpeg -v error -y -i "$WORK/gif.mp4" -i "$WORK/pal.png" \
-  -lavfi "fps=12,scale=320:-2:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=4:diff_mode=rectangle" "$ROOT/docs/media/demo.gif"
+  -lavfi "fps=10,scale=320:-2:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=4:diff_mode=rectangle" "$ROOT/docs/media/demo.gif"
 
 # Budgets: these files live in git history forever.
 check() {

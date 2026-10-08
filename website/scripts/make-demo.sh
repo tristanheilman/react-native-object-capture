@@ -20,7 +20,7 @@ CROP_TOP=180   # iOS status bar + Dynamic Island; app controls start ~210 px
 W=540          # output width; height follows the cropped aspect
 
 # "start end speed" in source seconds; speed 1 = real time.
-A_SEGMENTS=( "0 1.6 1" "1.6 9 2" "9 72 7" "72 76 1" "77 132 7" "132 135 1" )
+A_SEGMENTS=( "0 1.6 1" "1.6 9 3" "9 72 12" "72 76 1" "77 132 12" "132 135 1" )
 B_SEGMENTS=( "5 6 1" "6 40 17" "40 46 1" "49 53 1" "56 61 1" )
 POSTER_AT=42                                   # in SRC_B: Model ready, cm
 GIF_SEGMENTS=( "A 20 44 6" "B 40 45 1" "B 49 53 1" )

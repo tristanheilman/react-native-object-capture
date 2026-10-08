@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   PhotogrammetrySession,
+  type PhotogrammetryDimensions,
   type PhotogrammetrySessionOptions,
 } from 'react-native-object-capture';
 
@@ -8,6 +9,9 @@ const usePhotogrammetrySession = () => {
   const [error, setError] = useState<Error | null>(null);
   const [progress, setProgress] = useState<number>(0);
   const [result, setResult] = useState<string | null>(null);
+  const [dimensions, setDimensions] = useState<PhotogrammetryDimensions | null>(
+    null
+  );
 
   const startReconstruction = async ({
     imagesDirectory,
@@ -19,6 +23,7 @@ const usePhotogrammetrySession = () => {
     setError(null);
     setResult(null);
     setProgress(0);
+    setDimensions(null);
     try {
       const startResult = await PhotogrammetrySession.startReconstruction({
         imagesDirectory,
@@ -45,6 +50,10 @@ const usePhotogrammetrySession = () => {
       console.log('error', err);
       setError(new Error(err));
     });
+    PhotogrammetrySession.addDimensionsListener((dims) => {
+      console.log('onDimensions', JSON.stringify(dims));
+      setDimensions(dims);
+    });
     PhotogrammetrySession.addCompleteListener(() => {
       setResult('completed');
     });
@@ -62,6 +71,7 @@ const usePhotogrammetrySession = () => {
     error,
     progress,
     result,
+    dimensions,
     startReconstruction,
     cancelReconstruction,
   };

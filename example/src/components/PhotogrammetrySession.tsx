@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, TextInput } from 'react-native';
+import { Pressable, View, Text, StyleSheet, TextInput } from 'react-native';
 import usePhotogrammetrySession from '../hooks/usePhotogrammetrySession';
 import { Button, Card } from '../ui';
 import { colors, radius, spacing, type } from '../theme';
@@ -19,8 +19,15 @@ const PhotogrammetrySession = ({
 }) => {
   const [modelName, setModelName] = useState(defaultModelName);
   const [started, setStarted] = useState(false);
-  const { error, progress, result, startReconstruction, cancelReconstruction } =
-    usePhotogrammetrySession();
+  const [unit, setUnit] = useState<Unit>('cm');
+  const {
+    error,
+    progress,
+    result,
+    dimensions,
+    startReconstruction,
+    cancelReconstruction,
+  } = usePhotogrammetrySession();
 
   const fileName = `${modelName.trim().replace(/\.usdz$/i, '') || 'model'}.usdz`;
   const running = started && !result && !error;
@@ -79,6 +86,31 @@ const PhotogrammetrySession = ({
             Model ready
           </Text>
           <Text style={type.footnote}>Saved as {fileName}</Text>
+          {dimensions && (
+            <>
+              <View style={styles.dimensionsHeader}>
+                <Text style={type.caption}>Size</Text>
+                <UnitToggle unit={unit} onChange={setUnit} />
+              </View>
+              <View style={styles.dimensions}>
+                <Dimension
+                  label="Width"
+                  metres={dimensions.width}
+                  unit={unit}
+                />
+                <Dimension
+                  label="Height"
+                  metres={dimensions.height}
+                  unit={unit}
+                />
+                <Dimension
+                  label="Depth"
+                  metres={dimensions.depth}
+                  unit={unit}
+                />
+              </View>
+            </>
+          )}
         </Card>
       )}
       {result === 'cancelled' && (
@@ -114,6 +146,64 @@ const PhotogrammetrySession = ({
     </View>
   );
 };
+
+type Unit = 'cm' | 'in';
+
+// onDimensions reports metres. One decimal reads naturally for handheld
+// objects in either unit and still shows millimetre-level differences.
+const UNIT_FACTOR: Record<Unit, number> = { cm: 100, in: 39.3701 };
+
+function Dimension({
+  label,
+  metres,
+  unit,
+}: {
+  label: string;
+  metres: number;
+  unit: Unit;
+}) {
+  return (
+    <View style={styles.dimension}>
+      <Text style={styles.dimensionValue}>
+        {(metres * UNIT_FACTOR[unit]).toFixed(1)}
+      </Text>
+      <Text style={type.footnote}>
+        {label} · {unit}
+      </Text>
+    </View>
+  );
+}
+
+function UnitToggle({
+  unit,
+  onChange,
+}: {
+  unit: Unit;
+  onChange: (unit: Unit) => void;
+}) {
+  return (
+    <View style={styles.toggle} accessibilityRole="radiogroup">
+      {(['cm', 'in'] as const).map((u) => (
+        <Pressable
+          key={u}
+          accessibilityRole="radio"
+          accessibilityState={{ selected: unit === u }}
+          onPress={() => onChange(u)}
+          style={[styles.toggleOption, unit === u && styles.toggleSelected]}
+        >
+          <Text
+            style={[
+              styles.toggleLabel,
+              unit === u && styles.toggleLabelSelected,
+            ]}
+          >
+            {u}
+          </Text>
+        </Pressable>
+      ))}
+    </View>
+  );
+}
 
 export default PhotogrammetrySession;
 
@@ -180,6 +270,48 @@ const styles = StyleSheet.create({
   },
   errorCard: {
     borderColor: colors.dangerMuted,
+  },
+  dimensionsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: spacing.md,
+  },
+  dimensions: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.sm,
+  },
+  toggle: {
+    flexDirection: 'row',
+    padding: 2,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surfaceRaised,
+  },
+  toggleOption: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: radius.pill,
+  },
+  toggleSelected: {
+    backgroundColor: colors.accent,
+  },
+  toggleLabel: {
+    ...type.footnote,
+    fontWeight: '600',
+  },
+  toggleLabelSelected: {
+    color: '#FFFFFF',
+  },
+  dimension: {
+    flex: 1,
+    padding: spacing.md,
+    borderRadius: radius.md,
+    backgroundColor: colors.surfaceRaised,
+  },
+  dimensionValue: {
+    ...type.title,
+    fontVariant: ['tabular-nums'],
   },
   spacer: {
     flex: 1,

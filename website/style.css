@@ -15,6 +15,8 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .
 h1 { font-size: clamp(2rem, 5vw, 3.25rem); line-height: 1.1; margin: .25em 0 .4em; }
 h2 { font-size: 1.6rem; margin: 0 0 .6em; }
 .note { color: var(--muted); font-size: .9rem; }
+/* Long inline API names would otherwise force sideways scroll at 320px (Display Zoom). */
+.note code { overflow-wrap: anywhere; }
 
 .hero, main > section, footer { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
 .hero { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 48px; align-items: center; padding-top: 72px; padding-bottom: 48px; }

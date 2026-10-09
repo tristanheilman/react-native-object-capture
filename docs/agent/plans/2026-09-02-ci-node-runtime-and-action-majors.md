@@ -1,7 +1,7 @@
 # Move CI off the Node 20 action runtime — bump action majors, and decide separately what `.nvmrc` should pin
 
 **Date:** 2026-09-02
-**Status:** proposed — ready to execute, no blockers
+**Status:** done — [#55](https://github.com/tristanheilman/react-native-object-capture/pull/55), 2026-10-08. `.nvmrc` still open, see Out of scope.
 **Tracks:** [#41](https://github.com/tristanheilman/react-native-object-capture/issues/41)
 **Type:** CI maintenance (fully codeable, no owner action, no device)
 **Effort:** Low (~1 hr) · **Impact:** Medium (removes a live deprecation that GitHub is currently papering over; no user-facing change)

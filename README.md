@@ -53,8 +53,10 @@ what would have to change for that to be worth doing, is in [`docs/android/`](do
 npx expo install react-native-object-capture
 ```
 
-Add the config plugin to your app config. The permission strings are optional and default to the
-messages shown in the bare React Native section below.
+Add the config plugin to your app config. It sets the iOS permission strings and raises the iOS
+deployment target to 17.0, which Object Capture needs (it never lowers a higher one). The
+permission strings are optional and default to the messages shown in the bare React Native
+section below.
 
 ```json
 {
@@ -85,7 +87,17 @@ npx expo prebuild
 npm install react-native-object-capture
 # or
 yarn add react-native-object-capture
+```
 
+Object Capture needs iOS 17, and the React Native template targets lower, so raise the platform
+in `ios/Podfile`. Without this, `pod install` refuses the pod with "required a higher minimum
+deployment target".
+
+```ruby
+platform :ios, '17.0'
+```
+
+```sh
 cd ios && pod install
 ```
 

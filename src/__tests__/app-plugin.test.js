@@ -5,9 +5,24 @@ const mockWithInfoPlist = jest.fn((config, action) =>
   })
 );
 
-jest.mock('expo/config-plugins', () => ({ withInfoPlist: mockWithInfoPlist }), {
-  virtual: true,
-});
+// Podfile properties are a separate mod with their own modResults; keep them
+// on their own key so the Info.plist assertions below see only Info.plist.
+const mockWithPodfileProperties = jest.fn((config, action) => ({
+  ...config,
+  podfileProperties: action({
+    ...config,
+    modResults: { ...config.podfileProperties },
+  }).modResults,
+}));
+
+jest.mock(
+  'expo/config-plugins',
+  () => ({
+    withInfoPlist: mockWithInfoPlist,
+    withPodfileProperties: mockWithPodfileProperties,
+  }),
+  { virtual: true }
+);
 
 const withObjectCapture = require('../../app.plugin');
 
@@ -64,5 +79,46 @@ describe('withObjectCapture', () => {
     const result = withObjectCapture(config);
 
     expect(result.modResults).toEqual(config.modResults);
+  });
+
+  describe('iOS deployment target', () => {
+    const withTarget = (target) => ({
+      ...createConfig(),
+      podfileProperties:
+        target === undefined ? {} : { 'ios.deploymentTarget': target },
+    });
+
+    it('sets 17.0 when the app has no deployment target', () => {
+      const result = withObjectCapture(withTarget(undefined));
+
+      expect(result.podfileProperties['ios.deploymentTarget']).toBe('17.0');
+    });
+
+    it("raises Expo's default target to 17.0", () => {
+      const result = withObjectCapture(withTarget('16.4'));
+
+      expect(result.podfileProperties['ios.deploymentTarget']).toBe('17.0');
+    });
+
+    it.each(['17.0', '17.4', '18', '26.0'])(
+      'keeps a target already at or above 17.0 (%s)',
+      (target) => {
+        const result = withObjectCapture(withTarget(target));
+
+        expect(result.podfileProperties['ios.deploymentTarget']).toBe(target);
+      }
+    );
+
+    it('leaves other Podfile properties alone', () => {
+      const config = withTarget('15.1');
+      config.podfileProperties['expo.jsEngine'] = 'hermes';
+
+      const result = withObjectCapture(config);
+
+      expect(result.podfileProperties).toEqual({
+        'expo.jsEngine': 'hermes',
+        'ios.deploymentTarget': '17.0',
+      });
+    });
   });
 });

@@ -76,6 +76,10 @@ end
 File.write('Podfile', podfile)
 EOF
 
+# Ruby 3.4 dropped nkf from the default gems, and the CocoaPods 1.15 that
+# older templates pin still loads it ("cannot load such file -- kconv").
+# Newer templates list it themselves; add it the same way where missing.
+grep -q "gem 'nkf'" ../Gemfile || echo "gem 'nkf'" >> ../Gemfile
 bundle install
 # Prebuilt core where the RN version has it (0.81+); older versions ignore these.
 RCT_USE_PREBUILT_RNCORE=1 RCT_USE_RN_DEP=1 bundle exec pod install

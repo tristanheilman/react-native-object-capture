@@ -166,8 +166,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cocoapods-
 
+      # Runs even on a Pods cache hit. The cache only spares the downloads:
+      # pod install also runs codegen into ios/build/generated, which isn't in
+      # the cache and depends on src/specs, so skipping it fails the build
+      # ("No podspec found for ReactAppDependencyProvider").
       - name: Install cocoapods
-        if: env.turbo_cache_hit != 1 && steps.cocoapods-cache.outputs.cache-hit != 'true'
+        if: env.turbo_cache_hit != 1
         run: |
           cd example
           bundle install

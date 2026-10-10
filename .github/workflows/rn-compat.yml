@@ -1,0 +1,106 @@
+name: React Native compatibility
+
+# peerDependencies promises a range of React Native versions; PR CI builds only
+# the one the example pins. This checks the two ends of the promise - the floor
+# the range names, and whatever is `latest` on npm when it runs - by building a
+# stock app at each with the packed library installed (#40).
+#
+# Weekly rather than per PR: a new RN release breaks us on RN's schedule, not
+# ours, and a docs or JS PR can't change which RN versions build. A red run
+# here means "the range claims something that isn't true any more" - fix the
+# code or move the range, not this workflow.
+#
+# Also on PRs that change the check itself, so an edit here is tested before it
+# lands rather than on the next Monday.
+on:
+  pull_request:
+    paths:
+      - .github/workflows/rn-compat.yml
+      - .github/scripts/rn-compat-app.sh
+  schedule:
+    - cron: '0 9 * * 1' # Mondays
+  workflow_dispatch:
+    inputs:
+      versions:
+        description: 'Space-separated RN versions to build (default: peer-range floor and latest)'
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  versions:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.resolve.outputs.matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Resolve versions
+        id: resolve
+        env:
+          REQUESTED: ${{ inputs.versions }}
+        run: |
+          if [ -n "$REQUESTED" ]; then
+            versions="$REQUESTED"
+          else
+            # Read the floor from the range itself, so moving the range moves
+            # what gets built. Newest patch of that minor, since a consumer on
+            # the floor gets patch fixes too.
+            range=$(node -p "require('./package.json').peerDependencies['react-native']")
+            minor=$(echo "$range" | grep -oE '[0-9]+\.[0-9]+' | head -1)
+            [ -n "$minor" ] || { echo "can't read a floor from peerDependencies: $range"; exit 1; }
+            floor=$(npm view "react-native@~$minor.0" version --json | node -p "[].concat(JSON.parse(require('fs').readFileSync(0))).pop()")
+            latest=$(npm view react-native@latest version)
+            versions="$floor $latest"
+          fi
+          echo "Building: $versions"
+          echo "matrix=$(node -p "JSON.stringify(process.argv.slice(1))" $versions)" >> "$GITHUB_OUTPUT"
+
+  build-ios:
+    needs: versions
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        react-native: ${{ fromJSON(needs.versions.outputs.matrix) }}
+    name: build-ios (RN ${{ matrix.react-native }})
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Pack library
+        run: |
+          yarn prepare
+          npm pack --pack-destination "$RUNNER_TEMP"
+
+      # The library builds on .nvmrc's Node; the consumer app gets a Node every
+      # RN in range accepts (0.87 requires ^22.13, 0.79 anything >= 18).
+      - name: Setup Node for the consumer app
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Use latest stable Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Build stock app with the library
+        env:
+          RN_VERSION: ${{ matrix.react-native }}
+        run: |
+          .github/scripts/rn-compat-app.sh "$RN_VERSION" \
+            "$(ls "$RUNNER_TEMP"/react-native-object-capture-*.tgz)" "$RUNNER_TEMP/compat"
+
+      - name: Upload build log
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: xcodebuild-rn-${{ matrix.react-native }}
+          path: ${{ runner.temp }}/compat/xcodebuild.log
+          if-no-files-found: ignore

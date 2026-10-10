@@ -1,7 +1,7 @@
 # Make the supported React Native range true — measure both ends before narrowing `peerDependencies`
 
 **Date:** 2026-09-02
-**Status:** proposed — unblocked (the PRs named in Sequencing, #39 and #26, have merged)
+**Status:** done 2026-10-09. Weekly `rn-compat.yml` instead of a per-PR matrix (see the log entry); the floor measured true, so `react-native >=0.79.0` stays.
 **Tracks:** [#40](https://github.com/tristanheilman/react-native-object-capture/issues/40)
 **Type:** CI matrix + manifest correctness (codeable, no device; one owner decision at the end)
 **Effort:** Medium (~3–4 hrs, mostly CI iteration) · **Impact:** Medium (turns an unverified support claim into a tested one, for a package other people install)

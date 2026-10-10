@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.10](https://github.com/tristanheilman/react-native-object-capture/compare/v0.2.9...v0.2.10) (2026-10-10)
+
+
+### Bug Fixes
+
+* **plugin:** raise the iOS deployment target to 17.0 ([56c355a](https://github.com/tristanheilman/react-native-object-capture/commit/56c355ad616188bd12f4153d5a9b2f6a15a4a273))
+* require react 19, which the react-native floor already does ([b4590b9](https://github.com/tristanheilman/react-native-object-capture/commit/b4590b979cbbe4109e907e318016cfb4869b3162))
+
 ## [0.2.9](https://github.com/tristanheilman/react-native-object-capture/compare/v0.2.8...v0.2.9) (2026-10-08)
 
 
